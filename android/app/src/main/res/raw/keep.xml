@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Das Benachrichtigungs-Icon wird nur zur Laufzeit über seinen Namen aus dem
+  Dart-Code angesprochen. Ohne diesen Eintrag entfernt der Resource-Shrinker
+  es aus dem Release-APK, und die Erinnerung käme nie an.
+-->
+<resources
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_notification" />

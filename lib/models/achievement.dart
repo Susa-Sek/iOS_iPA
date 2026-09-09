@@ -1,0 +1,55 @@
+import 'package:flutter/material.dart';
+
+/// A badge and the condition that unlocks it.
+///
+/// The condition is a plain function over the numbers the app already keeps,
+/// so a badge can never disagree with the statistics it is based on.
+@immutable
+class Achievement {
+  const Achievement({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.icon,
+    required this.target,
+    required this.progress,
+  });
+
+  final String id;
+  final String name;
+  final String description;
+  final IconData icon;
+
+  /// What has to be reached.
+  final int target;
+
+  /// How far the learner is, given the current numbers.
+  final int Function(AchievementStats stats) progress;
+
+  bool isUnlocked(AchievementStats stats) => progress(stats) >= target;
+
+  double ratio(AchievementStats stats) =>
+      target == 0 ? 1 : (progress(stats) / target).clamp(0, 1).toDouble();
+}
+
+/// Everything the badges are judged on.
+@immutable
+class AchievementStats {
+  const AchievementStats({
+    required this.learnedWords,
+    required this.dayStreak,
+    required this.answers,
+    required this.perfectRounds,
+    required this.completedCategories,
+    required this.learnedQuranWords,
+    required this.level,
+  });
+
+  final int learnedWords;
+  final int dayStreak;
+  final int answers;
+  final int perfectRounds;
+  final int completedCategories;
+  final int learnedQuranWords;
+  final int level;
+}

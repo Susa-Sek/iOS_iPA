@@ -111,6 +111,13 @@ class _QuizScreenState extends State<QuizScreen> {
       state.demote(question.entry);
     }
     setState(() => _chosen = option);
+
+    // Letzte Frage richtig und keine einzige daneben: perfekte Runde.
+    if (_index == _questions.length - 1 &&
+        _correct == _questions.length &&
+        _questions.length >= 5) {
+      state.recordPerfectRound();
+    }
   }
 
   void _next() {

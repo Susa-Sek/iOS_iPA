@@ -3,7 +3,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../data/achievements_data.dart';
+import '../data/quran_vocab.dart';
 import '../data/vocabulary_data.dart';
+import '../models/achievement.dart';
 import '../models/vocabulary.dart';
 import 'progress_store.dart';
 import 'word_progress.dart';
@@ -28,6 +31,9 @@ class LearningState extends ChangeNotifier {
   int _sessionStreak = 0;
   int _bestStreak = 0;
   int _dailyGoal = 10;
+  int _xp = 0;
+  int _perfectRounds = 0;
+  int _goalDays = 0;
 
   bool get isLoaded => _loaded;
   int get answered => _answered;
@@ -39,6 +45,63 @@ class LearningState extends ChangeNotifier {
 
   int get dailyGoal => _dailyGoal;
   int get totalCount => kAllEntries.length;
+
+  // ---- Punkte und Level -------------------------------------------------
+
+  /// Punkte je Antwort und für ein erreichtes Tagesziel.
+  static const int xpPerCorrect = 10;
+  static const int xpPerWrong = 2;
+  static const int xpPerGoal = 50;
+
+  int get xp => _xp;
+  int get perfectRounds => _perfectRounds;
+  int get goalDays => _goalDays;
+
+  /// Level 1 ab 0 Punkten, danach quadratisch steigender Bedarf: Level 2 ab
+  /// 100, Level 3 ab 400, Level 4 ab 900 Punkten.
+  int get level => 1 + (sqrt(_xp / 100)).floor();
+
+  int get xpForCurrentLevel => _xpForLevel(level);
+  int get xpForNextLevel => _xpForLevel(level + 1);
+
+  static int _xpForLevel(int level) => 100 * (level - 1) * (level - 1);
+
+  /// Fortschritt innerhalb des aktuellen Levels, 0 bis 1.
+  double get levelProgress {
+    final int span = xpForNextLevel - xpForCurrentLevel;
+    if (span <= 0) return 1;
+    return ((_xp - xpForCurrentLevel) / span).clamp(0, 1).toDouble();
+  }
+
+  /// Eine Runde ohne Fehler — zählt für das Abzeichen "Fehlerfrei".
+  void recordPerfectRound() {
+    _perfectRounds++;
+    _xp += 25;
+    notifyListeners();
+    unawaited(_persist());
+  }
+
+  // ---- Abzeichen --------------------------------------------------------
+
+  AchievementStats get achievementStats => AchievementStats(
+        learnedWords: learnedCount,
+        dayStreak: dayStreak,
+        answers: _answered,
+        perfectRounds: _perfectRounds,
+        completedCategories: kAllCategories
+            .where((VocabCategory c) =>
+                c.entries.isNotEmpty && c.entries.every(isLearned))
+            .length,
+        learnedQuranWords: kQuranWords.entries.where(isLearned).length,
+        level: level,
+      );
+
+  List<Achievement> get unlockedAchievements {
+    final AchievementStats stats = achievementStats;
+    return kAchievements
+        .where((Achievement a) => a.isUnlocked(stats))
+        .toList();
+  }
 
   static const int maxBox = WordProgress.maxBox;
 
@@ -53,6 +116,9 @@ class LearningState extends ChangeNotifier {
     _correct = stored.correct;
     _bestStreak = stored.bestStreak;
     _dailyGoal = stored.dailyGoal;
+    _xp = stored.xp;
+    _perfectRounds = stored.perfectRounds;
+    _goalDays = stored.goalDays;
     _loaded = true;
     notifyListeners();
   }
@@ -64,6 +130,9 @@ class LearningState extends ChangeNotifier {
         bestStreak: _bestStreak,
         dailyGoal: _dailyGoal,
         history: _history,
+        xp: _xp,
+        perfectRounds: _perfectRounds,
+        goalDays: _goalDays,
       ));
 
   WordProgress progressOfWord(VocabEntry entry) =>
@@ -194,7 +263,10 @@ class LearningState extends ChangeNotifier {
   }
 
   void recordAnswer({required bool correct}) {
+    final bool goalWasReached = goalReached;
+
     _answered++;
+    _xp += correct ? xpPerCorrect : xpPerWrong;
     if (correct) {
       _correct++;
       _sessionStreak++;
@@ -204,6 +276,14 @@ class LearningState extends ChangeNotifier {
     }
     final String key = dayKey(_now());
     _history[key] = (_history[key] ?? 0) + 1;
+
+    // Der Moment, in dem das Tagesziel fällt: einmalig Punkte und ein Tag
+    // mehr auf dem Konto.
+    if (!goalWasReached && goalReached) {
+      _xp += xpPerGoal;
+      _goalDays++;
+    }
+
     notifyListeners();
     unawaited(_persist());
   }
@@ -215,6 +295,9 @@ class LearningState extends ChangeNotifier {
     _correct = 0;
     _sessionStreak = 0;
     _bestStreak = 0;
+    _xp = 0;
+    _perfectRounds = 0;
+    _goalDays = 0;
     notifyListeners();
     await _store.clear();
   }

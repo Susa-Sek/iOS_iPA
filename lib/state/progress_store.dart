@@ -15,6 +15,9 @@ class StoredProgress {
     this.bestStreak = 0,
     this.dailyGoal = 10,
     this.history = const <String, int>{},
+    this.xp = 0,
+    this.perfectRounds = 0,
+    this.goalDays = 0,
   });
 
   final Map<String, WordProgress> words;
@@ -27,6 +30,15 @@ class StoredProgress {
 
   /// Answers per day, keyed "YYYY-MM-DD".
   final Map<String, int> history;
+
+  /// Erfahrungspunkte, Level werden daraus berechnet.
+  final int xp;
+
+  /// Quizrunden ohne einen Fehler.
+  final int perfectRounds;
+
+  /// Tage insgesamt, an denen das Tagesziel erreicht wurde.
+  final int goalDays;
 }
 
 /// Reads and writes [StoredProgress] — backed by shared_preferences, so the
@@ -85,6 +97,9 @@ class ProgressStore {
       'correct': progress.correct,
       'bestStreak': progress.bestStreak,
       'dailyGoal': progress.dailyGoal,
+      'xp': progress.xp,
+      'perfectRounds': progress.perfectRounds,
+      'goalDays': progress.goalDays,
       'history': history,
       'words': <String, dynamic>{
         for (final MapEntry<String, WordProgress> e in progress.words.entries)
@@ -106,6 +121,9 @@ class ProgressStore {
       correct: (decoded['correct'] as num?)?.toInt() ?? 0,
       bestStreak: (decoded['bestStreak'] as num?)?.toInt() ?? 0,
       dailyGoal: (decoded['dailyGoal'] as num?)?.toInt() ?? 10,
+      xp: (decoded['xp'] as num?)?.toInt() ?? 0,
+      perfectRounds: (decoded['perfectRounds'] as num?)?.toInt() ?? 0,
+      goalDays: (decoded['goalDays'] as num?)?.toInt() ?? 0,
       words: <String, WordProgress>{
         if (words is Map<String, dynamic>)
           for (final MapEntry<String, dynamic> e in words.entries)

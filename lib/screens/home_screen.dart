@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../data/curriculum.dart';
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
+import '../state/reminders.dart';
+import 'achievements_screen.dart';
 import 'alphabet_screen.dart';
 import 'build_word_screen.dart';
 import 'category_screen.dart';
@@ -30,6 +32,11 @@ class HomeScreen extends StatelessWidget {
             title: const Text('Arabisch lernen'),
             actions: <Widget>[
               IconButton(
+                icon: const Icon(Icons.emoji_events_outlined),
+                tooltip: 'Erfolge',
+                onPressed: () => _push(context, const AchievementsScreen()),
+              ),
+              IconButton(
                 icon: const Icon(Icons.search),
                 tooltip: 'Suchen',
                 onPressed: () => _push(context, const SearchScreen()),
@@ -39,6 +46,9 @@ class HomeScreen extends StatelessWidget {
                   switch (value) {
                     case 'goal':
                       _editGoal(context, state);
+                      break;
+                    case 'reminder':
+                      _editReminder(context, state);
                       break;
                     case 'reset':
                       _confirmReset(context, state);
@@ -50,6 +60,10 @@ class HomeScreen extends StatelessWidget {
                   const PopupMenuItem<String>(
                     value: 'goal',
                     child: Text('Tagesziel ändern'),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'reminder',
+                    child: Text('Tägliche Erinnerung'),
                   ),
                   const PopupMenuItem<String>(
                     value: 'reset',
@@ -198,6 +212,82 @@ class HomeScreen extends StatelessWidget {
       ),
     );
     if (goal != null) await state.setDailyGoal(goal);
+  }
+
+  /// Erinnerung ein- oder ausschalten und die Uhrzeit wählen.
+  Future<void> _editReminder(
+      BuildContext context, LearningState state) async {
+    final ReminderService reminders = ReminderScope.of(context);
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) => AnimatedBuilder(
+        animation: reminders,
+        builder: (BuildContext context, _) => AlertDialog(
+          title: const Text('Tägliche Erinnerung'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const Text(
+                'Einmal am Tag eine kurze Erinnerung — an Tagen, an denen du '
+                'dein Ziel schon geschafft hast, bleibt es still.',
+              ),
+              const SizedBox(height: 12),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Erinnerung an'),
+                value: reminders.enabled,
+                onChanged: (bool on) async {
+                  if (on) {
+                    final bool ok = await reminders.enable(
+                        goalReachedToday: state.goalReached);
+                    if (!ok) {
+                      messenger.showSnackBar(const SnackBar(
+                        content: Text(
+                          'Benachrichtigungen sind für die App nicht '
+                          'erlaubt. In den Android-Einstellungen unter '
+                          '"Benachrichtigungen" freigeben.',
+                        ),
+                      ));
+                    }
+                  } else {
+                    await reminders.disable();
+                  }
+                },
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                enabled: reminders.enabled,
+                leading: const Icon(Icons.schedule),
+                title: const Text('Uhrzeit'),
+                trailing: Text(reminders.timeLabel),
+                onTap: !reminders.enabled
+                    ? null
+                    : () async {
+                        final TimeOfDay? picked = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay(
+                              hour: reminders.hour, minute: reminders.minute),
+                        );
+                        if (picked != null) {
+                          await reminders.setTime(picked.hour, picked.minute,
+                              goalReachedToday: state.goalReached);
+                        }
+                      },
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Fertig'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _confirmReset(BuildContext context, LearningState state) async {
@@ -365,10 +455,18 @@ class _ProgressCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(
-                    'Dein Fortschritt',
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text(
+                          'Level ${state.level}',
+                          style: theme.textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Text('${state.xp} Punkte',
+                          style: theme.textTheme.labelMedium),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Text(

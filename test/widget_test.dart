@@ -28,7 +28,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Arabisch lernen'), findsWidgets);
-    expect(find.text('Dein Fortschritt'), findsOneWidget);
+    expect(find.text('Level 1'), findsOneWidget);
+    expect(find.text('0 Punkte'), findsOneWidget);
     expect(find.text('Karteikarten'), findsOneWidget);
     expect(find.text('Quiz'), findsOneWidget);
     expect(find.text('Zuordnen'), findsOneWidget);

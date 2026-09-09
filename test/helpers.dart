@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:ipa_testing_github_action/state/learning_state.dart';
+import 'package:ipa_testing_github_action/state/reminders.dart';
 import 'package:ipa_testing_github_action/state/speech.dart';
 import 'package:ipa_testing_github_action/widgets/speak_button.dart';
 
@@ -24,16 +25,39 @@ class FakeSpeechBackend implements SpeechBackend {
   Future<void> stop() async {}
 }
 
-/// Wraps a screen in the two scopes the app provides at the top level.
+/// Erinnerungen für Tests: plant nichts, merkt sich nur.
+class FakeReminderBackend implements ReminderBackend {
+  final List<PlannedReminder> scheduled = <PlannedReminder>[];
+
+  @override
+  Future<void> init() async {}
+
+  @override
+  Future<bool> requestPermission() async => true;
+
+  @override
+  Future<void> schedule(PlannedReminder reminder) async =>
+      scheduled.add(reminder);
+
+  @override
+  Future<void> cancelAll() async => scheduled.clear();
+}
+
+/// Wraps a screen in the scopes the app provides at the top level.
 Widget wrapScreen(
   Widget child, {
   LearningState? state,
   Speaker? speaker,
+  ReminderService? reminders,
 }) =>
     LearningScope(
       state: state ?? LearningState(),
       child: SpeechScope(
         speaker: speaker ?? Speaker(backend: FakeSpeechBackend()),
-        child: MaterialApp(home: child),
+        child: ReminderScope(
+          service: reminders ??
+              ReminderService(backend: FakeReminderBackend()),
+          child: MaterialApp(home: child),
+        ),
       ),
     );

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ipa_testing_github_action/data/vocabulary_data.dart';
 import 'package:ipa_testing_github_action/main.dart';
 import 'package:ipa_testing_github_action/models/vocabulary.dart';
+import 'package:ipa_testing_github_action/screens/achievements_screen.dart';
 import 'package:ipa_testing_github_action/screens/alphabet_screen.dart';
 import 'package:ipa_testing_github_action/screens/build_word_screen.dart';
 import 'package:ipa_testing_github_action/screens/category_screen.dart';
@@ -109,6 +110,15 @@ void main() {
           await tester.pumpWidget(_wrap(const AlphabetScreen()));
           await tester.pumpAndSettle();
           await tester.tap(find.text('Alif'));
+          await tester.pumpAndSettle();
+        });
+      });
+
+      testWidgets('Erfolge', (WidgetTester tester) async {
+        await _withSize(tester, size, () async {
+          await tester.pumpWidget(_wrap(const AchievementsScreen()));
+          await tester.pumpAndSettle();
+          await tester.drag(find.byType(ListView), const Offset(0, -700));
           await tester.pumpAndSettle();
         });
       });

@@ -21,6 +21,7 @@ Zeichen dazu, schlägt er an.
 | **Quiz** | Multiple Choice mit vier Antworten, in beide Richtungen (Arabisch → Deutsch und umgekehrt). |
 | **Zuordnen** | Deutsches Wort antippen, dann das passende arabische — gelöste Paare verschwinden. |
 | **Wort bauen** | Das arabische Wort aus durcheinandergewürfelten Buchstaben zusammensetzen. |
+| **Erfolge** | Level, Punkte, Serie und zwölf Abzeichen — mit Fortschrittsbalken zum nächsten. |
 | **Alphabet & Zeichen** | Alle 28 Buchstaben mit Aussprache-Hinweis und den vier Formen (allein, Anfang, Mitte, Ende) — dazu eine Übersicht der Tashkīl-Zeichen von Fatḥa bis Tanwīn, jeweils mit Beispiel. |
 | **Hören → Deutsch** | Nur das gesprochene Wort ist gegeben. Die schwerste und nützlichste Richtung — nur verfügbar, wenn eine arabische Stimme installiert ist. |
 
@@ -56,6 +57,27 @@ Sprachausgabe des Geräts (`flutter_tts`) und spricht standardmäßig langsam.
 Ist keine arabische Stimme installiert, bleibt die App still und erklärt beim
 Antippen, wo man sie nachinstalliert — statt wortlos nichts zu tun. Die
 Hör-Übung wird in diesem Fall übersprungen.
+
+## Jeden Tag ein paar Wörter
+
+Der Teil, der aus Vorsatz Gewohnheit macht:
+
+* **Tägliche Erinnerung** als Benachrichtigung, Uhrzeit frei wählbar
+  (Voreinstellung 19:00). An Tagen, an denen das Tagesziel schon geschafft
+  ist, bleibt es still — die App plant die nächsten 14 Tage einzeln und
+  lässt erledigte Tage aus, statt stur jeden Abend zu piepen.
+* **Tagesziel** (Voreinstellung 10 Antworten) und **Serie**: 🔥 zählt die
+  Tage in Folge, an denen das Ziel erreicht wurde.
+* **Punkte und Level**: 10 Punkte je richtige Antwort, 2 für einen Versuch,
+  50 extra für das erreichte Tagesziel, 25 für eine fehlerfreie Quizrunde.
+  Level 2 ab 100 Punkten, Level 3 ab 400, Level 4 ab 900.
+* **Zwölf Abzeichen** für Meilensteine — von „10 Wörter gelernt" über
+  „7 Tage in Folge" bis „ein ganzes Thema gemeistert". Der Erfolge-Bildschirm
+  zeigt auch, wie weit es bis zum nächsten ist.
+
+Unter Android 13 und neuer fragt die App beim Einschalten nach der Erlaubnis
+für Benachrichtigungen. Wird sie verweigert, sagt die App das offen, statt
+eine Erinnerung zu versprechen, die nie ankommt.
 
 ## Wie die App sich merkt, was noch wackelt
 
@@ -111,7 +133,8 @@ lib/
 ├── models/                VocabEntry, VocabCategory, ArabicLetter,
 │                          ArabicDiacritic + Tashkīl-Hilfsfunktionen
 ├── data/                  Wortschatz, Lernweg, Alphabet, Verben, Quran
-├── state/                 Lernstufen & Termine, Speicherung, Sprachausgabe
+├── state/                 Lernstufen & Termine, Speicherung, Punkte,
+│                          Sprachausgabe, Erinnerungen
 ├── screens/               Start, Thema, Karteikarten, Quiz, Zuordnen,
 │                          Wort bauen, Alphabet & Zeichen, Suche,
 │                          Quran-Übersicht, Sure, Wurzeln, Verbtabellen
@@ -122,8 +145,9 @@ lib/
 
 ```bash
 flutter pub get
-flutter test        # 105 Tests: Daten, Lernlogik, Speicherung, Sprachausgabe,
-                    # Quran-Text gegen die Quelle, Verbtabellen, Layout
+flutter test        # 128 Tests: Daten, Lernlogik, Speicherung, Sprachausgabe,
+                    # Quran-Text gegen die Quelle, Verbtabellen,
+                    # Erinnerungsplan, Punkte & Abzeichen, Layout
 flutter analyze
 flutter run
 ```
