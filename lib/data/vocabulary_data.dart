@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/vocabulary.dart';
 import 'quran_vocab.dart';
+import 'vocabulary_more.dart';
 
 /// Shorthand so the word lists below stay readable.
 typedef V = VocabEntry;
@@ -538,7 +539,7 @@ const List<VocabCategory> kCategories = <VocabCategory>[
 /// Alltagswortschatz und Quran-Wortschatz — alles, woraus die Übungen
 /// schöpfen und was auf der Startseite unter "Themen" steht.
 List<VocabCategory> get kAllCategories =>
-    <VocabCategory>[...kCategories, kQuranWords];
+    <VocabCategory>[...kCategories, ...kMoreCategories, kQuranWords];
 
 /// Every word of the app in one flat list.
 List<VocabEntry> get kAllEntries =>

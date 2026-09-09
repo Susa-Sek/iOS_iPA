@@ -7,10 +7,11 @@ Die App ist komplett auf Deutsch, zeigt jedes Wort in arabischer Schrift und
 mit Lautschrift und besteht nicht aus Listen zum Durchlesen, sondern aus
 Übungen zum Mitmachen.
 
-**Jedes arabische Wort ist vollständig vokalisiert** — mit Fatḥa, Kasra,
-Ḍamma, Sukūn, Shadda und Tanwīn (شُكْرًا statt شكرا). Ohne diese Zeichen
-schreibt Arabisch nur die Konsonanten, und Anfänger können nicht wissen, wie
-ein Wort klingt.
+**Alle 801 arabischen Wörter sind vollständig vokalisiert** — mit Fatḥa,
+Kasra, Ḍamma, Sukūn, Shadda und Tanwīn (شُكْرًا statt شكرا). Ohne diese
+Zeichen schreibt Arabisch nur die Konsonanten, und Anfänger können nicht
+wissen, wie ein Wort klingt. Ein Test setzt das durch: kommt ein Wort ohne
+Zeichen dazu, schlägt er an.
 
 ## Übungen
 
@@ -75,13 +76,24 @@ zählt die Tage in Folge, an denen das Ziel erreicht wurde.
 übersteht das Schließen der App. Ein beschädigter Speicher lässt die App
 leer starten statt abzustürzen — auch das ist getestet.
 
-## Wortschatz
+## Wortschatz und Aufbau
 
-Rund 300 vollständig vokalisierte Wörter und Wendungen in 16 Themen:
-Allgemein, Sich vorstellen,
-Begrüßung & Abschied, Reise, Wegbeschreibungen, Zeit & Datum, Orte,
-Einkaufen, Im Restaurant, Im Hotel, Zahlen, Personalpronomen, Wichtige
-Wörter, Mensch & Körper, Wichtige Verben, Wichtige Adjektive.
+**801 vollständig vokalisierte Wörter in 33 Themen**, geordnet in sechs
+Bereichen — die Startseite zeigt den Lernweg von oben nach unten:
+
+| Bereich | Themen | Wörter |
+| --- | ---: | ---: |
+| Erste Schritte — die Wörter, mit denen jedes Gespräch anfängt | 5 | 102 |
+| Alltag — zu Hause, Einkaufen, Essen, Kleidung, Zeit | 7 | 176 |
+| Unterwegs — Reise, Weg, Orte, Restaurant, Hotel | 5 | 97 |
+| Mensch & Welt — Körper, Gesundheit, Gefühle, Arbeit, Natur, Technik | 9 | 190 |
+| Bausteine der Sprache — Verben, Adjektive, Gegensätze, Mengen | 6 | 136 |
+| Quran-Sprache — die häufigsten Wörter des Quran | 1 | 100 |
+
+Dazu **Verbtabellen**: acht häufige Verben mit allen acht Personen in
+Vergangenheit und Gegenwart (64 Formen). Arabisch zeigt die Person in der
+Gegenwart über eine Vorsilbe an — أ für „ich", تـ für „du", يـ für „er",
+نـ für „wir" —, und dieses Muster wiederholt sich bei fast jedem Verb.
 
 Als Inspiration für die Themenauswahl diente der
 [Grundwortschatz Arabisch von Sprachheld](https://www.sprachheld.de/).
@@ -98,11 +110,11 @@ lib/
 ├── main.dart              App, Theme (hell & dunkel)
 ├── models/                VocabEntry, VocabCategory, ArabicLetter,
 │                          ArabicDiacritic + Tashkīl-Hilfsfunktionen
-├── data/                  Wortschatz und Alphabet
+├── data/                  Wortschatz, Lernweg, Alphabet, Verben, Quran
 ├── state/                 Lernstufen & Termine, Speicherung, Sprachausgabe
 ├── screens/               Start, Thema, Karteikarten, Quiz, Zuordnen,
 │                          Wort bauen, Alphabet & Zeichen, Suche,
-│                          Quran-Übersicht, Sure, Wurzeln
+│                          Quran-Übersicht, Sure, Wurzeln, Verbtabellen
 └── widgets/               Arabische Textausgabe (RTL), Wortzeile, Lernboxen
 ```
 
@@ -110,7 +122,8 @@ lib/
 
 ```bash
 flutter pub get
-flutter test        # Daten, Lernlogik, Speicherung, Sprachausgabe, Layout
+flutter test        # 105 Tests: Daten, Lernlogik, Speicherung, Sprachausgabe,
+                    # Quran-Text gegen die Quelle, Verbtabellen, Layout
 flutter analyze
 flutter run
 ```

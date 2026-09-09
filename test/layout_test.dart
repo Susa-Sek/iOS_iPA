@@ -14,6 +14,7 @@ import 'package:ipa_testing_github_action/screens/quiz_screen.dart';
 import 'package:ipa_testing_github_action/screens/quran_screen.dart';
 import 'package:ipa_testing_github_action/screens/roots_screen.dart';
 import 'package:ipa_testing_github_action/screens/sura_screen.dart';
+import 'package:ipa_testing_github_action/screens/verbs_screen.dart';
 import 'package:ipa_testing_github_action/screens/search_screen.dart';
 import 'package:ipa_testing_github_action/state/learning_state.dart';
 
@@ -127,6 +128,16 @@ void main() {
           await tester.pumpWidget(_wrap(SuraScreen(sura: kSuras.first)));
           await tester.pumpAndSettle();
           await tester.drag(find.byType(ListView), const Offset(0, -800));
+          await tester.pumpAndSettle();
+        });
+      });
+
+      testWidgets('Verben beugen', (WidgetTester tester) async {
+        await _withSize(tester, size, () async {
+          await tester.pumpWidget(_wrap(const VerbsScreen()));
+          await tester.pumpAndSettle();
+          // Erste Tabelle aufklappen — dort ist die Zeilenbreite am engsten.
+          await tester.tap(find.text('schreiben'));
           await tester.pumpAndSettle();
         });
       });

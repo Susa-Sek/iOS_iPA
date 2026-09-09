@@ -105,3 +105,69 @@ class ArabicDiacritic {
 
   final String hint;
 }
+
+/// Ein Bereich des Lernwegs — mehrere Themen, die zusammengehören.
+///
+/// Mit rund 30 Themen wäre eine einzige Liste unübersichtlich; die Bereiche
+/// geben dem Wortschatz eine Reihenfolge, von den ersten Wörtern bis zu den
+/// Bausteinen der Sprache.
+@immutable
+class CategoryGroup {
+  const CategoryGroup({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.icon,
+    required this.categories,
+  });
+
+  final String id;
+  final String name;
+  final String description;
+  final IconData icon;
+  final List<VocabCategory> categories;
+
+  List<VocabEntry> get entries =>
+      <VocabEntry>[for (final VocabCategory c in categories) ...c.entries];
+}
+
+/// Eine Person in der Konjugationstabelle.
+@immutable
+class VerbForm {
+  const VerbForm(this.person, this.past, this.present, this.transliteration);
+
+  /// "ich", "du", "er" …
+  final String person;
+
+  /// Vergangenheit (الْمَاضِي) und Gegenwart (الْمُضَارِع).
+  final String past;
+  final String present;
+
+  /// Lautschrift beider Formen, durch " / " getrennt.
+  final String transliteration;
+}
+
+/// Ein Verb mit seiner vollständigen Konjugation.
+@immutable
+class Verb {
+  const Verb({
+    required this.german,
+    required this.root,
+    required this.past,
+    required this.present,
+    required this.transliteration,
+    required this.forms,
+  });
+
+  final String german;
+
+  /// Die drei Wurzelbuchstaben, z. B. "ك · ت · ب".
+  final String root;
+
+  /// Die Grundform: er schrieb / er schreibt.
+  final String past;
+  final String present;
+  final String transliteration;
+
+  final List<VerbForm> forms;
+}

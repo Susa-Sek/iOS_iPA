@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../data/vocabulary_data.dart';
+import '../data/curriculum.dart';
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
 import 'alphabet_screen.dart';
@@ -11,6 +11,7 @@ import 'matching_screen.dart';
 import 'quiz_screen.dart';
 import 'quran_screen.dart';
 import 'search_screen.dart';
+import 'verbs_screen.dart';
 
 /// Start screen: progress at a glance, the training modes and the list of
 /// vocabulary categories.
@@ -120,6 +121,12 @@ class HomeScreen extends StatelessWidget {
                     onTap: () => _push(context, const AlphabetScreen()),
                   ),
                   _ModeCard(
+                    icon: Icons.table_chart_outlined,
+                    label: 'Verben',
+                    hint: 'beugen',
+                    onTap: () => _push(context, const VerbsScreen()),
+                  ),
+                  _ModeCard(
                     icon: Icons.menu_book_outlined,
                     label: 'Quran',
                     hint: 'Suren & Wurzeln',
@@ -131,23 +138,33 @@ class HomeScreen extends StatelessWidget {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-              child: Text(
-                'Themen',
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+              child: Row(
+                children: <Widget>[
+                  Text(
+                    'Lernweg',
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${state.totalCount} Wörter',
+                    style: theme.textTheme.labelMedium,
+                  ),
+                ],
               ),
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+            padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
-                (BuildContext context, int index) => _CategoryCard(
-                  category: kAllCategories[index],
+                (BuildContext context, int index) => _GroupCard(
+                  group: kGroups[index],
                   state: state,
+                  initiallyOpen: index == 0,
                 ),
-                childCount: kAllCategories.length,
+                childCount: kGroups.length,
               ),
             ),
           ),
@@ -437,6 +454,80 @@ class _ModeCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// One area of the learning path: a headline with its own progress, and the
+/// themes inside it. Collapsed by default so ~30 themes stay manageable.
+class _GroupCard extends StatelessWidget {
+  const _GroupCard({
+    required this.group,
+    required this.state,
+    required this.initiallyOpen,
+  });
+
+  final CategoryGroup group;
+  final LearningState state;
+  final bool initiallyOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final List<VocabEntry> entries = group.entries;
+    final int learned = entries.where(state.isLearned).length;
+    final int due = state.dueEntries(entries).length;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+      clipBehavior: Clip.antiAlias,
+      child: ExpansionTile(
+        initiallyExpanded: initiallyOpen,
+        shape: const Border(),
+        collapsedShape: const Border(),
+        leading: Icon(group.icon, color: theme.colorScheme.primary),
+        title: Text(
+          group.name,
+          style: theme.textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4, bottom: 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                '$learned / ${entries.length} gelernt'
+                '${due > 0 ? " · $due fällig" : ""}',
+                style: theme.textTheme.bodySmall,
+              ),
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: entries.isEmpty ? 0 : learned / entries.length,
+                  minHeight: 4,
+                  backgroundColor: theme.colorScheme.primaryContainer,
+                ),
+              ),
+            ],
+          ),
+        ),
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(group.description,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.hintColor)),
+            ),
+          ),
+          for (final VocabCategory category in group.categories)
+            _CategoryCard(category: category, state: state),
+          const SizedBox(height: 8),
+        ],
       ),
     );
   }
