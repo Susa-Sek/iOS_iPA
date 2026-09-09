@@ -29,7 +29,7 @@ void main() {
     });
 
     test('auch die Kategorienamen sind vokalisiert', () {
-      for (final VocabCategory category in kCategories) {
+      for (final VocabCategory category in kAllCategories) {
         expect(hasTashkil(category.arabicName), isTrue,
             reason: category.name);
       }

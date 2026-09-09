@@ -21,22 +21,59 @@ ein Wort klingt.
 | **Zuordnen** | Deutsches Wort antippen, dann das passende arabische — gelöste Paare verschwinden. |
 | **Wort bauen** | Das arabische Wort aus durcheinandergewürfelten Buchstaben zusammensetzen. |
 | **Alphabet & Zeichen** | Alle 28 Buchstaben mit Aussprache-Hinweis und den vier Formen (allein, Anfang, Mitte, Ende) — dazu eine Übersicht der Tashkīl-Zeichen von Fatḥa bis Tanwīn, jeweils mit Beispiel. |
+| **Hören → Deutsch** | Nur das gesprochene Wort ist gegeben. Die schwerste und nützlichste Richtung — nur verfügbar, wenn eine arabische Stimme installiert ist. |
+
+## Quran-Sprache
+
+Ein eigener Bereich für klassisches Arabisch:
+
+* **Sechs kurze Suren Wort für Wort** — al-Fātiḥa, al-ʿAṣr, al-Kauṯar,
+  al-Iḫlāṣ, al-Falaq, an-Nās. Jeder Vers mit arabischem Text, deutscher
+  Verständnishilfe und jedem einzelnen Wort samt Bedeutung.
+* **Die 100 häufigsten Wortformen**, ermittelt aus dem vollständigen Text:
+  78.245 Wörter, davon entfallen 29.637 Vorkommen auf diese 100 Formen —
+  rund 38 % des gesamten Textes. Gezählt werden Wortformen, nicht Wurzeln.
+* **Zwölf Wurzeln** und die Wörter, die aus ihnen wachsen
+  (ك·ت·ب → كَتَبَ، كِتَاب، كَاتِب، مَكْتُوب).
+
+Der arabische Text stammt unverändert aus der Ausgabe `quran-simple` des
+[Tanzil-Projekts](https://tanzil.net/) und wurde **nicht abgetippt**. Ein Test
+vergleicht jeden Vers zeichenweise gegen die mitgelieferte Quellkopie
+(`test/data/quran_reference.json`) — er hat beim Bauen bereits einen Fehler
+gefunden, bei dem eine von Hand geschriebene Basmala optisch gleich, aber
+byteweise anders war (Reihenfolge von Shadda und Fatḥa).
+
+Die deutschen Zeilen sind eine schlichte Verständnishilfe zum Sprachenlernen
+und ersetzen keine anerkannte Übersetzung.
+
+## Aussprache
+
+Jedes arabische Wort lässt sich anhören — auf der Karteikarte, im Quiz, in der
+Wortliste, beim Alphabet und bei den Tashkīl-Zeichen. Die App nutzt die
+Sprachausgabe des Geräts (`flutter_tts`) und spricht standardmäßig langsam.
+
+Ist keine arabische Stimme installiert, bleibt die App still und erklärt beim
+Antippen, wo man sie nachinstalliert — statt wortlos nichts zu tun. Die
+Hör-Übung wird in diesem Fall übersprungen.
 
 ## Wie die App sich merkt, was noch wackelt
 
-Jedes Wort sitzt in einer von vier Lernboxen (Leitner-Prinzip):
+Jedes Wort durchläuft sechs Stufen mit echten Wiederholungsterminen:
 
-* richtige Antwort → eine Box weiter,
-* falsche Antwort → zurück in Box 0,
-* ab der letzten Box gilt ein Wort als **gelernt**.
+| Stufe | 0 | 1 | 2 | 3 | 4 | 5 |
+| --- | --- | --- | --- | --- | --- | --- |
+| nächste Wiederholung | heute | in 1 Tag | in 3 Tagen | in 7 Tagen | in 21 Tagen | in 60 Tagen |
 
-Jede Übungsrunde zieht die Wörter aus den schwächsten Boxen zuerst — geübt
-wird also genau das, was noch nicht sitzt. Fortschritt, Trefferquote und
-Serie stehen auf der Startseite; pro Thema gibt es einen eigenen Balken.
+Richtige Antwort → eine Stufe weiter, falsche → zurück auf Stufe 0. Ab Stufe 3
+gilt ein Wort als **sitzt**. Die Startseite zeigt, was heute fällig ist, und
+startet die Wiederholung mit einem Tippen.
 
-> Der Lernstand liegt im Arbeitsspeicher und gilt für die laufende Sitzung.
-> Absichtlich: Das Projekt kommt ohne zusätzliche Plugins aus, damit die
-> Builds überall ohne Extra-Setup durchlaufen.
+Dazu ein Tagesziel (Voreinstellung: 10 Antworten) und eine Tagesserie: 🔥
+zählt die Tage in Folge, an denen das Ziel erreicht wurde.
+
+**Der Lernstand wird auf dem Gerät gespeichert** (`shared_preferences`) und
+übersteht das Schließen der App. Ein beschädigter Speicher lässt die App
+leer starten statt abzustürzen — auch das ist getestet.
 
 ## Wortschatz
 
@@ -62,9 +99,10 @@ lib/
 ├── models/                VocabEntry, VocabCategory, ArabicLetter,
 │                          ArabicDiacritic + Tashkīl-Hilfsfunktionen
 ├── data/                  Wortschatz und Alphabet
-├── state/                 Lernboxen, Statistik (ChangeNotifier)
+├── state/                 Lernstufen & Termine, Speicherung, Sprachausgabe
 ├── screens/               Start, Thema, Karteikarten, Quiz, Zuordnen,
-│                          Wort bauen, Alphabet & Zeichen, Suche
+│                          Wort bauen, Alphabet & Zeichen, Suche,
+│                          Quran-Übersicht, Sure, Wurzeln
 └── widgets/               Arabische Textausgabe (RTL), Wortzeile, Lernboxen
 ```
 
@@ -72,7 +110,7 @@ lib/
 
 ```bash
 flutter pub get
-flutter test        # Widget-, Übungs- und Datentests
+flutter test        # Daten, Lernlogik, Speicherung, Sprachausgabe, Layout
 flutter analyze
 flutter run
 ```

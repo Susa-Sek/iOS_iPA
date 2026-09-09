@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:ipa_testing_github_action/data/vocabulary_data.dart';
 import 'package:ipa_testing_github_action/main.dart';
@@ -8,6 +9,19 @@ import 'package:ipa_testing_github_action/screens/quiz_screen.dart';
 import 'package:ipa_testing_github_action/widgets/word_tile.dart';
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues(<String, Object>{}));
+
+  /// Scrollt die Startseite bis zum ersten Thema — seit der "Heute"-Karte
+  /// liegt die Themenliste unterhalb des sichtbaren Bereichs.
+  Future<void> scrollToCategories(WidgetTester tester) async {
+    await tester.scrollUntilVisible(
+      find.text(kCategories.first.name),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('Startseite zeigt Fortschritt, Übungen und Themen',
       (WidgetTester tester) async {
     await tester.pumpWidget(const ArabischLernenApp());
@@ -19,6 +33,9 @@ void main() {
     expect(find.text('Quiz'), findsOneWidget);
     expect(find.text('Zuordnen'), findsOneWidget);
     expect(find.text('Alphabet'), findsOneWidget);
+    expect(find.text('Heute'), findsOneWidget);
+
+    await scrollToCategories(tester);
     expect(find.text(kCategories.first.name), findsOneWidget);
   });
 
@@ -26,6 +43,7 @@ void main() {
     await tester.pumpWidget(const ArabischLernenApp());
     await tester.pumpAndSettle();
 
+    await scrollToCategories(tester);
     await tester.tap(find.text(kCategories.first.name));
     await tester.pumpAndSettle();
 

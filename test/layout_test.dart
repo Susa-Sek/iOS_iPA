@@ -9,9 +9,15 @@ import 'package:ipa_testing_github_action/screens/build_word_screen.dart';
 import 'package:ipa_testing_github_action/screens/category_screen.dart';
 import 'package:ipa_testing_github_action/screens/flashcard_screen.dart';
 import 'package:ipa_testing_github_action/screens/matching_screen.dart';
+import 'package:ipa_testing_github_action/data/quran_data.dart';
 import 'package:ipa_testing_github_action/screens/quiz_screen.dart';
+import 'package:ipa_testing_github_action/screens/quran_screen.dart';
+import 'package:ipa_testing_github_action/screens/roots_screen.dart';
+import 'package:ipa_testing_github_action/screens/sura_screen.dart';
 import 'package:ipa_testing_github_action/screens/search_screen.dart';
 import 'package:ipa_testing_github_action/state/learning_state.dart';
+
+import 'helpers.dart';
 
 /// Phone sizes every screen is checked against. A RenderFlex overflow makes
 /// the surrounding test fail, so simply pumping each screen is a real layout
@@ -33,10 +39,7 @@ Future<void> _withSize(
   await body();
 }
 
-Widget _wrap(Widget child) => LearningScope(
-      state: LearningState(),
-      child: MaterialApp(home: child),
-    );
+Widget _wrap(Widget child) => wrapScreen(child);
 
 void main() {
   final VocabCategory category = kCategories.first;
@@ -105,6 +108,34 @@ void main() {
           await tester.pumpWidget(_wrap(const AlphabetScreen()));
           await tester.pumpAndSettle();
           await tester.tap(find.text('Alif'));
+          await tester.pumpAndSettle();
+        });
+      });
+
+      testWidgets('Quran-Übersicht', (WidgetTester tester) async {
+        await _withSize(tester, size, () async {
+          await tester.pumpWidget(_wrap(const QuranScreen()));
+          await tester.pumpAndSettle();
+          await tester.drag(find.byType(ListView), const Offset(0, -500));
+          await tester.pumpAndSettle();
+        });
+      });
+
+      testWidgets('Sure Wort für Wort', (WidgetTester tester) async {
+        await _withSize(tester, size, () async {
+          // Al-Fātiḥa hat den längsten Vers der sechs Suren.
+          await tester.pumpWidget(_wrap(SuraScreen(sura: kSuras.first)));
+          await tester.pumpAndSettle();
+          await tester.drag(find.byType(ListView), const Offset(0, -800));
+          await tester.pumpAndSettle();
+        });
+      });
+
+      testWidgets('Wurzeln', (WidgetTester tester) async {
+        await _withSize(tester, size, () async {
+          await tester.pumpWidget(_wrap(const RootsScreen()));
+          await tester.pumpAndSettle();
+          await tester.drag(find.byType(ListView), const Offset(0, -600));
           await tester.pumpAndSettle();
         });
       });

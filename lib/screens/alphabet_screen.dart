@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/alphabet_data.dart';
 import '../models/vocabulary.dart';
 import '../widgets/arabic_text.dart';
+import '../widgets/speak_button.dart';
 
 /// Two references in one screen: the 28 letters, and the Tashkīl marks that
 /// make a written word pronounceable.
@@ -123,9 +124,18 @@ class _LettersTab extends StatelessWidget {
                   fontSize: 64,
                   color: theme.colorScheme.primary,
                 ),
-                Text(
-                  '${letter.name}  ·  ${letter.transliteration}',
-                  style: theme.textTheme.titleLarge,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Flexible(
+                      child: Text(
+                        '${letter.name}  ·  ${letter.transliteration}',
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleLarge,
+                      ),
+                    ),
+                    SpeakButton(text: letter.isolated),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -223,11 +233,15 @@ class _DiacriticsTab extends StatelessWidget {
                             color: theme.colorScheme.primary,
                           ),
                           const SizedBox(width: 10),
-                          Text(
-                            '= ${mark.sound}',
-                            style: theme.textTheme.titleSmall
-                                ?.copyWith(fontStyle: FontStyle.italic),
+                          Flexible(
+                            child: Text(
+                              '= ${mark.sound}',
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.titleSmall
+                                  ?.copyWith(fontStyle: FontStyle.italic),
+                            ),
                           ),
+                          SpeakButton(text: mark.example, size: 20),
                         ],
                       ),
                       const SizedBox(height: 6),

@@ -6,6 +6,8 @@ import 'package:ipa_testing_github_action/screens/build_word_screen.dart';
 import 'package:ipa_testing_github_action/screens/matching_screen.dart';
 import 'package:ipa_testing_github_action/state/learning_state.dart';
 
+import 'helpers.dart';
+
 const List<VocabEntry> _words = <VocabEntry>[
   VocabEntry('Buch', 'كتاب', 'kitab'),
   VocabEntry('Sonne', 'شمس', 'shams'),
@@ -15,10 +17,8 @@ const List<VocabEntry> _words = <VocabEntry>[
   VocabEntry('Wasser', 'ماء', "ma'"),
 ];
 
-Widget _wrap(Widget child, LearningState state) => LearningScope(
-      state: state,
-      child: MaterialApp(home: child),
-    );
+Widget _wrap(Widget child, LearningState state) =>
+    wrapScreen(child, state: state);
 
 void main() {
   group('Zuordnen', () {

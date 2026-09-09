@@ -1,4 +1,4 @@
-package com.example.ipa_testing_github_action
+package de.susasek.arabischlernen
 
 import io.flutter.embedding.android.FlutterActivity
 

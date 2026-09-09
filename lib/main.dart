@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'screens/home_screen.dart';
 import 'state/learning_state.dart';
+import 'state/speech.dart';
+import 'widgets/speak_button.dart';
 
 void main() {
   runApp(const ArabischLernenApp());
@@ -17,10 +19,21 @@ class ArabischLernenApp extends StatefulWidget {
 
 class _ArabischLernenAppState extends State<ArabischLernenApp> {
   final LearningState _state = LearningState();
+  final Speaker _speaker = Speaker();
+
+  @override
+  void initState() {
+    super.initState();
+    // Reads the saved boxes, streak and statistics from the device …
+    _state.load();
+    // … and asks the system whether it can speak Arabic at all.
+    _speaker.init();
+  }
 
   @override
   void dispose() {
     _state.dispose();
+    _speaker.dispose();
     super.dispose();
   }
 
@@ -42,12 +55,15 @@ class _ArabischLernenAppState extends State<ArabischLernenApp> {
   Widget build(BuildContext context) {
     return LearningScope(
       state: _state,
-      child: MaterialApp(
-        title: 'Arabisch lernen',
-        debugShowCheckedModeBanner: false,
-        theme: _theme(Brightness.light),
-        darkTheme: _theme(Brightness.dark),
-        home: const HomeScreen(),
+      child: SpeechScope(
+        speaker: _speaker,
+        child: MaterialApp(
+          title: 'Arabisch lernen',
+          debugShowCheckedModeBanner: false,
+          theme: _theme(Brightness.light),
+          darkTheme: _theme(Brightness.dark),
+          home: const HomeScreen(),
+        ),
       ),
     );
   }

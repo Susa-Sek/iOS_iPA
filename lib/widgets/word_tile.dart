@@ -4,6 +4,7 @@ import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
 import 'arabic_text.dart';
 import 'level_dots.dart';
+import 'speak_button.dart';
 
 /// One vocabulary row: German on the left, Arabic on the right, the
 /// transliteration underneath and a checkbox for "das kann ich schon".
@@ -68,7 +69,7 @@ class WordTile extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 160),
+              constraints: const BoxConstraints(maxWidth: 150),
               child: ArabicText(
                 entry.arabic,
                 fontSize: 22,
@@ -76,6 +77,7 @@ class WordTile extends StatelessWidget {
                 textAlign: TextAlign.right,
               ),
             ),
+            SpeakButton(text: entry.arabic, size: 20, color: color),
           ],
         ),
       ),

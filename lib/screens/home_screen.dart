@@ -9,6 +9,7 @@ import 'category_screen.dart';
 import 'flashcard_screen.dart';
 import 'matching_screen.dart';
 import 'quiz_screen.dart';
+import 'quran_screen.dart';
 import 'search_screen.dart';
 
 /// Start screen: progress at a glance, the training modes and the list of
@@ -34,10 +35,21 @@ class HomeScreen extends StatelessWidget {
               ),
               PopupMenuButton<String>(
                 onSelected: (String value) {
-                  if (value == 'reset') _confirmReset(context, state);
+                  switch (value) {
+                    case 'goal':
+                      _editGoal(context, state);
+                      break;
+                    case 'reset':
+                      _confirmReset(context, state);
+                      break;
+                  }
                 },
                 itemBuilder: (BuildContext context) =>
                     <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(
+                    value: 'goal',
+                    child: Text('Tagesziel ändern'),
+                  ),
                   const PopupMenuItem<String>(
                     value: 'reset',
                     child: Text('Fortschritt zurücksetzen'),
@@ -46,6 +58,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ],
           ),
+          SliverToBoxAdapter(child: _TodayCard(state: state)),
           SliverToBoxAdapter(child: _ProgressCard(state: state)),
           SliverToBoxAdapter(
             child: Padding(
@@ -106,6 +119,12 @@ class HomeScreen extends StatelessWidget {
                     hint: '28 Buchstaben',
                     onTap: () => _push(context, const AlphabetScreen()),
                   ),
+                  _ModeCard(
+                    icon: Icons.menu_book_outlined,
+                    label: 'Quran',
+                    hint: 'Suren & Wurzeln',
+                    onTap: () => _push(context, const QuranScreen()),
+                  ),
                 ],
               ),
             ),
@@ -125,10 +144,10 @@ class HomeScreen extends StatelessWidget {
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (BuildContext context, int index) => _CategoryCard(
-                  category: kCategories[index],
+                  category: kAllCategories[index],
                   state: state,
                 ),
-                childCount: kCategories.length,
+                childCount: kAllCategories.length,
               ),
             ),
           ),
@@ -143,14 +162,35 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _editGoal(BuildContext context, LearningState state) async {
+    const List<int> options = <int>[5, 10, 20, 30, 50];
+    final int? goal = await showDialog<int>(
+      context: context,
+      builder: (BuildContext context) => SimpleDialog(
+        title: const Text('Tagesziel'),
+        children: <Widget>[
+          for (final int option in options)
+            ListTile(
+              leading: Icon(option == state.dailyGoal
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked),
+              title: Text('$option Antworten pro Tag'),
+              onTap: () => Navigator.of(context).pop(option),
+            ),
+        ],
+      ),
+    );
+    if (goal != null) await state.setDailyGoal(goal);
+  }
+
   Future<void> _confirmReset(BuildContext context, LearningState state) async {
     final bool? yes = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
         title: const Text('Fortschritt zurücksetzen?'),
         content: const Text(
-          'Alle Lernstände und Quiz-Ergebnisse dieser Sitzung werden '
-          'gelöscht.',
+          'Alle gespeicherten Lernstände, Termine und Ergebnisse werden '
+          'gelöscht. Das lässt sich nicht rückgängig machen.',
         ),
         actions: <Widget>[
           TextButton(
@@ -164,7 +204,107 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
     );
-    if (yes ?? false) state.reset();
+    if (yes ?? false) await state.reset();
+  }
+}
+
+/// The daily routine: what is due today, the goal, and the day streak.
+class _TodayCard extends StatelessWidget {
+  const _TodayCard({required this.state});
+
+  final LearningState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final int due = state.dueCount;
+    final int streak = state.dayStreak;
+
+    return Card(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      color: theme.colorScheme.primaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Icon(Icons.today_outlined,
+                    color: theme.colorScheme.onPrimaryContainer),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Heute',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                ),
+                if (streak > 0)
+                  Row(
+                    children: <Widget>[
+                      const Text('🔥'),
+                      const SizedBox(width: 4),
+                      Text(
+                        '$streak ${streak == 1 ? "Tag" : "Tage"}',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: theme.colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              due == 0
+                  ? 'Alles wiederholt. Neue Wörter findest du in den Themen.'
+                  : '$due ${due == 1 ? "Wort wartet" : "Wörter warten"} '
+                      'auf eine Wiederholung.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onPrimaryContainer,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: state.goalProgress,
+                minHeight: 6,
+                backgroundColor: theme.colorScheme.surface,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Tagesziel: ${state.answeredToday} / ${state.dailyGoal} '
+              'Antworten${state.goalReached ? " · geschafft" : ""}',
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: theme.colorScheme.onPrimaryContainer,
+              ),
+            ),
+            if (due > 0) ...<Widget>[
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.play_arrow),
+                  label: const Text('Jetzt wiederholen'),
+                  onPressed: () => HomeScreen._push(
+                    context,
+                    FlashcardScreen(
+                      entries: state.dueEntries(),
+                      title: 'Heute fällig',
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -223,7 +363,7 @@ class _ProgressCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       '${state.correct} von ${state.answered} Antworten '
-                      'richtig · Serie: ${state.streak}',
+                      'richtig',
                       style: theme.textTheme.bodySmall,
                     ),
                   ],

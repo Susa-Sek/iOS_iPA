@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import '../data/vocabulary_data.dart';
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
+import '../state/speech.dart';
 import '../widgets/arabic_text.dart';
+import '../widgets/speak_button.dart';
 
 /// Which way round the quiz asks.
 enum QuizDirection {
@@ -14,6 +16,15 @@ enum QuizDirection {
 
   /// German word is shown, the Arabic word has to be picked.
   germanToArabic,
+
+  /// Only the spoken word is given — the hardest and most useful direction.
+  listening;
+
+  String get label => switch (this) {
+        QuizDirection.arabicToGerman => 'Arabisch → Deutsch',
+        QuizDirection.germanToArabic => 'Deutsch → Arabisch',
+        QuizDirection.listening => 'Hören → Deutsch',
+      };
 }
 
 /// Multiple-choice quiz in both directions. Words that are still weak are
@@ -102,33 +113,52 @@ class _QuizScreenState extends State<QuizScreen> {
     setState(() => _chosen = option);
   }
 
-  void _next() => setState(() {
-        _chosen = null;
-        _index++;
-      });
+  void _next() {
+    setState(() {
+      _chosen = null;
+      _index++;
+    });
+    _speakIfListening();
+  }
 
-  void _flipDirection() => setState(() {
-        _direction = _direction == QuizDirection.arabicToGerman
-            ? QuizDirection.germanToArabic
-            : QuizDirection.arabicToGerman;
-        _buildQuestions();
-      });
+  /// Cycles through the directions. "Hören" is skipped when the device has
+  /// no Arabic voice — a listening quiz without sound would be unanswerable.
+  void _nextDirection() {
+    final Speaker speaker = SpeechScope.of(context);
+    final List<QuizDirection> available = <QuizDirection>[
+      QuizDirection.arabicToGerman,
+      QuizDirection.germanToArabic,
+      if (speaker.isAvailable) QuizDirection.listening,
+    ];
+    final int index = available.indexOf(_direction);
+    setState(() {
+      _direction = available[(index + 1) % available.length];
+      _buildQuestions();
+    });
+    _speakIfListening();
+  }
+
+  /// In the listening direction the word is played as soon as it appears.
+  void _speakIfListening() {
+    if (_direction != QuizDirection.listening) return;
+    if (_index >= _questions.length) return;
+    SpeechScope.of(context).speak(_questions[_index].entry.arabic);
+  }
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final bool arabicPrompt = _direction == QuizDirection.arabicToGerman;
+    final bool listening = _direction == QuizDirection.listening;
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Quiz · ${widget.title}'),
         actions: <Widget>[
           IconButton(
-            tooltip: arabicPrompt
-                ? 'Richtung: Arabisch → Deutsch'
-                : 'Richtung: Deutsch → Arabisch',
-            icon: const Icon(Icons.swap_horiz),
-            onPressed: _flipDirection,
+            tooltip: 'Richtung: ${_direction.label}',
+            icon: Icon(listening ? Icons.hearing : Icons.swap_horiz),
+            onPressed: _nextDirection,
           ),
         ],
         bottom: _questions.isEmpty
@@ -141,11 +171,11 @@ class _QuizScreenState extends State<QuizScreen> {
                 ),
               ),
       ),
-      body: _buildBody(theme, arabicPrompt),
+      body: _buildBody(theme, arabicPrompt, listening),
     );
   }
 
-  Widget _buildBody(ThemeData theme, bool arabicPrompt) {
+  Widget _buildBody(ThemeData theme, bool arabicPrompt, bool listening) {
     if (_questions.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -192,17 +222,59 @@ class _QuizScreenState extends State<QuizScreen> {
             style: theme.textTheme.labelLarge,
           ),
           const SizedBox(height: 16),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
+          Flexible(
+            child: Card(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
               child: Column(
                 children: <Widget>[
-                  if (arabicPrompt) ...<Widget>[
-                    ArabicText(
-                      question.entry.arabic,
-                      fontSize: 36,
-                      color: theme.colorScheme.primary,
-                      textAlign: TextAlign.center,
+                  if (listening) ...<Widget>[
+                    IconButton.filled(
+                      iconSize: 44,
+                      tooltip: 'Nochmal anhören',
+                      icon: const Icon(Icons.volume_up),
+                      onPressed: () => SpeechScope.of(context)
+                          .speak(question.entry.arabic),
+                    ),
+                    const SizedBox(height: 10),
+                    if (_chosen == null)
+                      Text(
+                        'Welches Wort hörst du?',
+                        style: theme.textTheme.bodyMedium
+                            ?.copyWith(color: theme.hintColor),
+                      )
+                    else ...<Widget>[
+                      ArabicText(
+                        question.entry.arabic,
+                        fontSize: 30,
+                        color: theme.colorScheme.primary,
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        question.entry.transliteration,
+                        style: theme.textTheme.titleSmall
+                            ?.copyWith(fontStyle: FontStyle.italic),
+                      ),
+                    ],
+                  ] else if (arabicPrompt) ...<Widget>[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Flexible(
+                          child: ArabicText(
+                            question.entry.arabic,
+                            fontSize: 36,
+                            color: theme.colorScheme.primary,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        SpeakButton(
+                          text: question.entry.arabic,
+                          size: 26,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -221,9 +293,11 @@ class _QuizScreenState extends State<QuizScreen> {
                 ],
               ),
             ),
+            ),
           ),
           const SizedBox(height: 20),
           Expanded(
+            flex: 2,
             child: ListView.separated(
               itemCount: question.options.length,
               separatorBuilder: (_, __) => const SizedBox(height: 10),

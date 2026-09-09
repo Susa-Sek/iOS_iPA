@@ -6,6 +6,7 @@ import '../data/vocabulary_data.dart';
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
 import '../widgets/arabic_text.dart';
+import '../widgets/speak_button.dart';
 import '../widgets/level_dots.dart';
 
 /// Flashcards with a flip: German on the front, Arabic and the
@@ -158,12 +159,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
                           if (_arabicFirst)
-                            ArabicText(
-                              card.arabic,
-                              fontSize: 40,
-                              color: accent,
-                              textAlign: TextAlign.center,
-                            )
+                            _SpokenWord(word: card.arabic, color: accent)
                           else
                             Text(
                               card.german,
@@ -181,12 +177,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                                     ?.copyWith(fontWeight: FontWeight.w600),
                               )
                             else
-                              ArabicText(
-                                card.arabic,
-                                fontSize: 40,
-                                color: accent,
-                                textAlign: TextAlign.center,
-                              ),
+                              _SpokenWord(word: card.arabic, color: accent),
                             const SizedBox(height: 12),
                             Text(
                               card.transliteration,
@@ -230,6 +221,33 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The Arabic word with a speaker button next to it.
+class _SpokenWord extends StatelessWidget {
+  const _SpokenWord({required this.word, required this.color});
+
+  final String word;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Flexible(
+          child: ArabicText(
+            word,
+            fontSize: 40,
+            color: color,
+            textAlign: TextAlign.center,
+          ),
+        ),
+        SpeakButton(text: word, size: 28, color: color),
+      ],
     );
   }
 }

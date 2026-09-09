@@ -16,7 +16,7 @@ void main() {
   group('Vokabeldaten', () {
     test('jede Kategorie hat Wörter und eine eindeutige id', () {
       final Set<String> ids = <String>{};
-      for (final VocabCategory category in kCategories) {
+      for (final VocabCategory category in kAllCategories) {
         expect(category.entries, isNotEmpty, reason: category.name);
         expect(ids.add(category.id), isTrue, reason: 'doppelt: ${category.id}');
       }
@@ -40,7 +40,7 @@ void main() {
     });
 
     test('innerhalb einer Kategorie kommt kein deutsches Wort doppelt vor', () {
-      for (final VocabCategory category in kCategories) {
+      for (final VocabCategory category in kAllCategories) {
         final Set<String> seen = <String>{};
         for (final VocabEntry entry in category.entries) {
           expect(seen.add(entry.german), isTrue,
@@ -50,15 +50,15 @@ void main() {
     });
 
     test('es gibt genug Wörter für eine Quizrunde', () {
-      expect(kAllEntries.length, greaterThan(100));
-      for (final VocabCategory category in kCategories) {
+      expect(kAllEntries.length, greaterThan(300));
+      for (final VocabCategory category in kAllCategories) {
         expect(category.entries.length, greaterThanOrEqualTo(4),
             reason: category.name);
       }
     });
 
     test('jede Kategorie hat Wörter zum Buchstabenbauen', () {
-      for (final VocabCategory category in kCategories) {
+      for (final VocabCategory category in kAllCategories) {
         final int suitable =
             category.entries.where(BuildWordScreen.isSuitable).length;
         expect(suitable, greaterThan(0), reason: category.name);
