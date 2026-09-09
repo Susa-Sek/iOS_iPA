@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../data/vocabulary_data.dart';
+import '../models/arabic.dart';
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
 import '../widgets/arabic_text.dart';
@@ -23,12 +24,13 @@ class BuildWordScreen extends StatefulWidget {
 
   static const int wordsPerRound = 8;
 
-  /// Only short single words can be assembled letter by letter.
+  /// Only short single words can be assembled letter by letter. Counted in
+  /// letters, not code points — a letter carrying Fatḥa is still one letter.
   static bool isSuitable(VocabEntry entry) {
     final String word = entry.arabic;
     if (word.contains(' ')) return false;
-    final int length = word.runes.length;
-    return length >= 3 && length <= 7;
+    final int letters = arabicLetterUnits(word).length;
+    return letters >= 3 && letters <= 7;
   }
 
   @override
@@ -57,10 +59,8 @@ class _BuildWordScreenState extends State<BuildWordScreen> {
   }
 
   void _deal() {
-    _tiles = _round[_index].arabic.runes
-        .map((int r) => String.fromCharCode(r))
-        .toList()
-      ..shuffle(_random);
+    // Each tile is a letter with its own vowel marks, never a bare Fatḥa.
+    _tiles = arabicLetterUnits(_round[_index].arabic)..shuffle(_random);
     _picked.clear();
     _result = null;
   }

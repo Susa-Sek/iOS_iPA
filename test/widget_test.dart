@@ -102,6 +102,12 @@ void main() {
     // 'danke' also appears in the search field itself, so check the result
     // row: exactly one word tile showing the Arabic translation.
     expect(find.byType(WordTile), findsOneWidget);
-    expect(find.text('شكرا'), findsOneWidget);
+    // Angezeigt wird die vokalisierte Schreibweise …
+    expect(find.text('شُكْرًا'), findsOneWidget);
+
+    // … gefunden wird sie auch, wenn man ohne Zeichen tippt.
+    await tester.enterText(find.byType(TextField), 'شكرا');
+    await tester.pumpAndSettle();
+    expect(find.text('شُكْرًا'), findsOneWidget);
   });
 }

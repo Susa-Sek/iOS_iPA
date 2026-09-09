@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'arabic.dart';
+
 /// A single vocabulary entry: the German word, its Arabic script and a
 /// transliteration ("Lautschrift") that shows how the word is pronounced.
 @immutable
@@ -13,12 +15,17 @@ class VocabEntry {
   /// Stable identifier, used to remember which words have been learned.
   String get id => '$german|$arabic';
 
+  /// Arabic without Tashkīl, so a search finds a word whether or not the
+  /// vowel marks are typed.
+  String get arabicPlain => withoutTashkil(arabic);
+
   bool matches(String query) {
-    final q = query.trim().toLowerCase();
+    final String q = query.trim().toLowerCase();
     if (q.isEmpty) return true;
     return german.toLowerCase().contains(q) ||
         transliteration.toLowerCase().contains(q) ||
-        arabic.contains(q);
+        arabic.contains(q) ||
+        arabicPlain.contains(withoutTashkil(q));
   }
 }
 
@@ -68,5 +75,33 @@ class ArabicLetter {
   final String finalForm;
 
   /// Short German pronunciation hint.
+  final String hint;
+}
+
+/// A Tashkīl mark — the short vowels and reading signs that turn a row of
+/// consonants into a pronounceable word.
+@immutable
+class ArabicDiacritic {
+  const ArabicDiacritic({
+    required this.symbol,
+    required this.name,
+    required this.arabicName,
+    required this.example,
+    required this.sound,
+    required this.hint,
+  });
+
+  /// The mark on a dotted circle, e.g. "◌َ".
+  final String symbol;
+
+  final String name;
+  final String arabicName;
+
+  /// The mark on the letter Bāʾ, e.g. "بَ".
+  final String example;
+
+  /// How that example is pronounced, e.g. "ba".
+  final String sound;
+
   final String hint;
 }

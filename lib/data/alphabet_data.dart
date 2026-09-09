@@ -231,3 +231,82 @@ const List<ArabicLetter> kAlphabet = <ArabicLetter>[
       finalForm: 'ـي',
       hint: 'j wie in "ja", oder langes i'),
 ];
+
+/// Tashkīl — the vowel and reading marks. Without them Arabic writes only
+/// the consonants; with them every word can be read aloud, which is why the
+/// whole vocabulary of this app is fully vocalised.
+const List<ArabicDiacritic> kDiacritics = <ArabicDiacritic>[
+  ArabicDiacritic(
+    symbol: '◌َ',
+    name: 'Fatḥa',
+    arabicName: 'فَتْحَة',
+    example: 'بَ',
+    sound: 'ba',
+    hint: 'Strich über dem Buchstaben: kurzes a.',
+  ),
+  ArabicDiacritic(
+    symbol: '◌ِ',
+    name: 'Kasra',
+    arabicName: 'كَسْرَة',
+    example: 'بِ',
+    sound: 'bi',
+    hint: 'Strich unter dem Buchstaben: kurzes i.',
+  ),
+  ArabicDiacritic(
+    symbol: '◌ُ',
+    name: 'Ḍamma',
+    arabicName: 'ضَمَّة',
+    example: 'بُ',
+    sound: 'bu',
+    hint: 'Kleines Wāw darüber: kurzes u.',
+  ),
+  ArabicDiacritic(
+    symbol: '◌ْ',
+    name: 'Sukūn',
+    arabicName: 'سُكُون',
+    example: 'بْ',
+    sound: 'b',
+    hint: 'Kleiner Kreis: kein Vokal, der Buchstabe steht still.',
+  ),
+  ArabicDiacritic(
+    symbol: '◌ّ',
+    name: 'Shadda',
+    arabicName: 'شَدَّة',
+    example: 'بَّ',
+    sound: 'bba',
+    hint: 'Verdoppelt den Buchstaben — man hält ihn länger, '
+        'wie in مُدَرِّس (mudarris).',
+  ),
+  ArabicDiacritic(
+    symbol: '◌ً',
+    name: 'Tanwīn Fatḥ',
+    arabicName: 'تَنْوِين فَتْح',
+    example: 'بًا',
+    sound: 'ban',
+    hint: 'Doppelte Fatḥa am Wortende: Endung -an, wie in شُكْرًا (shukran).',
+  ),
+  ArabicDiacritic(
+    symbol: '◌ٍ',
+    name: 'Tanwīn Kasr',
+    arabicName: 'تَنْوِين كَسْر',
+    example: 'بٍ',
+    sound: 'bin',
+    hint: 'Doppelte Kasra am Wortende: Endung -in.',
+  ),
+  ArabicDiacritic(
+    symbol: '◌ٌ',
+    name: 'Tanwīn Ḍamm',
+    arabicName: 'تَنْوِين ضَمّ',
+    example: 'بٌ',
+    sound: 'bun',
+    hint: 'Doppelte Ḍamma am Wortende: Endung -un.',
+  ),
+  ArabicDiacritic(
+    symbol: 'آ',
+    name: 'Madda',
+    arabicName: 'مَدَّة',
+    example: 'آ',
+    sound: 'aa',
+    hint: 'Welle über dem Alif: langes aa, wie in آسِف (asif).',
+  ),
+];

@@ -4,80 +4,105 @@ import '../data/alphabet_data.dart';
 import '../models/vocabulary.dart';
 import '../widgets/arabic_text.dart';
 
-/// The 28 letters as a grid; tapping a letter shows its four forms.
+/// Two references in one screen: the 28 letters, and the Tashkīl marks that
+/// make a written word pronounceable.
 class AlphabetScreen extends StatelessWidget {
   const AlphabetScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Alphabet & Zeichen'),
+          bottom: const TabBar(
+            tabs: <Widget>[
+              Tab(text: 'Buchstaben'),
+              Tab(text: 'Zeichen'),
+            ],
+          ),
+        ),
+        body: const TabBarView(
+          children: <Widget>[
+            _LettersTab(),
+            _DiacriticsTab(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LettersTab extends StatelessWidget {
+  const _LettersTab();
+
+  @override
+  Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Das arabische Alphabet')),
-      body: Column(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-            child: Text(
-              'Arabisch wird von rechts nach links geschrieben. Die meisten '
-              'Buchstaben ändern ihre Form, je nachdem ob sie am Anfang, in '
-              'der Mitte oder am Ende eines Wortes stehen.',
-              style: theme.textTheme.bodyMedium,
-            ),
+    return Column(
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+          child: Text(
+            'Arabisch wird von rechts nach links geschrieben. Die meisten '
+            'Buchstaben ändern ihre Form, je nachdem ob sie am Anfang, in '
+            'der Mitte oder am Ende eines Wortes stehen.',
+            style: theme.textTheme.bodyMedium,
           ),
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(12),
-              gridDelegate:
-                  const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 130,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                mainAxisExtent: 118,
-              ),
-              itemCount: kAlphabet.length,
-              itemBuilder: (BuildContext context, int index) {
-                final ArabicLetter letter = kAlphabet[index];
-                return Card(
-                  margin: EdgeInsets.zero,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () => _showLetter(context, letter),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        ArabicText(
-                          letter.isolated,
-                          fontSize: 34,
-                          color: theme.colorScheme.primary,
+        ),
+        Expanded(
+          child: GridView.builder(
+            padding: const EdgeInsets.all(12),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 130,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              mainAxisExtent: 118,
+            ),
+            itemCount: kAlphabet.length,
+            itemBuilder: (BuildContext context, int index) {
+              final ArabicLetter letter = kAlphabet[index];
+              return Card(
+                margin: EdgeInsets.zero,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => _showLetter(context, letter),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      ArabicText(
+                        letter.isolated,
+                        fontSize: 34,
+                        color: theme.colorScheme.primary,
+                      ),
+                      const SizedBox(height: 4),
+                      Flexible(
+                        child: Text(
+                          letter.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelMedium,
                         ),
-                        const SizedBox(height: 4),
-                        Flexible(
-                          child: Text(
-                            letter.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.labelMedium,
-                          ),
+                      ),
+                      Flexible(
+                        child: Text(
+                          letter.transliteration,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelSmall
+                              ?.copyWith(fontStyle: FontStyle.italic),
                         ),
-                        Flexible(
-                          child: Text(
-                            letter.transliteration,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.labelSmall
-                                ?.copyWith(fontStyle: FontStyle.italic),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -119,6 +144,96 @@ class AlphabetScreen extends StatelessWidget {
                     _Form(label: 'Mitte', form: letter.medial),
                     _Form(label: 'Ende', form: letter.finalForm),
                   ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _DiacriticsTab extends StatelessWidget {
+  const _DiacriticsTab();
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+      itemCount: kDiacritics.length + 1,
+      separatorBuilder: (_, __) => const SizedBox(height: 10),
+      itemBuilder: (BuildContext context, int index) {
+        if (index == 0) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 4, 6),
+            child: Text(
+              'Die arabische Schrift notiert vor allem Konsonanten. Die '
+              'kurzen Vokale kommen als kleine Zeichen dazu — erst mit ihnen '
+              'steht fest, wie ein Wort klingt. In dieser App sind deshalb '
+              'alle Vokabeln vollständig gesetzt.',
+              style: theme.textTheme.bodyMedium,
+            ),
+          );
+        }
+
+        final ArabicDiacritic mark = kDiacritics[index - 1];
+        return Card(
+          margin: EdgeInsets.zero,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                SizedBox(
+                  width: 56,
+                  child: Center(
+                    child: ArabicText(
+                      mark.symbol,
+                      fontSize: 34,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Text(
+                              mark.name,
+                              style: theme.textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                          ArabicText(mark.arabicName, fontSize: 18),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: <Widget>[
+                          ArabicText(
+                            mark.example,
+                            fontSize: 26,
+                            color: theme.colorScheme.primary,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            '= ${mark.sound}',
+                            style: theme.textTheme.titleSmall
+                                ?.copyWith(fontStyle: FontStyle.italic),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(mark.hint, style: theme.textTheme.bodySmall),
+                    ],
+                  ),
                 ),
               ],
             ),

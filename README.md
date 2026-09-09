@@ -7,6 +7,11 @@ Die App ist komplett auf Deutsch, zeigt jedes Wort in arabischer Schrift und
 mit Lautschrift und besteht nicht aus Listen zum Durchlesen, sondern aus
 Übungen zum Mitmachen.
 
+**Jedes arabische Wort ist vollständig vokalisiert** — mit Fatḥa, Kasra,
+Ḍamma, Sukūn, Shadda und Tanwīn (شُكْرًا statt شكرا). Ohne diese Zeichen
+schreibt Arabisch nur die Konsonanten, und Anfänger können nicht wissen, wie
+ein Wort klingt.
+
 ## Übungen
 
 | Übung | Was man macht |
@@ -15,7 +20,7 @@ mit Lautschrift und besteht nicht aus Listen zum Durchlesen, sondern aus
 | **Quiz** | Multiple Choice mit vier Antworten, in beide Richtungen (Arabisch → Deutsch und umgekehrt). |
 | **Zuordnen** | Deutsches Wort antippen, dann das passende arabische — gelöste Paare verschwinden. |
 | **Wort bauen** | Das arabische Wort aus durcheinandergewürfelten Buchstaben zusammensetzen. |
-| **Alphabet** | Alle 28 Buchstaben mit Aussprache-Hinweis und den vier Formen (allein, Anfang, Mitte, Ende). |
+| **Alphabet & Zeichen** | Alle 28 Buchstaben mit Aussprache-Hinweis und den vier Formen (allein, Anfang, Mitte, Ende) — dazu eine Übersicht der Tashkīl-Zeichen von Fatḥa bis Tanwīn, jeweils mit Beispiel. |
 
 ## Wie die App sich merkt, was noch wackelt
 
@@ -35,7 +40,8 @@ Serie stehen auf der Startseite; pro Thema gibt es einen eigenen Balken.
 
 ## Wortschatz
 
-Rund 300 Wörter und Wendungen in 16 Themen: Allgemein, Sich vorstellen,
+Rund 300 vollständig vokalisierte Wörter und Wendungen in 16 Themen:
+Allgemein, Sich vorstellen,
 Begrüßung & Abschied, Reise, Wegbeschreibungen, Zeit & Datum, Orte,
 Einkaufen, Im Restaurant, Im Hotel, Zahlen, Personalpronomen, Wichtige
 Wörter, Mensch & Körper, Wichtige Verben, Wichtige Adjektive.
@@ -43,16 +49,22 @@ Wörter, Mensch & Körper, Wichtige Verben, Wichtige Adjektive.
 Als Inspiration für die Themenauswahl diente der
 [Grundwortschatz Arabisch von Sprachheld](https://www.sprachheld.de/).
 
+Die Wörter stehen in Pausalform: innen voll vokalisiert, ohne Kasusendung am
+Wortende — so, wie man sie einzeln ausspricht. Wo das Tanwīn zur Aussprache
+gehört (شُكْرًا, غَدًا, مُبَاشَرَةً), steht es. Die Suche findet ein Wort mit
+und ohne Zeichen: Wer كتاب tippt, findet كِتَاب.
+
 ## Projektstruktur
 
 ```
 lib/
 ├── main.dart              App, Theme (hell & dunkel)
-├── models/                VocabEntry, VocabCategory, ArabicLetter
+├── models/                VocabEntry, VocabCategory, ArabicLetter,
+│                          ArabicDiacritic + Tashkīl-Hilfsfunktionen
 ├── data/                  Wortschatz und Alphabet
 ├── state/                 Lernboxen, Statistik (ChangeNotifier)
 ├── screens/               Start, Thema, Karteikarten, Quiz, Zuordnen,
-│                          Wort bauen, Alphabet, Suche
+│                          Wort bauen, Alphabet & Zeichen, Suche
 └── widgets/               Arabische Textausgabe (RTL), Wortzeile, Lernboxen
 ```
 
