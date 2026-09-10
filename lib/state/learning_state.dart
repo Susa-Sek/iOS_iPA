@@ -31,6 +31,13 @@ class LearningState extends ChangeNotifier {
 
   ContentRegistry get content => _content;
 
+  /// Der Inhalt hat sich geändert — etwa weil eine Karte gemerkt wurde.
+  ///
+  /// Die Registry liest die gemerkten Karten bei jedem Zugriff neu; ohne
+  /// diesen Anstoß würde die Startseite die neue Karte aber erst beim
+  /// nächsten Start zeigen.
+  void contentChanged() => notifyListeners();
+
   final Map<String, WordProgress> _words = <String, WordProgress>{};
   Map<String, int> _history = <String, int>{};
 

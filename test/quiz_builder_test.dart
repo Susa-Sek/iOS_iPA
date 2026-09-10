@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ipa_testing_github_action/data/vocabulary_data.dart';
+import 'package:ipa_testing_github_action/models/arabic.dart';
 import 'package:ipa_testing_github_action/models/vocabulary.dart';
 import 'package:ipa_testing_github_action/state/quiz_builder.dart';
 
@@ -19,6 +20,19 @@ const VocabEntry _karte = VocabEntry.fact(
   'Anhaltender Anstieg des Preisniveaus',
   explanation: 'Für dasselbe Geld bekommt man weniger.',
 );
+
+/// Ein gemischter Vorrat, wie er entsteht, sobald Wortschatz und Wissen
+/// nebeneinanderliegen.
+const List<VocabEntry> _gemischt = <VocabEntry>[
+  VocabEntry('Haus', 'بَيْت', 'bait'),
+  VocabEntry('Buch', 'كِتَاب', 'kitāb'),
+  VocabEntry('Tür', 'بَاب', 'bāb'),
+  VocabEntry('Wasser', 'مَاء', 'māʾ'),
+  VocabEntry.fact('Wolga', 'Längster Fluss Europas'),
+  VocabEntry.fact('Everest', 'Höchster Berg der Erde'),
+  VocabEntry.fact('Algorithmus', 'Eindeutige Folge von Anweisungen'),
+  VocabEntry.fact('Photosynthese', 'Zucker aus Licht'),
+];
 
 void main() {
   final Random random = Random(42);
@@ -169,6 +183,60 @@ void main() {
         ),
         isEmpty,
       );
+    });
+  });
+
+  group('Gemischter Vorrat', () {
+    test('eine Vokabel bekommt keine deutschen Ablenker', () {
+      // Sonst wäre die richtige Antwort die einzige arabische — man müsste
+      // die Vokabel nicht kennen, um sie zu treffen.
+      final List<QuizQuestion> runde = buildQuizRound(
+        ordered: <VocabEntry>[_gemischt.first],
+        pool: _gemischt,
+        direction: QuizDirection.germanToArabic,
+        random: Random(3),
+      );
+      expect(runde.single.options, hasLength(4));
+      for (final String option in runde.single.options) {
+        expect(hasTashkil(option) || withoutTashkil(option) != option, isTrue,
+            reason: '„$option" ist keine arabische Antwort');
+      }
+    });
+
+    test('eine Wissensfrage bekommt keine arabischen Ablenker', () {
+      final VocabEntry wissen =
+          _gemischt.firstWhere((VocabEntry e) => !e.isLanguage);
+      final List<QuizQuestion> runde = buildQuizRound(
+        ordered: <VocabEntry>[wissen],
+        pool: _gemischt,
+        direction: QuizDirection.arabicToGerman,
+        random: Random(5),
+      );
+      expect(runde.single.options, hasLength(4));
+      for (final String option in runde.single.options) {
+        expect(RegExp(r'[\u0600-\u06FF]').hasMatch(option), isFalse,
+            reason: '„$option" ist arabisch');
+      }
+    });
+
+    test('reicht die eigene Art nicht, wird trotzdem aufgefüllt', () {
+      // Zwei Wissenseinträge ergeben nur zwei Antworten — die fehlenden
+      // dürfen dann auch aus dem übrigen Vorrat kommen.
+      const List<VocabEntry> knapp = <VocabEntry>[
+        VocabEntry.fact('Wolga', 'Längster Fluss Europas'),
+        VocabEntry.fact('Everest', 'Höchster Berg der Erde'),
+        VocabEntry('Haus', 'بَيْت', 'bait'),
+        VocabEntry('Buch', 'كِتَاب', 'kitāb'),
+      ];
+      final List<QuizQuestion> runde = buildQuizRound(
+        ordered: <VocabEntry>[knapp.first],
+        pool: knapp,
+        direction: QuizDirection.arabicToGerman,
+        random: Random(7),
+      );
+      expect(runde.single.options, hasLength(4));
+      expect(runde.single.options.toSet(), hasLength(4));
+      expect(runde.single.options, contains('Längster Fluss Europas'));
     });
   });
 }

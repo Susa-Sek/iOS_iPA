@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'data/content_registry.dart';
 import 'screens/app_shell.dart';
 import 'theme/app_theme.dart';
+import 'state/custom_cards.dart';
+import 'state/daily_feed.dart';
 import 'state/learning_state.dart';
 import 'state/reminders.dart';
 import 'state/speech.dart';
@@ -20,17 +23,28 @@ class ArabischLernenApp extends StatefulWidget {
 }
 
 class _ArabischLernenAppState extends State<ArabischLernenApp> {
-  final LearningState _state = LearningState();
+  final CustomCardStore _cards = CustomCardStore();
+  late final LearningState _state = LearningState(
+    content: ContentWithCustomCards(kDefaultContent, _cards),
+  );
   final Speaker _speaker = Speaker();
   final ReminderService _reminders = ReminderService();
+  final DailyFeedService _feed = DailyFeedService();
 
   @override
   void initState() {
     super.initState();
+    // Eine gemerkte Karte ändert den Vorrat — die Startseite muss das sehen,
+    // ohne dass die App neu gestartet wird.
+    _cards.addListener(_state.contentChanged);
+    _cards.load();
     // Reads the saved boxes, streak and statistics from the device …
     _state.load();
     // … and asks the system whether it can speak Arabic at all.
     _speaker.init();
+    // Der Tagesinhalt wird nur aus dem Speicher gelesen; geholt wird er erst,
+    // wenn jemand den Bereich „Heute" öffnet.
+    _feed.load();
     _setUpReminders();
   }
 
@@ -47,6 +61,9 @@ class _ArabischLernenAppState extends State<ArabischLernenApp> {
 
   @override
   void dispose() {
+    _cards.removeListener(_state.contentChanged);
+    _cards.dispose();
+    _feed.dispose();
     _state.dispose();
     _speaker.dispose();
     _reminders.dispose();
@@ -57,17 +74,23 @@ class _ArabischLernenAppState extends State<ArabischLernenApp> {
   Widget build(BuildContext context) {
     return LearningScope(
       state: _state,
-      child: SpeechScope(
-        speaker: _speaker,
-        child: ReminderScope(
-        service: _reminders,
-        child: MaterialApp(
-          title: 'Arabisch lernen',
-          debugShowCheckedModeBanner: false,
-          theme: buildAppTheme(Brightness.light),
-          darkTheme: buildAppTheme(Brightness.dark),
-          home: const AppShell(),
-        ),
+      child: CustomCardScope(
+        store: _cards,
+        child: DailyFeedScope(
+          service: _feed,
+          child: SpeechScope(
+            speaker: _speaker,
+            child: ReminderScope(
+              service: _reminders,
+              child: MaterialApp(
+                title: 'Arabisch lernen',
+                debugShowCheckedModeBanner: false,
+                theme: buildAppTheme(Brightness.light),
+                darkTheme: buildAppTheme(Brightness.dark),
+                home: const AppShell(),
+              ),
+            ),
+          ),
         ),
       ),
     );

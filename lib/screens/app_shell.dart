@@ -4,15 +4,20 @@ import '../state/learning_state.dart';
 import 'achievements_screen.dart';
 import 'home_screen.dart';
 import 'practice_screen.dart';
+import 'today_screen.dart';
 
-/// Das Gerüst der App: unten drei Bereiche, dazwischen wird nur der Inhalt
+/// Das Gerüst der App: unten vier Bereiche, dazwischen wird nur der Inhalt
 /// getauscht.
 ///
 /// Vorher lag alles auf der Startseite übereinander — Tagesziel, Level, sieben
 /// Übungskacheln und der Lernweg. Das war mit wachsendem Umfang nicht mehr zu
 /// überblicken. Jetzt hat jeder Teil seinen Platz: „Lernen" für die tägliche
 /// Runde, „Üben" für die Übungen und das Nachschlagen, „Erfolge" für den
-/// Fortschritt.
+/// Fortschritt — und „Heute" für das, was jeden Tag neu dazukommt.
+///
+/// „Lernen" bleibt vorn: Der feste Bestand ist die Hauptsache, der Tagesteil
+/// das Beiwerk. Ein Bereich, der auf fremde Server angewiesen ist, gehört
+/// nicht auf den Platz, den man beim Öffnen zuerst sieht.
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 
@@ -36,6 +41,7 @@ class _AppShellState extends State<AppShell> {
         children: const <Widget>[
           HomeScreen(),
           PracticeScreen(),
+          TodayScreen(),
           AchievementsScreen(),
         ],
       ),
@@ -58,6 +64,11 @@ class _AppShellState extends State<AppShell> {
             icon: Icon(Icons.fitness_center_outlined),
             selectedIcon: Icon(Icons.fitness_center),
             label: 'Üben',
+          ),
+          const NavigationDestination(
+            icon: Icon(Icons.wb_sunny_outlined),
+            selectedIcon: Icon(Icons.wb_sunny),
+            label: 'Heute',
           ),
           const NavigationDestination(
             icon: Icon(Icons.emoji_events_outlined),

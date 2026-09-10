@@ -128,6 +128,10 @@ QuizQuestion _questionFor({
 }
 
 /// Füllt auf vier Antworten auf, ohne die richtige zu wiederholen.
+///
+/// Ablenker kommen zuerst aus Einträgen derselben Art. Sonst stünden, sobald
+/// Wortschatz und Wissen im selben Vorrat liegen, unter „Kragenhai" drei
+/// arabische Wörter zur Wahl — die Frage wäre ohne Nachdenken zu lösen.
 void _fillUp(
   List<String> options,
   VocabEntry entry,
@@ -139,11 +143,15 @@ void _fillUp(
   final List<VocabEntry> candidates = List<VocabEntry>.of(pool)
     ..shuffle(random);
 
-  for (final VocabEntry candidate in candidates) {
-    if (options.length == 4) break;
-    if (candidate.id == entry.id) continue;
-    final String text = useAnswerSide ? candidate.arabic : candidate.german;
-    if (text.trim().isEmpty || options.contains(text)) continue;
-    options.add(text);
+  // Erst die passenden, danach — nur falls nötig — alle übrigen.
+  for (final bool sameKind in <bool>[true, false]) {
+    for (final VocabEntry candidate in candidates) {
+      if (options.length == 4) return;
+      if (candidate.id == entry.id) continue;
+      if ((candidate.isLanguage == entry.isLanguage) != sameKind) continue;
+      final String text = useAnswerSide ? candidate.arabic : candidate.german;
+      if (text.trim().isEmpty || options.contains(text)) continue;
+      options.add(text);
+    }
   }
 }

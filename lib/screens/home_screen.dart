@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../data/curriculum.dart';
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
 import '../state/reminders.dart';
@@ -17,6 +16,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final LearningState state = LearningScope.of(context);
+    final List<CategoryGroup> groups = state.content.groups;
     final ThemeData theme = Theme.of(context);
 
     return Scaffold(
@@ -89,12 +89,14 @@ class HomeScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
+                // Aus der Registry, nicht aus der Konstante: Nur so taucht
+                // ein gemerkter Fund auch im Lernweg auf.
                 (BuildContext context, int index) => _GroupCard(
-                  group: kGroups[index],
+                  group: groups[index],
                   state: state,
                   initiallyOpen: index == 0,
                 ),
-                childCount: kGroups.length,
+                childCount: groups.length,
               ),
             ),
           ),

@@ -1,0 +1,78 @@
+{
+  "tfa": {
+    "title": "Kragenhai",
+    "normalizedtitle": "Kragenhai",
+    "description": "Art der Gattung Kragenhaie (Chlamydoselachus)",
+    "extract": "Der Kragenhai, auch Krausenhai oder Schlangenhai, ist eine von zwei Arten aus der Familie der Kragenhaie (Chlamydoselachidae). Er ist hinsichtlich seiner Anatomie und Morphologie der altertümlichste rezente Hai, weshalb er als ein „lebendes Fossil“ bezeichnet wird. Der Gattungsname ist von den griechischen Wörtern chlamýs  „männl. Obergewand, Kragen“ und seláchos  „Hai, Rochen“ abgeleitet. Das lateinische Epitheton anguineus für die Art bedeutet „schlangenartig“.",
+    "thumbnail": {
+      "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bb/Chlamydoselachus_anguineus1.jpg/960px-Chlamydoselachus_anguineus1.jpg?utm_source=de.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+    },
+    "content_urls": {
+      "desktop": {
+        "page": "https://de.wikipedia.org/wiki/Kragenhai"
+      }
+    }
+  },
+  "onthisday": [
+    {
+      "text": "Mit 158 von 173 Stimmen nimmt die UN-General­versammlung den Kern­waffen­test­stopp-Vertrag an; er tritt jedoch bis heute nicht in Kraft, da ihn einige der über Kern­technik verfügenden Staaten nicht rati­fi­ziert haben.",
+      "year": 1996,
+      "pages": [
+        {
+          "title": "Generalversammlung_der_Vereinten_Nationen",
+          "normalizedtitle": "Generalversammlung der Vereinten Nationen",
+          "description": "Vollversammlung der Mitgliedstaaten der Vereinten Nationen",
+          "extract": "Die Generalversammlung der Vereinten Nationen, kurz UN-Vollversammlung, ist die Vollversammlung der Mitgliedstaaten der Vereinten Nationen. Sie tritt jährlich im September am UN-Hauptquartier in New York City zusammen. Jeder Mitgliedstaat darf durch bis zu fünf Personen in einer Sitzung vertreten sein. Zum ersten Mal trat die Vollversammlung, damals mit Abgesandten aus 51 Staaten, am 10. Januar 1946 in der Londoner Westminster Central Hall zusammen.",
+          "thumbnail": {
+            "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/52/Emblem_of_the_United_Nations.svg/langde-330px-Emblem_of_the_United_Nations.svg.png?utm_source=de.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+          },
+          "content_urls": {
+            "desktop": {
+              "page": "https://de.wikipedia.org/wiki/Generalversammlung_der_Vereinten_Nationen"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "text": "Im Luft­raum von Jugoslawien kolli­dieren zwei Flug­zeuge der British Airways und der Inex Adria Airways, wobei alle 176 Menschen an Bord der beiden Maschinen ums Leben kommen.",
+      "year": 1976,
+      "pages": [
+        {
+          "title": "Flugzeugkollision_von_Zagreb",
+          "normalizedtitle": "Flugzeugkollision von Zagreb",
+          "description": null,
+          "extract": "Bei der Flugzeugkollision von Zagreb vom 10. September 1976 kollidierten im betreffenden Luftraum eine Hawker Siddeley Trident der British Airways und eine Douglas DC-9 der jugoslawischen Inex Adria Airways. Grund dafür war ein überlasteter Luftraum, kombiniert mit Fehlhandlungen und technischen Fehlanzeigen bei der Flugverkehrskontrolle. Insgesamt kamen 176 Personen ums Leben, darunter 107 Staatsangehörige der Bundesrepublik Deutschland.",
+          "thumbnail": {
+            "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6c/1976_Zagreb_mid-air_collision_computer_graphics.png/330px-1976_Zagreb_mid-air_collision_computer_graphics.png?utm_source=de.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+          },
+          "content_urls": {
+            "desktop": {
+              "page": "https://de.wikipedia.org/wiki/Flugzeugkollision_von_Zagreb"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "text": "Der Jesuit Robert Jacquinot de Besange, der während des zweiten Japanisch-Chinesischen Krieges eine Schutz­zone für die Zivil­bevöl­kerung in Shanghai ein­richtete, stirbt in Berlin.",
+      "year": 1946,
+      "pages": [
+        {
+          "title": "Robert_Jacquinot_de_Besange",
+          "normalizedtitle": "Robert Jacquinot de Besange",
+          "description": "französischer Jesuit und humanitärer Wohltäter in China",
+          "extract": "Robert Charles Joseph Emile Jacquinot de Besange war ein französischer Jesuit. Während des zweiten Japanisch-Chinesischen Krieges errichtete er 1937 in Verhandlungen mit chinesischen und japanischen Stellen für die Zivilbevölkerung in Shanghai eine Schutzzone. Diese Schutzzone wurde zum Vorbild für die wenig später von einem internationalen Komitee unter Vorsitz von John Rabe in Nanjing eingerichtete Schutzzone.",
+          "thumbnail": {
+            "source": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/34/%E9%A5%B6%E7%A5%9E%E7%88%B6%E9%80%A0%E5%83%8F.jpg/330px-%E9%A5%B6%E7%A5%9E%E7%88%B6%E9%80%A0%E5%83%8F.jpg?utm_source=de.wikipedia.org&utm_campaign=api&utm_content=thumbnail"
+          },
+          "content_urls": {
+            "desktop": {
+              "page": "https://de.wikipedia.org/wiki/Robert_Jacquinot_de_Besange"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

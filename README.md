@@ -15,13 +15,34 @@ Zeichen dazu, schlägt er an.
 
 ## Aufbau der App
 
-Unten drei Bereiche, statt alles auf einer Seite:
+Unten vier Bereiche, statt alles auf einer Seite:
 
 | Bereich | Inhalt |
 | --- | --- |
 | **Lernen** | Was heute fällig ist, Tagesziel, Serie, Level — darunter der Lernweg mit allen Themen. Die Zahl am Symbol zeigt die fälligen Wörter. |
 | **Üben** | Alle Übungen und alles zum Nachschlagen, jeweils mit einem Satz dazu, was einen erwartet. |
+| **Heute** | Artikel des Tages, „Was geschah heute" und Nachrichten — jeden Tag neu. |
 | **Erfolge** | Level, Punkte, Serie und die zwölf Abzeichen. |
+
+## Bereich „Heute"
+
+Einmal am Tag holt die App drei Dinge aus dem Netz: den **Artikel des Tages**
+und **„Was geschah heute"** von der deutschen Wikipedia (beides in einem
+einzigen Aufruf) sowie die **Nachrichten** der Tagesschau — von dort nur
+Überschrift, Dachzeile und erster Satz, kein Volltext. Quelle und Lizenz
+(Wikipedia, CC BY-SA 4.0) stehen unter den Karten.
+
+Was gefällt, wandert mit **„Als Karte merken"** unter *Meine Karten* und läuft
+danach durch dieselbe Wiederholung wie der übrige Wortschatz. Ein Ereignis
+wird dabei zur Frage „In welchem Jahr …?" mit drei plausiblen Jahreszahlen
+zur Auswahl, der Artikel des Tages zur Begriffskarte.
+
+**Nachrichten lassen sich nicht merken.** Sie sind morgen überholt und hätten
+in einer Wiederholung nach drei Wochen nichts mehr zu suchen.
+
+Der Bereich lädt erst, wenn man ihn öffnet, und merkt sich den Stand für den
+Tag. Ohne Netz steht der letzte Stand mit seinem Datum da statt einer
+Fehlermeldung ins Leere — der Rest der App braucht kein Netz.
 
 ## Übungen
 
@@ -142,12 +163,13 @@ lib/
 ├── main.dart              App, Theme (hell & dunkel)
 ├── models/                VocabEntry, VocabCategory, ArabicLetter,
 │                          ArabicDiacritic + Tashkīl-Hilfsfunktionen
-├── data/                  Wortschatz, Lernweg, Alphabet, Verben, Quran
 ├── theme/                 Abstände, Radien, Bewegung, Erscheinungsbild
 ├── state/                 Lernstufen & Termine, Speicherung, Punkte,
-│                          Sprachausgabe, Erinnerungen
-├── data/                  Wortschatz, Lernweg, Registry, Alphabet, Verben
-├── screens/               Start, Thema, Karteikarten, Quiz, Zuordnen,
+│                          Sprachausgabe, Erinnerungen, Tagesinhalte,
+│                          gemerkte Karten
+├── data/                  Wortschatz, Lernweg, Registry, Alphabet, Verben,
+│                          Quran
+├── screens/               Start, Heute, Thema, Karteikarten, Quiz, Zuordnen,
 │                          Wort bauen, Alphabet & Zeichen, Suche,
 │                          Quran-Übersicht, Sure, Wurzeln, Verbtabellen,
 │                          Navigationsgerüst, Übungsübersicht
@@ -176,6 +198,18 @@ flutter run
 Die Android-Artefakte liegen nach dem Lauf unter *Actions → Run → Artifacts*.
 Die APK ist mit dem Debug-Key signiert und damit zum Ausprobieren, nicht für
 den Play Store gedacht.
+
+## Quellen der Tagesinhalte
+
+| Quelle | Aufruf | Lizenz |
+| --- | --- | --- |
+| Wikipedia | `de.wikipedia.org/api/rest_v1/feed/featured/JJJJ/MM/TT` | CC BY-SA 4.0, im Bereich genannt |
+| Tagesschau | `tagesschau.de/api2u/news` (ohne Schrägstrich am Ende) | nur Überschrift und erster Satz, mit Verweis |
+
+Beide sind ohne Vertrag nutzbar, aber auch ohne Zusage. Die App muss deshalb
+ohne sie vollständig funktionieren — der Feed ist Beiwerk, nicht Fundament.
+Getestet wird er gegen abgelegte echte Antworten unter `test/data/`, nicht
+gegen das Netz.
 
 ## Herkunft
 

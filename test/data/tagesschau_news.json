@@ -1,0 +1,59 @@
+{
+  "news": [
+    {
+      "sophoraId": "ukraine-selenskyj-journalisten-100",
+      "title": "Journalisten fordern Antworten von Selenskyj",
+      "date": "2026-09-10T12:39:01.279+02:00",
+      "topline": "Video an ukrainischen Präsidenten",
+      "firstSentence": "Selenskyjs tägliche Videobotschaft sei eine Einbahnstraße. Die Reporter verlangen eine Pressekonferenz.",
+      "shareURL": "https://www.tagesschau.de/ausland/europa/ukraine-selenskyj-journalisten-100.html",
+      "ressort": "ausland",
+      "type": "story",
+      "breakingNews": false
+    },
+    {
+      "sophoraId": "hr-weilburg-ermittler-durchsuchen-hauptsitz-der-kreissparkasse-100",
+      "title": "Kreissparkasse Weilburg: Staatsanwaltschaft bestätigt Ermittlungen wegen Löhnberg-Kredit",
+      "date": "2026-09-10T12:27:23.069+02:00",
+      "topline": "Hessen",
+      "firstSentence": "In Weilburg hat es Durchsuchungen im Hauptsitz der Kreissparkasse gegeben.",
+      "shareURL": "https://www.hessenschau.de/panorama/kreissparkasse-weilburg-staatsanwaltschaft-bestaetigt-ermittlungen-wegen-loehnberg-kredit-v7,durchsuchung-weilburg-102.html",
+      "ressort": null,
+      "type": "story",
+      "breakingNews": false
+    },
+    {
+      "sophoraId": "inflation-deutschland-august-details-100",
+      "title": "Wo die Preise am stärksten steigen",
+      "date": "2026-09-10T12:21:08.792+02:00",
+      "topline": "Inflation im August",
+      "firstSentence": "Der Iran-Krieg treibt die Energiepreise in die Höhe und verteuert das Leben in Deutschland.",
+      "shareURL": "https://www.tagesschau.de/wirtschaft/konjunktur/inflation-deutschland-august-details-100.html",
+      "ressort": "wirtschaft",
+      "type": "story",
+      "breakingNews": false
+    },
+    {
+      "sophoraId": "sr-mordprozess-ohne-leiche-lebenslange-haft-100",
+      "title": "Mordprozess ohne Leiche: Lebenslange Haft",
+      "date": "2026-09-10T12:20:00.000+02:00",
+      "topline": "Saarland",
+      "firstSentence": "Im sogenannten Mordprozess ohne Leiche am Saarbrücker Landgericht wurde der Angeklagte Werner S. zu lebenslanger Haft verurteilt.",
+      "shareURL": "https://www.sr.de/sr/home/nachrichten/panorama/mordprozess_ohne_leiche_urteil_100.html",
+      "ressort": null,
+      "type": "story",
+      "breakingNews": false
+    },
+    {
+      "sophoraId": "video-1646552",
+      "title": "\"Zum ersten Mal auch eine Entwarnung\", Birgit Langhammer, ARD-aktuell, über Alarm zum Warntag",
+      "date": "2026-09-10T11:47:53.622+02:00",
+      "topline": null,
+      "firstSentence": null,
+      "shareURL": null,
+      "ressort": null,
+      "type": "video",
+      "breakingNews": null
+    }
+  ]
+}

@@ -42,12 +42,12 @@ const VocabCategory _wissen = VocabCategory(
   ],
 );
 
-final CategoryGroup _gruppe = CategoryGroup(
+const CategoryGroup _gruppe = CategoryGroup(
   id: 'test_gruppe',
   name: 'Testbereich',
   description: 'Nur für den Test.',
   icon: Icons.science_outlined,
-  categories: const <VocabCategory>[_wissen],
+  categories: <VocabCategory>[_wissen],
 );
 
 void main() {
@@ -57,7 +57,7 @@ void main() {
 
   Widget wrap(Widget child) => wrapScreen(
         child,
-        state: LearningState(content: FixedContent(<CategoryGroup>[_gruppe])),
+        state: LearningState(content: const FixedContent(<CategoryGroup>[_gruppe])),
       );
 
   group('Quiz mit Wissensfragen', () {
@@ -71,11 +71,15 @@ void main() {
       // Die Erklärung erscheint erst nach der Antwort.
       expect(find.textContaining('Kilometer'), findsNothing);
 
-      // Eine Frage mit mitgelieferten Ablenkern ist erkennbar.
-      final Finder wolga = find.text('Wolga');
-      if (wolga.evaluate().isNotEmpty) {
+      // Fällt die Flussfrage als Erste, stehen genau ihre Ablenker da.
+      // Am Vorkommen von „Wolga" allein lässt sich das nicht festmachen:
+      // Das Wort taucht auch als Falschantwort einer anderen Frage auf.
+      final Finder flussfrage = find.text('Welcher Fluss ist der längste Europas?');
+      if (flussfrage.evaluate().isNotEmpty) {
+        expect(find.text('Wolga'), findsOneWidget);
         expect(find.text('Donau'), findsOneWidget);
         expect(find.text('Rhein'), findsOneWidget);
+        expect(find.text('Dnepr'), findsOneWidget);
       }
 
       await tester.tap(find.byType(OutlinedButton).first);

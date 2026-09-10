@@ -1,5 +1,5 @@
 name: ipa_testing_github_action
-description: Arabisch lernen - ein interaktiver Arabisch-Deutsch-Vokabeltrainer.
+description: Arabisch lernen - interaktiver Vokabeltrainer mit taeglichen Inhalten.
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.5.0+6
+version: 1.6.0+7
 
 environment:
   sdk: '>=3.1.0 <4.0.0'
@@ -45,6 +45,10 @@ dependencies:
   # Tägliche Erinnerung als Benachrichtigung.
   flutter_local_notifications: ^22.0.0
   timezone: ^0.11.0
+
+  # Holt die Tagesinhalte von Wikipedia und der Tagesschau. Reines Dart,
+  # ohne Plattform-Anteil — deshalb ohne Desugaring und ohne keep.xml.
+  http: ^1.2.0
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
+import 'package:ipa_testing_github_action/state/custom_cards.dart';
+import 'package:ipa_testing_github_action/state/daily_feed.dart';
 import 'package:ipa_testing_github_action/state/learning_state.dart';
 import 'package:ipa_testing_github_action/state/reminders.dart';
 import 'package:ipa_testing_github_action/state/speech.dart';
@@ -47,21 +51,66 @@ class FakeReminderBackend implements ReminderBackend {
   Future<void> cancelAll() async => scheduled.clear();
 }
 
+/// Ein Netz, das nichts hergibt — der Regelfall im Test.
+class OfflineFeedBackend implements FeedBackend {
+  final List<Uri> calls = <Uri>[];
+
+  @override
+  Future<FeedResponse> get(Uri url) async {
+    calls.add(url);
+    return const FeedResponse.offline();
+  }
+}
+
+/// Ein Netz, das immer dieselbe Antwort gibt.
+class CannedFeedBackend implements FeedBackend {
+  CannedFeedBackend(this.wikipedia, this.news);
+
+  final String wikipedia;
+  final String news;
+
+  @override
+  Future<FeedResponse> get(Uri url) async => FeedResponse(
+      200, url.host == DailyFeedService.wikipediaHost ? wikipedia : news);
+}
+
+/// Ein Dienst mit den echten, abgelegten Antworten — geladen über denselben
+/// Weg wie im Betrieb, nur ohne Netz.
+Future<DailyFeedService> loadedFeed({DateTime? day}) async {
+  final DailyFeedService service = DailyFeedService(
+    backend: CannedFeedBackend(
+      File('test/data/wikipedia_feed.json').readAsStringSync(),
+      File('test/data/tagesschau_news.json').readAsStringSync(),
+    ),
+    clock: () => day ?? DateTime(2026, 9, 10, 9),
+  );
+  await service.refresh();
+  return service;
+}
+
 /// Wraps a screen in the scopes the app provides at the top level.
 Widget wrapScreen(
   Widget child, {
   LearningState? state,
   Speaker? speaker,
   ReminderService? reminders,
+  DailyFeedService? feed,
+  CustomCardStore? cards,
 }) =>
     LearningScope(
       state: state ?? LearningState(),
-      child: SpeechScope(
-        speaker: speaker ?? Speaker(backend: FakeSpeechBackend()),
-        child: ReminderScope(
-          service: reminders ??
-              ReminderService(backend: FakeReminderBackend()),
-          child: MaterialApp(home: child),
+      child: CustomCardScope(
+        store: cards ?? CustomCardStore(),
+        child: DailyFeedScope(
+          service: feed ?? DailyFeedService(backend: OfflineFeedBackend()),
+          child: SpeechScope(
+            speaker: speaker ?? Speaker(backend: FakeSpeechBackend()),
+            child: ReminderScope(
+              service: reminders ??
+                  ReminderService(backend: FakeReminderBackend()),
+              child: MaterialApp(home: child),
+            ),
+          ),
         ),
       ),
     );
@@ -77,21 +126,29 @@ Widget wrapScreenScaled(
   LearningState? state,
   Speaker? speaker,
   ReminderService? reminders,
+  DailyFeedService? feed,
+  CustomCardStore? cards,
 }) =>
     LearningScope(
       state: state ?? LearningState(),
-      child: SpeechScope(
-        speaker: speaker ?? Speaker(backend: FakeSpeechBackend()),
-        child: ReminderScope(
-          service: reminders ??
-              ReminderService(backend: FakeReminderBackend()),
-          child: MaterialApp(
-            builder: (BuildContext context, Widget? widget) => MediaQuery(
-              data: MediaQuery.of(context)
-                  .copyWith(textScaler: TextScaler.linear(scale)),
-              child: widget!,
+      child: CustomCardScope(
+        store: cards ?? CustomCardStore(),
+        child: DailyFeedScope(
+          service: feed ?? DailyFeedService(backend: OfflineFeedBackend()),
+          child: SpeechScope(
+            speaker: speaker ?? Speaker(backend: FakeSpeechBackend()),
+            child: ReminderScope(
+              service: reminders ??
+                  ReminderService(backend: FakeReminderBackend()),
+              child: MaterialApp(
+                builder: (BuildContext context, Widget? widget) => MediaQuery(
+                  data: MediaQuery.of(context)
+                      .copyWith(textScaler: TextScaler.linear(scale)),
+                  child: widget!,
+                ),
+                home: child,
+              ),
             ),
-            home: child,
           ),
         ),
       ),

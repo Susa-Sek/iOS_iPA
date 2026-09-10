@@ -46,13 +46,16 @@ void main() {
     await tester.pumpWidget(const ArabischLernenApp());
     await tester.pumpAndSettle();
 
-    // Die drei Bereiche unten …
+    // Die vier Bereiche unten …
     expect(find.text('Lernen'), findsWidgets);
     expect(find.text('Üben'), findsWidgets);
     expect(find.text('Erfolge'), findsWidgets);
+    expect(find.text('Heute'), findsWidgets);
 
-    // … und auf "Lernen" der Tag und der Fortschritt.
-    expect(find.text('Heute'), findsOneWidget);
+    // … und auf "Lernen" der Tag und der Fortschritt. „Heute" steht seit dem
+    // vierten Bereich zweimal auf dem Bildschirm: als Überschrift der
+    // Tageskarte und als Beschriftung unten.
+    expect(find.text('Heute'), findsNWidgets(2));
     expect(find.text('Level 1'), findsOneWidget);
     expect(find.text('0 Punkte'), findsOneWidget);
 

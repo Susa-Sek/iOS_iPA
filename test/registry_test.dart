@@ -29,12 +29,12 @@ const VocabCategory _wissen = VocabCategory(
   ],
 );
 
-final CategoryGroup _gruppe = CategoryGroup(
+const CategoryGroup _gruppe = CategoryGroup(
   id: 'test_gruppe',
   name: 'Testbereich',
   description: 'Nur für den Test.',
   icon: Icons.science_outlined,
-  categories: const <VocabCategory>[_wissen],
+  categories: <VocabCategory>[_wissen],
 );
 
 void main() {
@@ -93,7 +93,7 @@ void main() {
     test('rechnet mit dem, was die Registry liefert', () async {
       final LearningState state = LearningState(
         store: ProgressStore(),
-        content: FixedContent(<CategoryGroup>[_gruppe]),
+        content: const FixedContent(<CategoryGroup>[_gruppe]),
         clock: () => DateTime(2026, 5, 1, 9),
       );
       await state.load();
@@ -112,7 +112,7 @@ void main() {
     test('das Quran-Abzeichen bleibt ohne Quran-Kategorie ruhig', () async {
       final LearningState state = LearningState(
         store: ProgressStore(),
-        content: FixedContent(<CategoryGroup>[_gruppe]),
+        content: const FixedContent(<CategoryGroup>[_gruppe]),
         clock: () => DateTime(2026, 5, 1, 9),
       );
       await state.load();

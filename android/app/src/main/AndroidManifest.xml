@@ -3,6 +3,10 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- Damit die geplanten Erinnerungen einen Neustart überleben. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- Für den Bereich „Heute": Wikipedia und Tagesschau. Ohne diese Zeile
+         hätte ausgerechnet das Release-APK keinen Netzzugang — Flutter setzt
+         sie nur in die debug- und profile-Manifeste. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="Arabisch lernen"
         android:name="${applicationName}"
