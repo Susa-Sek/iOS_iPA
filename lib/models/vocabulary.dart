@@ -2,15 +2,100 @@ import 'package:flutter/material.dart';
 
 import 'arabic.dart';
 
-/// A single vocabulary entry: the German word, its Arabic script and a
-/// transliteration ("Lautschrift") that shows how the word is pronounced.
+/// Welche Schrift ein Eintrag benutzt — entscheidet über die Leserichtung.
+enum TextScript {
+  /// Deutsch, Zahlen, Fachbegriffe: von links nach rechts.
+  latin,
+
+  /// Arabisch: von rechts nach links.
+  arabic;
+
+  bool get isRightToLeft => this == TextScript.arabic;
+}
+
+/// Ein Lerneintrag.
+///
+/// Ursprünglich für Vokabeln gebaut (Deutsch, arabische Schrift, Lautschrift)
+/// und inzwischen auch für Wissenskarten: [answer] trägt dann die Antwort
+/// statt eines arabischen Wortes.
+///
+/// Die drei ersten Felder bleiben bewusst positional und in dieser
+/// Reihenfolge — sie werden in `lib/data/` rund tausendmal so geschrieben,
+/// und [id] aus ihnen gebildet. [id] ist zugleich der Schlüssel im
+/// gespeicherten Lernstand: Ändert sich das Schema, verlieren alle
+/// bestehenden Installationen ihren Fortschritt.
 @immutable
 class VocabEntry {
-  const VocabEntry(this.german, this.arabic, this.transliteration);
+  const VocabEntry(
+    this.german,
+    this.arabic,
+    this.transliteration, {
+    this.question,
+    this.distractors = const <String>[],
+    this.explanation,
+    this.source,
+    this.script = TextScript.arabic,
+  });
 
+  /// Eine Wissenskarte: Begriff und Erklärung, ohne Lautschrift.
+  const VocabEntry.fact(
+    String term,
+    String meaning, {
+    String? explanation,
+    String? source,
+  }) : this(term, meaning, '',
+            explanation: explanation,
+            source: source,
+            script: TextScript.latin);
+
+  /// Eine Wissensfrage mit vier Antworten: die richtige plus drei falsche.
+  const VocabEntry.question(
+    String question,
+    String answer, {
+    required List<String> distractors,
+    String? explanation,
+    String? source,
+  }) : this(question, answer, '',
+            question: question,
+            distractors: distractors,
+            explanation: explanation,
+            source: source,
+            script: TextScript.latin);
+
+  /// Die deutsche Seite — bei Wissenskarten der Begriff, bei Fragen die Frage.
   final String german;
+
+  /// Die andere Seite: arabisches Wort oder Antwort.
   final String arabic;
+
   final String transliteration;
+
+  /// Ausformulierte Frage, falls sich der Eintrag nicht als Begriffspaar
+  /// darstellen lässt.
+  final String? question;
+
+  /// Mitgelieferte Falschantworten. Sind sie leer, baut das Quiz die
+  /// Ablenker wie bisher aus anderen Einträgen.
+  final List<String> distractors;
+
+  /// Ein bis zwei Sätze, warum die Antwort stimmt — bei Wissensfragen der
+  /// eigentliche Lerneffekt.
+  final String? explanation;
+
+  /// Woher der Inhalt stammt, falls er nicht aus der App selbst kommt.
+  final String? source;
+
+  /// Leserichtung der [arabic]-Seite.
+  final TextScript script;
+
+  /// Die Antwortseite unter ihrem sprechenden Namen.
+  String get answer => arabic;
+
+  /// Der Text, der als Aufgabe gezeigt wird.
+  String get prompt => question ?? german;
+
+  /// Ob der Eintrag Sprache übt (arabische Schrift) oder Wissen abfragt.
+  bool get isLanguage => script == TextScript.arabic;
 
   /// Stable identifier, used to remember which words have been learned.
   String get id => '$german|$arabic';
@@ -24,7 +109,8 @@ class VocabEntry {
     if (q.isEmpty) return true;
     return german.toLowerCase().contains(q) ||
         transliteration.toLowerCase().contains(q) ||
-        arabic.contains(q) ||
+        (explanation?.toLowerCase().contains(q) ?? false) ||
+        arabic.toLowerCase().contains(q) ||
         arabicPlain.contains(withoutTashkil(q));
   }
 }
@@ -35,16 +121,26 @@ class VocabCategory {
   const VocabCategory({
     required this.id,
     required this.name,
-    required this.arabicName,
     required this.icon,
     required this.color,
     required this.softColor,
     required this.entries,
+    this.arabicName,
+    this.script = TextScript.arabic,
   });
 
   final String id;
   final String name;
-  final String arabicName;
+
+  /// Nur bei arabischen Themen gesetzt.
+  final String? arabicName;
+
+  /// Leserichtung der Einträge dieses Themas.
+  final TextScript script;
+
+  /// Ob das Thema Sprache übt — davon hängt ab, welche Übungen sinnvoll sind.
+  bool get isLanguage => script == TextScript.arabic;
+
   final IconData icon;
 
   /// The category's accent colour and a translucent version of it, kept as

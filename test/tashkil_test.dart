@@ -28,10 +28,19 @@ void main() {
       }
     });
 
-    test('auch die Kategorienamen sind vokalisiert', () {
+    test('Sprachthemen haben einen vokalisierten arabischen Namen', () {
       for (final VocabCategory category in kAllCategories) {
-        expect(hasTashkil(category.arabicName), isTrue,
-            reason: category.name);
+        if (!category.isLanguage) continue;
+        final String? arabicName = category.arabicName;
+        expect(arabicName, isNotNull, reason: category.name);
+        expect(hasTashkil(arabicName!), isTrue, reason: category.name);
+      }
+    });
+
+    test('Wissensthemen brauchen keinen arabischen Namen', () {
+      for (final VocabCategory category in kAllCategories) {
+        if (category.isLanguage) continue;
+        expect(category.script, TextScript.latin, reason: category.name);
       }
     });
 

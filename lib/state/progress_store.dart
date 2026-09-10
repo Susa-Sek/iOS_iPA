@@ -46,6 +46,10 @@ class StoredProgress {
 class ProgressStore {
   ProgressStore({SharedPreferences? preferences}) : _prefs = preferences;
 
+  /// Heißt aus historischen Gründen "arabisch_lernen". Nicht umbenennen:
+  /// Der Schlüssel ist der Lernstand bestehender Nutzer — ein neuer Name
+  /// bedeutet, dass die App ihn nicht mehr findet. Abgesichert durch
+  /// test/naming_test.dart.
   static const String storageKey = 'arabisch_lernen.progress.v1';
 
   /// Days of statistics kept — enough for the chart, small enough to stay fast.

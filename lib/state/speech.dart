@@ -82,6 +82,7 @@ class Speaker extends ChangeNotifier {
         _prefs = preferences;
 
   static const String language = 'ar';
+  /// Nicht umbenennen — siehe test/naming_test.dart.
   static const String slowKey = 'arabisch_lernen.speech.slow';
 
   /// Learner pace vs. normal pace. Arabic TTS at 1.0 is too fast to follow.

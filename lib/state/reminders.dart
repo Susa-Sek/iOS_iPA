@@ -145,6 +145,7 @@ class ReminderService extends ChangeNotifier {
         _prefs = preferences,
         _now = clock ?? DateTime.now;
 
+  /// Nicht umbenennen — siehe test/naming_test.dart.
   static const String enabledKey = 'arabisch_lernen.reminder.enabled';
   static const String hourKey = 'arabisch_lernen.reminder.hour';
   static const String minuteKey = 'arabisch_lernen.reminder.minute';
