@@ -4,8 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../data/achievements_data.dart';
-import '../data/quran_vocab.dart';
-import '../data/vocabulary_data.dart';
+import '../data/content_registry.dart';
 import '../models/achievement.dart';
 import '../models/vocabulary.dart';
 import 'progress_store.dart';
@@ -15,12 +14,22 @@ import 'word_progress.dart';
 /// last days went. Everything is written to the device through
 /// [ProgressStore], so closing the app no longer loses the progress.
 class LearningState extends ChangeNotifier {
-  LearningState({ProgressStore? store, DateTime Function()? clock})
-      : _store = store ?? ProgressStore(),
-        _now = clock ?? DateTime.now;
+  LearningState({
+    ProgressStore? store,
+    DateTime Function()? clock,
+    ContentRegistry? content,
+  })  : _store = store ?? ProgressStore(),
+        _now = clock ?? DateTime.now,
+        _content = content ?? kDefaultContent;
 
   final ProgressStore _store;
   final DateTime Function() _now;
+
+  /// Woher die Inhalte kommen. Der Lernkern kennt keine einzelne Sprache
+  /// mehr, nur noch diese Registry.
+  final ContentRegistry _content;
+
+  ContentRegistry get content => _content;
 
   final Map<String, WordProgress> _words = <String, WordProgress>{};
   Map<String, int> _history = <String, int>{};
@@ -44,7 +53,7 @@ class LearningState extends ChangeNotifier {
   int get bestStreak => _bestStreak;
 
   int get dailyGoal => _dailyGoal;
-  int get totalCount => kAllEntries.length;
+  int get totalCount => _content.entries.length;
 
   // ---- Punkte und Level -------------------------------------------------
 
@@ -88,11 +97,16 @@ class LearningState extends ChangeNotifier {
         dayStreak: dayStreak,
         answers: _answered,
         perfectRounds: _perfectRounds,
-        completedCategories: kAllCategories
+        completedCategories: _content.categories
             .where((VocabCategory c) =>
                 c.entries.isNotEmpty && c.entries.every(isLearned))
             .length,
-        learnedQuranWords: kQuranWords.entries.where(isLearned).length,
+        learnedQuranWords: _content
+                .categoryById(AppContent.quranCategoryId)
+                ?.entries
+                .where(isLearned)
+                .length ??
+            0,
         level: level,
       );
 
@@ -160,7 +174,7 @@ class LearningState extends ChangeNotifier {
   List<VocabEntry> dueEntries([List<VocabEntry>? pool]) {
     final DateTime now = _now();
     return <VocabEntry>[
-      for (final VocabEntry entry in pool ?? kAllEntries)
+      for (final VocabEntry entry in pool ?? _content.entries)
         if (progressOfWord(entry).isDue(now)) entry,
     ];
   }
@@ -245,6 +259,20 @@ class LearningState extends ChangeNotifier {
       : learnedIn(category) / category.entries.length;
 
   int dueIn(VocabCategory category) => dueEntries(category.entries).length;
+
+  /// Gelernte Wörter eines Bereichs — die Startseite zeigt den Fortschritt
+  /// bereichsweise statt als eine große Zahl über alles. Sonst fiele die
+  /// Anzeige sichtbar ab, sobald ein neues Fach dazukommt, ohne dass jemand
+  /// etwas verlernt hätte.
+  int learnedInGroup(CategoryGroup group) =>
+      group.entries.where(isLearned).length;
+
+  double progressOfGroup(CategoryGroup group) {
+    final int total = group.entries.length;
+    return total == 0 ? 0 : learnedInGroup(group) / total;
+  }
+
+  int dueInGroup(CategoryGroup group) => dueEntries(group.entries).length;
 
   /// Training order: what is due comes first, then the weakest boxes,
   /// shuffled inside a group so a round never feels the same twice.

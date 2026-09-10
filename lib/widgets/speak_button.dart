@@ -29,11 +29,15 @@ class SpeakButton extends StatelessWidget {
     required this.text,
     this.size = 24,
     this.color,
+    this.languageCode,
   });
 
   final String text;
   final double size;
   final Color? color;
+
+  /// Welche Stimme sprechen soll. Ohne Angabe die arabische.
+  final String? languageCode;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +51,7 @@ class SpeakButton extends StatelessWidget {
       tooltip: 'Anhören',
       onPressed: () {
         if (speaker.isAvailable) {
-          speaker.speak(text);
+          speaker.speak(text, languageCode: languageCode);
         } else {
           showMissingVoiceHint(context);
         }

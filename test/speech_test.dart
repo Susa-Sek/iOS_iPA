@@ -11,6 +11,7 @@ class FakeBackend implements SpeechBackend {
 
   final bool hasVoice;
   final List<String> spoken = <String>[];
+  final List<String> languages = <String>[];
   final List<double> rates = <double>[];
   int stops = 0;
   String? preparedLanguage;
@@ -20,6 +21,9 @@ class FakeBackend implements SpeechBackend {
     preparedLanguage = language;
     return hasVoice;
   }
+
+  @override
+  Future<void> setLanguage(String language) async => languages.add(language);
 
   @override
   Future<void> setRate(double rate) async => rates.add(rate);

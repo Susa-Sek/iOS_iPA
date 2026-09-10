@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// instead of throwing at the user.
 abstract class SpeechBackend {
   Future<bool> prepare(String language);
+  Future<void> setLanguage(String language);
   Future<void> setRate(double rate);
   Future<void> speak(String text);
   Future<void> stop();
@@ -32,6 +33,15 @@ class FlutterTtsBackend implements SpeechBackend {
     } catch (error) {
       debugPrint('Sprachausgabe nicht verfügbar: $error');
       return false;
+    }
+  }
+
+  @override
+  Future<void> setLanguage(String language) async {
+    try {
+      await _tts.setLanguage(language);
+    } catch (error) {
+      debugPrint('Sprache konnte nicht gesetzt werden: $error');
     }
   }
 
@@ -81,7 +91,11 @@ class Speaker extends ChangeNotifier {
       : _backend = backend ?? FlutterTtsBackend(),
         _prefs = preferences;
 
+  /// Die Sprache des arabischen Wortschatzes.
   static const String language = 'ar';
+
+  /// Für deutsche Wissenskarten.
+  static const String germanLanguage = 'de-DE';
   /// Nicht umbenennen — siehe test/naming_test.dart.
   static const String slowKey = 'arabisch_lernen.speech.slow';
 
@@ -95,6 +109,10 @@ class Speaker extends ChangeNotifier {
   SpeechStatus _status = SpeechStatus.unknown;
   bool _slow = true;
   String? _speaking;
+  String _current = language;
+
+  /// Welche Sprachen das Gerät beherrscht — einmal gefragt, dann gemerkt.
+  final Map<String, bool> _available = <String, bool>{};
 
   SpeechStatus get status => _status;
   bool get isAvailable => _status == SpeechStatus.ready;
@@ -107,9 +125,19 @@ class Speaker extends ChangeNotifier {
     _prefs ??= await _safePrefs();
     _slow = _prefs?.getBool(slowKey) ?? true;
     final bool ok = await _backend.prepare(language);
+    _available[language] = ok;
     _status = ok ? SpeechStatus.ready : SpeechStatus.unavailable;
     if (ok) await _backend.setRate(_slow ? slowRate : normalRate);
     notifyListeners();
+  }
+
+  /// Ob für diese Sprache eine Stimme da ist.
+  Future<bool> supports(String code) async {
+    final bool? known = _available[code];
+    if (known != null) return known;
+    final bool ok = await _backend.prepare(code);
+    _available[code] = ok;
+    return ok;
   }
 
   Future<SharedPreferences?> _safePrefs() async {
@@ -128,10 +156,22 @@ class Speaker extends ChangeNotifier {
     await _prefs?.setBool(slowKey, value);
   }
 
-  /// Speaks [text]. Does nothing when no Arabic voice is installed, so every
-  /// caller can simply call it.
-  Future<void> speak(String text) async {
-    if (!isAvailable || text.trim().isEmpty) return;
+  /// Spricht [text]. Ohne passende Stimme passiert nichts, damit jeder
+  /// Aufrufer das einfach aufrufen kann.
+  ///
+  /// [languageCode] bestimmt die Stimme: Arabisch für Vokabeln, Deutsch für
+  /// Wissenskarten. Die Sprache wird nur umgestellt, wenn sie wechselt.
+  Future<void> speak(String text, {String? languageCode}) async {
+    final String code = languageCode ?? language;
+    if (text.trim().isEmpty) return;
+    if (!await supports(code)) return;
+
+    if (code != _current) {
+      await _backend.setLanguage(code);
+      await _backend.setRate(_slow ? slowRate : normalRate);
+      _current = code;
+    }
+
     _speaking = text;
     notifyListeners();
     await _backend.speak(text);
