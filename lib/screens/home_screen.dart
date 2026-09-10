@@ -9,6 +9,7 @@ import '../widgets/subject_switch.dart';
 import 'category_screen.dart';
 import 'flashcard_screen.dart';
 import 'search_screen.dart';
+import 'session_screen.dart';
 
 /// Start screen: progress at a glance, the training modes and the list of
 /// vocabulary categories.
@@ -73,6 +74,7 @@ class HomeScreen extends StatelessWidget {
               MediaQuery.textScalerOf(context).scale(1),
             ),
           ),
+          SliverToBoxAdapter(child: _KurzrundeCard(state: state)),
           SliverToBoxAdapter(child: _TodayCard(state: state)),
           SliverToBoxAdapter(child: _ProgressCard(state: state)),
           SliverToBoxAdapter(
@@ -247,6 +249,65 @@ class HomeScreen extends StatelessWidget {
 }
 
 /// The daily routine: what is due today, the goal, and the day streak.
+/// Der Einstieg für zwischendurch: ein Griff, dann ist man beschäftigt.
+///
+/// Er steht bewusst über allem anderen. Wer zwei Minuten hat, soll nicht
+/// erst am Tagesziel und am Lernweg vorbeiscrollen müssen.
+class _KurzrundeCard extends StatelessWidget {
+  const _KurzrundeCard({required this.state});
+
+  final LearningState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+          Insets.lg, Insets.sm, Insets.lg, Insets.xs),
+      child: FilledButton(
+        onPressed: state.activeEntries.isEmpty
+            ? null
+            : () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const SessionScreen(),
+                  ),
+                ),
+        style: FilledButton.styleFrom(
+          minimumSize: const Size.fromHeight(60),
+          shape: const RoundedRectangleBorder(borderRadius: Radii.cardShape),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Icon(Icons.play_arrow_rounded, size: 26),
+            const SizedBox(width: Insets.sm),
+            Flexible(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text('Kurzrunde',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.onPrimary,
+                        fontWeight: FontWeight.w600,
+                      )),
+                  Text(
+                    'Gemischt, etwa zwei Minuten',
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onPrimary.withValues(alpha: 0.85),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _TodayCard extends StatelessWidget {
   const _TodayCard({required this.state});
 

@@ -15,11 +15,27 @@ class BuildWordScreen extends StatefulWidget {
     this.entries,
     required this.title,
     this.accent,
+    this.count,
+    this.onFinished,
+    this.embedded = false,
   });
 
   final List<VocabEntry>? entries;
   final String title;
   final Color? accent;
+
+  /// Wie viele Aufgaben die Runde hat. `null` heißt: die übliche Zahl.
+  ///
+  /// Zusammen mit [onFinished] und [embedded] macht das den Bildschirm zu
+  /// einem Block einer Kurzrunde: kürzer, ohne eigene Bilanz, ohne eigenes
+  /// Gerüst.
+  final int? count;
+
+  /// Wird statt der eigenen Schlussbilanz gerufen, sobald die Runde durch ist.
+  final VoidCallback? onFinished;
+
+  /// Ohne eigenes `Scaffold` und ohne Kopfzeile.
+  final bool embedded;
 
   static const int wordsPerRound = 8;
 
@@ -58,7 +74,7 @@ class _BuildWordScreenState extends State<BuildWordScreen> {
         .where(BuildWordScreen.isSuitable)
         .toList()
       ..shuffle(_random);
-    _round = pool.take(BuildWordScreen.wordsPerRound).toList();
+    _round = pool.take(widget.count ?? BuildWordScreen.wordsPerRound).toList();
     if (_round.isNotEmpty) _deal();
   }
 
@@ -91,30 +107,52 @@ class _BuildWordScreenState extends State<BuildWordScreen> {
         if (_index < _round.length) _deal();
       });
 
+  /// Kopfzeile und Fortschrittsbalken — in einer Kurzrunde nichts davon,
+  /// dort trägt der Rahmen beides über die ganze Runde.
+  Widget _wrap(Widget body) {
+    if (widget.embedded) return body;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Wort bauen · ${widget.title}'),
+        bottom: _round.isEmpty
+            ? null
+            : PreferredSize(
+                preferredSize: const Size.fromHeight(4),
+                child: LinearProgressIndicator(
+                  value: _index / _round.length,
+                  minHeight: 4,
+                ),
+              ),
+      ),
+      body: body,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final Color accent = widget.accent ?? theme.colorScheme.primary;
 
     if (_round.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Wort bauen')),
-        body: const Center(
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Text(
-              'In diesem Thema gibt es keine kurzen Einzelwörter zum Bauen.',
-              textAlign: TextAlign.center,
-            ),
+      return _wrap(const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Text(
+            'In diesem Thema gibt es keine kurzen Einzelwörter zum Bauen.',
+            textAlign: TextAlign.center,
           ),
         ),
-      );
+      ));
     }
 
     if (_index >= _round.length) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Wort bauen')),
-        body: Center(
+      // In einer Kurzrunde übernimmt der Rahmen die Bilanz.
+      final VoidCallback? fertig = widget.onFinished;
+      if (fertig != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => fertig());
+        return _wrap(const SizedBox.shrink());
+      }
+      return _wrap(Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
@@ -130,24 +168,13 @@ class _BuildWordScreenState extends State<BuildWordScreen> {
               ),
             ],
           ),
-        ),
-      );
+      ));
     }
 
     final VocabEntry entry = _round[_index];
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Wort bauen · ${widget.title}'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(4),
-          child: LinearProgressIndicator(
-            value: _index / _round.length,
-            minHeight: 4,
-          ),
-        ),
-      ),
-      body: Padding(
+    return _wrap(
+      Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

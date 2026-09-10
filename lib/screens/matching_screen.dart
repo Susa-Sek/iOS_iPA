@@ -15,12 +15,28 @@ class MatchingScreen extends StatefulWidget {
     required this.title,
     this.accent,
     this.accentSoft,
+    this.count,
+    this.onFinished,
+    this.embedded = false,
   });
 
   final List<VocabEntry>? entries;
   final String title;
   final Color? accent;
   final Color? accentSoft;
+
+  /// Wie viele Aufgaben die Runde hat. `null` heißt: die übliche Zahl.
+  ///
+  /// Zusammen mit [onFinished] und [embedded] macht das den Bildschirm zu
+  /// einem Block einer Kurzrunde: kürzer, ohne eigene Bilanz, ohne eigenes
+  /// Gerüst.
+  final int? count;
+
+  /// Wird statt der eigenen Schlussbilanz gerufen, sobald die Runde durch ist.
+  final VoidCallback? onFinished;
+
+  /// Ohne eigenes `Scaffold` und ohne Kopfzeile.
+  final bool embedded;
 
   /// Pairs shown per round.
   static const int pairsPerRound = 6;
@@ -67,7 +83,8 @@ class _MatchingScreenState extends State<MatchingScreen> {
   void _deal() {
     final LearningState state = LearningScope.of(context);
     final List<VocabEntry> ordered = state.trainingOrder(_pool, random: _random);
-    final int count = min(MatchingScreen.pairsPerRound, ordered.length);
+    final int count =
+        min(widget.count ?? MatchingScreen.pairsPerRound, ordered.length);
     setState(() {
       _round = ordered.take(count).toList();
       _germanColumn = List<VocabEntry>.of(_round)..shuffle(_random);
@@ -130,22 +147,19 @@ class _MatchingScreenState extends State<MatchingScreen> {
         widget.accentSoft ?? theme.colorScheme.primaryContainer;
     final bool done = _round.isNotEmpty && _solved.length == _round.length;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Zuordnen · ${widget.title}'),
-        actions: <Widget>[
-          IconButton(
-            tooltip: 'Neue Runde',
-            icon: const Icon(Icons.refresh),
-            onPressed: _deal,
-          ),
-        ],
-      ),
-      body: _round.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : done
-              ? _Done(mistakes: _mistakes, accent: accent, onAgain: _deal)
-              : Padding(
+    final VoidCallback? fertig = widget.onFinished;
+    if (done && fertig != null) {
+      // In einer Kurzrunde übernimmt der Rahmen die Bilanz.
+      WidgetsBinding.instance.addPostFrameCallback((_) => fertig());
+    }
+
+    final Widget koerper = _round.isEmpty
+        ? const Center(child: CircularProgressIndicator())
+        : done
+            ? (fertig != null
+                ? const SizedBox.shrink()
+                : _Done(mistakes: _mistakes, accent: accent, onAgain: _deal))
+            : Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: <Widget>[
@@ -201,7 +215,22 @@ class _MatchingScreenState extends State<MatchingScreen> {
                       Text('${_solved.length} / ${_round.length} Paare'),
                     ],
                   ),
-                ),
+                );
+
+    if (widget.embedded) return koerper;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Zuordnen · ${widget.title}'),
+        actions: <Widget>[
+          IconButton(
+            tooltip: 'Neue Runde',
+            icon: const Icon(Icons.refresh),
+            onPressed: _deal,
+          ),
+        ],
+      ),
+      body: koerper,
     );
   }
 }

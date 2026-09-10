@@ -20,6 +20,9 @@ class FlashcardScreen extends StatefulWidget {
     required this.title,
     this.accent,
     this.accentSoft,
+    this.count,
+    this.onFinished,
+    this.embedded = false,
   });
 
   /// Die Wörter für diese Runde, oder `null` für die Tagesportion aus dem
@@ -28,6 +31,21 @@ class FlashcardScreen extends StatefulWidget {
   final String title;
   final Color? accent;
   final Color? accentSoft;
+
+  /// Wie viele Aufgaben die Runde hat. `null` heißt: die übliche Zahl.
+  ///
+  /// Zusammen mit [onFinished] und [embedded] macht das den Bildschirm zu
+  /// einem Block einer Kurzrunde: kürzer, ohne eigene Bilanz und ohne
+  /// eigenes Gerüst.
+  final int? count;
+
+  /// Wird statt der eigenen Schlussbilanz gerufen, sobald die Runde durch
+  /// ist — die Kurzrunde hängt dann den nächsten Block an.
+  final VoidCallback? onFinished;
+
+  /// Ohne eigenes `Scaffold` und ohne Kopfzeile: Der Bildschirm sitzt in
+  /// einem fremden Gerüst.
+  final bool embedded;
 
   @override
   State<FlashcardScreen> createState() => _FlashcardScreenState();
@@ -59,6 +77,10 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
     _cards = chosen != null
         ? state.trainingOrder(List<VocabEntry>.of(chosen), random: _random)
         : state.dailySelection(random: _random);
+    final int? limit = widget.count;
+    if (limit != null && _cards.length > limit) {
+      _cards = _cards.take(limit).toList();
+    }
     _index = 0;
     _revealed = false;
   }
@@ -77,22 +99,64 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
     });
   }
 
+  /// Legt das Gerüst um den Inhalt.
+  ///
+  /// In der App eine Kopfzeile mit Fortschrittsbalken; in einer Kurzrunde
+  /// nichts davon — dort trägt der Rahmen den Fortschritt über die ganze
+  /// Runde, und zwei Kopfzeilen übereinander wären nur im Weg.
+  Widget _wrap(Widget body, {List<Widget> actions = const <Widget>[]}) {
+    if (widget.embedded) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          if (actions.isNotEmpty)
+            Align(
+              alignment: Alignment.centerRight,
+              child: Row(mainAxisSize: MainAxisSize.min, children: actions),
+            ),
+          Expanded(child: body),
+        ],
+      );
+    }
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Karteikarten · ${widget.title}'),
+        actions: actions,
+        bottom: _cards.isEmpty
+            ? null
+            : PreferredSize(
+                preferredSize: const Size.fromHeight(4),
+                child: LinearProgressIndicator(
+                  value: _index / _cards.length,
+                  minHeight: 4,
+                ),
+              ),
+      ),
+      body: body,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final Color accent = widget.accent ?? theme.colorScheme.primary;
 
     if (_cards.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: Text(widget.title)),
-        body: const Center(child: CircularProgressIndicator()),
-      );
+      return _wrap(const Center(child: CircularProgressIndicator()));
     }
 
     if (_index >= _cards.length) {
-      return Scaffold(
-        appBar: AppBar(title: Text(widget.title)),
-        body: Center(
+      // In einer Kurzrunde übernimmt der Rahmen; hier gibt es keine eigene
+      // Schlussbilanz, sonst stünden zwei hintereinander.
+      final VoidCallback? fertig = widget.onFinished;
+      if (fertig != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => fertig());
+        // Nichts statt eines Ladekringels: Der Rahmen tauscht den Block im
+        // nächsten Bild aus. Ein sich drehender Kringel wäre ein Flackern —
+        // und wenn die Übergabe je hakte, ein Kringel ohne Ende.
+        return _wrap(const SizedBox.shrink());
+      }
+      return _wrap(Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
@@ -109,37 +173,26 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
               ),
             ],
           ),
-        ),
-      );
+      ));
     }
 
     final VocabEntry card = _cards[_index];
     final LearningState state = LearningScope.of(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Karteikarten · ${widget.title}'),
-        actions: <Widget>[
-          IconButton(
-            tooltip: _arabicFirst
-                ? 'Vorderseite: Arabisch'
-                : 'Vorderseite: Deutsch',
-            icon: const Icon(Icons.swap_horiz),
-            onPressed: () => setState(() {
-              _arabicFirst = !_arabicFirst;
-              _revealed = false;
-            }),
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(4),
-          child: LinearProgressIndicator(
-            value: _index / _cards.length,
-            minHeight: 4,
-          ),
+    return _wrap(
+      actions: <Widget>[
+        IconButton(
+          tooltip: _arabicFirst
+              ? 'Vorderseite: Arabisch'
+              : 'Vorderseite: Deutsch',
+          icon: const Icon(Icons.swap_horiz),
+          onPressed: () => setState(() {
+            _arabicFirst = !_arabicFirst;
+            _revealed = false;
+          }),
         ),
-      ),
-      body: Padding(
+      ],
+      Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: <Widget>[

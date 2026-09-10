@@ -19,12 +19,28 @@ class QuizScreen extends StatefulWidget {
     this.entries,
     required this.title,
     this.direction = QuizDirection.arabicToGerman,
+    this.count,
+    this.onFinished,
+    this.embedded = false,
   });
 
   /// The pool to draw questions from, or `null` for the whole vocabulary.
   final List<VocabEntry>? entries;
   final String title;
   final QuizDirection direction;
+
+  /// Wie viele Aufgaben die Runde hat. `null` heißt: die übliche Zahl.
+  ///
+  /// Zusammen mit [onFinished] und [embedded] macht das den Bildschirm zu
+  /// einem Block einer Kurzrunde: kürzer, ohne eigene Bilanz, ohne eigenes
+  /// Gerüst.
+  final int? count;
+
+  /// Wird statt der eigenen Schlussbilanz gerufen, sobald die Runde durch ist.
+  final VoidCallback? onFinished;
+
+  /// Ohne eigenes `Scaffold` und ohne Kopfzeile.
+  final bool embedded;
 
   static const int questionsPerRound = kQuestionsPerRound;
 
@@ -72,6 +88,7 @@ class _QuizScreenState extends State<QuizScreen> {
       pool: _pool,
       direction: _direction,
       random: _random,
+      count: widget.count ?? kQuestionsPerRound,
     );
     _index = 0;
     _correct = 0;
@@ -169,16 +186,29 @@ class _QuizScreenState extends State<QuizScreen> {
     final bool arabicPrompt = _direction == QuizDirection.arabicToGerman;
     final bool listening = _direction == QuizDirection.listening;
 
+    final Widget koerper = _buildBody(theme, arabicPrompt, listening);
+    final Widget richtungswechsel = IconButton(
+      tooltip: 'Richtung: ${_direction.label}',
+      icon: Icon(listening ? Icons.hearing : Icons.swap_horiz),
+      onPressed: _nextDirection,
+    );
+
+    // Ohne eigenes Gerüst: Der Rahmen der Kurzrunde bringt Kopfzeile und
+    // Fortschritt über die ganze Runde mit.
+    if (widget.embedded) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Align(alignment: Alignment.centerRight, child: richtungswechsel),
+          Expanded(child: koerper),
+        ],
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Quiz · ${widget.title}'),
-        actions: <Widget>[
-          IconButton(
-            tooltip: 'Richtung: ${_direction.label}',
-            icon: Icon(listening ? Icons.hearing : Icons.swap_horiz),
-            onPressed: _nextDirection,
-          ),
-        ],
+        actions: <Widget>[richtungswechsel],
         bottom: _questions.isEmpty
             ? null
             : PreferredSize(
@@ -189,7 +219,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 ),
               ),
       ),
-      body: _buildBody(theme, arabicPrompt, listening),
+      body: koerper,
     );
   }
 
@@ -199,6 +229,13 @@ class _QuizScreenState extends State<QuizScreen> {
     }
 
     if (_index >= _questions.length) {
+      // In einer Kurzrunde übernimmt der Rahmen die Bilanz.
+      final VoidCallback? fertig = widget.onFinished;
+      if (fertig != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => fertig());
+        // Nichts statt eines Ladekringels — siehe flashcard_screen.dart.
+        return const SizedBox.shrink();
+      }
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

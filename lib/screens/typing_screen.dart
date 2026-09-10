@@ -20,10 +20,26 @@ class TypingScreen extends StatefulWidget {
     super.key,
     this.entries,
     required this.title,
+    this.count,
+    this.onFinished,
+    this.embedded = false,
   });
 
   final List<VocabEntry>? entries;
   final String title;
+
+  /// Wie viele Aufgaben die Runde hat. `null` heißt: die übliche Zahl.
+  ///
+  /// Zusammen mit [onFinished] und [embedded] macht das den Bildschirm zu
+  /// einem Block einer Kurzrunde: kürzer, ohne eigene Bilanz, ohne eigenes
+  /// Gerüst.
+  final int? count;
+
+  /// Wird statt der eigenen Schlussbilanz gerufen, sobald die Runde durch ist.
+  final VoidCallback? onFinished;
+
+  /// Ohne eigenes `Scaffold` und ohne Kopfzeile.
+  final bool embedded;
 
   /// Wie viele Wörter eine Runde hat.
   static const int wordsPerRound = 10;
@@ -67,7 +83,7 @@ class _TypingScreenState extends State<TypingScreen> {
         .toList();
     _round = state
         .trainingOrder(pool, random: _random)
-        .take(TypingScreen.wordsPerRound)
+        .take(widget.count ?? TypingScreen.wordsPerRound)
         .toList();
     _index = 0;
     _solved = 0;
@@ -105,19 +121,32 @@ class _TypingScreenState extends State<TypingScreen> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
 
+    final VoidCallback? fertig = widget.onFinished;
+    final bool durch = _round.isNotEmpty && _index >= _round.length;
+    if (durch && fertig != null) {
+      // In einer Kurzrunde übernimmt der Rahmen die Bilanz.
+      WidgetsBinding.instance.addPostFrameCallback((_) => fertig());
+    }
+
+    final Widget koerper = SafeArea(
+      child: _round.isEmpty
+          ? const _NothingToType()
+          : durch
+              ? (fertig != null
+                  ? const SizedBox.shrink()
+                  : _Summary(
+                      solved: _solved,
+                      total: _round.length,
+                      onAgain: () => setState(_deal),
+                    ))
+              : _question(theme),
+    );
+
+    if (widget.embedded) return koerper;
+
     return Scaffold(
       appBar: AppBar(title: Text(widget.title)),
-      body: SafeArea(
-        child: _round.isEmpty
-            ? const _NothingToType()
-            : _index >= _round.length
-                ? _Summary(
-                    solved: _solved,
-                    total: _round.length,
-                    onAgain: () => setState(_deal),
-                  )
-                : _question(theme),
-      ),
+      body: koerper,
     );
   }
 

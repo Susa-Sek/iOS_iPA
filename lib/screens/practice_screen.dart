@@ -11,6 +11,7 @@ import 'flashcard_screen.dart';
 import 'matching_screen.dart';
 import 'quiz_screen.dart';
 import 'quran_screen.dart';
+import 'session_screen.dart';
 import 'typing_screen.dart';
 import 'verbs_screen.dart';
 
@@ -41,6 +42,12 @@ class PracticeScreen extends StatelessWidget {
             const SizedBox(height: Insets.lg),
           ],
           const _SectionTitle('Übungen'),
+          _PracticeCard(
+            icon: Icons.play_arrow_rounded,
+            title: 'Kurzrunde',
+            subtitle: 'Mehrere Übungsarten, etwa zwei Minuten',
+            onTap: () => _open(context, const SessionScreen()),
+          ),
           // Jede Übung ist eine Portion, kein Marathon: Fällige und schwache
           // Karten zuerst, dann ist Schluss. Wer mehr will, fängt neu an —
           // das ist der Unterschied zwischen „geschafft" und „abgebrochen".

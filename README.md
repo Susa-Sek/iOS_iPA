@@ -111,6 +111,21 @@ eine falsche Antwort durchginge:** „Totes Meer" ist von „Rotes Meer" nur ein
 Buchstaben entfernt und trotzdem ein anderes Meer. Liegt die Eingabe genauso
 nah an einem Ablenker wie an der Antwort, zählt sie nicht.
 
+## Kurzrunde — zwei Minuten zwischendurch
+
+Ein Knopf ganz oben auf „Lernen" startet eine gemischte Runde: drei Blöcke
+verschiedener Übungsarten, etwa acht Aufgaben, dann eine Bilanz. Ein Griff,
+und man ist beschäftigt — kein Bereich, keine Übung, keine Richtung wählen.
+
+Die Zusammenstellung entsteht aus dem, was gerade fällig ist, und **nie
+zweimal dieselbe Art hintereinander**. Welche Arten möglich sind, ergibt sich
+aus dem Vorrat: Im Fach Wissen fällt „Wort bauen" von selbst weg, weil es dort
+keine arabischen Buchstaben zu bauen gibt.
+
+Der Fortschrittsbalken oben gilt für die **ganze** Runde, nicht für den
+laufenden Block — man sieht, dass es gleich vorbei ist, und hört deshalb nicht
+mittendrin auf.
+
 ## Tagesportion statt Marathon
 
 Karteikarten und Quiz zeigen nicht den ganzen Bestand, sondern eine Portion:
