@@ -155,6 +155,19 @@ class LearningState extends ChangeNotifier {
 
   // ---- Abzeichen --------------------------------------------------------
 
+  int _lessonsDone = 0;
+  int _topicsUnderstood = 0;
+
+  /// Der Lektionsfortschritt liegt in einem eigenen Speicher; der Lernkern
+  /// bekommt ihn gemeldet, statt ihn zu kennen. So bleibt er von den
+  /// Wissensdaten unabhängig — wie schon von den arabischen.
+  void reportLessons({required int done, required int topicsUnderstood}) {
+    if (_lessonsDone == done && _topicsUnderstood == topicsUnderstood) return;
+    _lessonsDone = done;
+    _topicsUnderstood = topicsUnderstood;
+    notifyListeners();
+  }
+
   /// Die Abzeichen hängen **nicht** am Fach: Wer umschaltet, hat nichts
   /// verlernt. Deshalb zählen hier die Werte über beide Fächer.
   AchievementStats get achievementStats => AchievementStats(
@@ -173,6 +186,8 @@ class LearningState extends ChangeNotifier {
                 .length ??
             0,
         level: level,
+        lessonsDone: _lessonsDone,
+        topicsUnderstood: _topicsUnderstood,
       );
 
   List<Achievement> get unlockedAchievements {
@@ -268,17 +283,27 @@ class LearningState extends ChangeNotifier {
   /// nicht: Ein nie angefasstes Wort gilt als fällig, die Marke zeigte auf
   /// einer frischen Installation also für immer „301" und sagte damit nichts.
   /// Ein vergessenes Wort ist dringend, ein noch nie gesehenes nicht.
-  int repetitionsDueIn(Subject subject) {
+  int repetitionsDueIn(Subject subject) =>
+      repetitionsDue(entriesOf(subject)).length;
+
+  /// Die **angefangenen** Einträge, deren Termin gekommen ist.
+  ///
+  /// Der Unterschied zu [dueEntries] entscheidet mehr, als er aussieht: Dort
+  /// gilt auch ein nie angesehener Eintrag als fällig — für eine erste Runde
+  /// richtig, für alles, was „Wiederholung" heißt, falsch. Sonst begönne auf
+  /// einer frischen Installation jede Lektion mit dem Nachfassen von Stoff,
+  /// den noch niemand gesehen hat.
+  ///
+  /// Angefangen heißt: Es gibt einen Termin. Nicht `box > 0` — eine falsche
+  /// Antwort setzt auf Fach 0 zurück, angefangen ist der Eintrag trotzdem.
+  List<VocabEntry> repetitionsDue([List<VocabEntry>? pool]) {
     final DateTime now = _now();
-    int offen = 0;
-    for (final VocabEntry entry in entriesOf(subject)) {
-      final WordProgress fortschritt = progressOfWord(entry);
-      // `due != null` heißt: Das Wort war schon einmal dran und hat einen
-      // Termin bekommen. Nicht `box > 0` — eine falsche Antwort setzt auf
-      // Fach 0 zurück, angefangen ist das Wort trotzdem.
-      if (fortschritt.due != null && fortschritt.isDue(now)) offen++;
-    }
-    return offen;
+    return <VocabEntry>[
+      for (final VocabEntry entry in pool ?? activeEntries)
+        if (progressOfWord(entry).due != null &&
+            progressOfWord(entry).isDue(now))
+          entry,
+    ];
   }
 
   /// Fällige Wörter über beide Fächer. Die Abenderinnerung nennt diese Zahl:

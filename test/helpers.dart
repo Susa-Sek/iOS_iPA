@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:ipa_testing_github_action/state/custom_cards.dart';
 import 'package:ipa_testing_github_action/state/daily_feed.dart';
 import 'package:ipa_testing_github_action/state/learning_state.dart';
+import 'package:ipa_testing_github_action/state/lesson_store.dart';
 import 'package:ipa_testing_github_action/state/reminders.dart';
 import 'package:ipa_testing_github_action/state/speech.dart';
 import 'package:ipa_testing_github_action/widgets/speak_button.dart';
@@ -96,10 +97,13 @@ Widget wrapScreen(
   ReminderService? reminders,
   DailyFeedService? feed,
   CustomCardStore? cards,
+  LessonStore? lessons,
 }) =>
     LearningScope(
       state: state ?? LearningState(),
-      child: CustomCardScope(
+      child: LessonScope(
+        store: lessons ?? LessonStore(),
+        child: CustomCardScope(
         store: cards ?? CustomCardStore(),
         child: DailyFeedScope(
           service: feed ?? DailyFeedService(backend: OfflineFeedBackend()),
@@ -111,6 +115,7 @@ Widget wrapScreen(
               child: MaterialApp(home: child),
             ),
           ),
+        ),
         ),
       ),
     );
@@ -128,10 +133,13 @@ Widget wrapScreenScaled(
   ReminderService? reminders,
   DailyFeedService? feed,
   CustomCardStore? cards,
+  LessonStore? lessons,
 }) =>
     LearningScope(
       state: state ?? LearningState(),
-      child: CustomCardScope(
+      child: LessonScope(
+        store: lessons ?? LessonStore(),
+        child: CustomCardScope(
         store: cards ?? CustomCardStore(),
         child: DailyFeedScope(
           service: feed ?? DailyFeedService(backend: OfflineFeedBackend()),
@@ -150,6 +158,7 @@ Widget wrapScreenScaled(
               ),
             ),
           ),
+        ),
         ),
       ),
     );

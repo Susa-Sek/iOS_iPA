@@ -43,6 +43,8 @@ class AchievementStats {
     required this.completedCategories,
     required this.learnedQuranWords,
     required this.level,
+    this.lessonsDone = 0,
+    this.topicsUnderstood = 0,
   });
 
   final int learnedWords;
@@ -52,4 +54,11 @@ class AchievementStats {
   final int completedCategories;
   final int learnedQuranWords;
   final int level;
+
+  /// Durchgearbeitete Lektionen im Fach Wissen.
+  ///
+  /// Eigene Zahlen, weil dort anders gelernt wird: Nicht die abgehakte Karte
+  /// zählt, sondern die Lektion und das verstandene Thema.
+  final int lessonsDone;
+  final int topicsUnderstood;
 }

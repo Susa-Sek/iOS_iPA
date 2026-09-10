@@ -78,6 +78,37 @@ Der Bereich lädt erst, wenn man ihn öffnet, und merkt sich den Stand für den
 Tag. Ohne Netz steht der letzte Stand mit seinem Datum da statt einer
 Fehlermeldung ins Leere — der Rest der App braucht kein Netz.
 
+## Wissen wird gelesen, nicht gedrillt
+
+Im Fach Wissen sieht die App **anders aus als bei Arabisch** — weil anders
+gelernt wird.
+
+Vokabeln sind willkürliche Paare: „Haus" und بَيْت haben nichts miteinander zu
+tun, das muss man stur wiederholen. Dafür ist die Kartei gemacht. Wissen ist
+nicht willkürlich. Es hängt zusammen, und wer den Zusammenhang einmal
+verstanden hat, braucht keine Karteikarte, sondern einen Text. Eine Karte
+„Wolga | Längster Fluss Europas" lehrt ein Stück Trivia, kein Verständnis.
+
+Einheit ist deshalb die **Lektion**, Maß das **verstandene Thema**:
+
+1. **Kurz nachgefasst** — höchstens zwei Fragen, die beim letzten Mal falsch
+   waren. Mehr sichtbare Wiederholung gibt es hier nicht.
+2. **Einstieg** — ein Satz, worum es geht.
+3. **Lesekarten** — Begriff, Bedeutung, Erklärung. Nur „Weiter": **kein
+   Bewerten, kein Ankreuzen, keine Selbsteinschätzung.** Hier wird gelesen.
+4. **Prüffragen** zu genau dem, was gerade stand, mit sofortiger Auflösung.
+5. **„Das nimmst du mit"** — zwei bis drei Kernsätze.
+
+42 Lektionen zu je fünf Minuten, zwei pro Thema. Die Leitner-Wiederholung
+läuft für die Fragen im Hintergrund weiter — sie wird im Wissen nur nirgends
+angezeigt.
+
+Entsprechend gibt es dort **keine Karteikarten, kein Zuordnen, kein Wort
+bauen**: Das sind Vokabelwerkzeuge. Es bleiben Lektion und Quiz. Und der
+Tagesstoff aus dem Netz steht jetzt dort, wo er hingehört — auf der
+Wissens-Startseite statt in einem eigenen Bereich. Unten sind es dadurch drei
+Bereiche statt vier.
+
 ## Wissen neben Sprache
 
 Neben rund 800 arabischen Wörtern stecken jetzt **301 Wissenskarten** in der

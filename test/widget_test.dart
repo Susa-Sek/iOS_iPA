@@ -47,16 +47,15 @@ void main() {
     await tester.pumpWidget(const TaeglichKluegerApp());
     await tester.pumpAndSettle();
 
-    // Die vier Bereiche unten …
+    // Die drei Bereiche unten …
     expect(find.text('Lernen'), findsWidgets);
     expect(find.text('Üben'), findsWidgets);
     expect(find.text('Erfolge'), findsWidgets);
-    expect(find.text('Heute'), findsWidgets);
 
-    // … und auf "Lernen" der Tag und der Fortschritt. „Heute" steht seit dem
-    // vierten Bereich zweimal auf dem Bildschirm: als Überschrift der
-    // Tageskarte und als Beschriftung unten.
-    expect(find.text('Heute'), findsNWidgets(2));
+    // … und auf „Lernen" der Tag und der Fortschritt. „Heute" steht genau
+    // einmal da — als Überschrift der Tageskarte. Der gleichnamige Bereich
+    // unten ist ins Fach Wissen gewandert, wo der Tagesstoff hingehört.
+    expect(find.text('Heute'), findsOneWidget);
     expect(find.text('Level 1'), findsOneWidget);
     expect(find.text('0 Punkte'), findsOneWidget);
 

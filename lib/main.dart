@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import 'data/content_registry.dart';
+import 'data/knowledge/knowledge_data.dart';
 import 'screens/app_shell.dart';
 import 'theme/app_theme.dart';
 import 'state/custom_cards.dart';
 import 'state/daily_feed.dart';
 import 'state/learning_state.dart';
+import 'state/lesson_store.dart';
 import 'state/reminders.dart';
 import 'state/speech.dart';
 import 'widgets/speak_button.dart';
@@ -35,6 +37,7 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
   final Speaker _speaker = Speaker();
   final ReminderService _reminders = ReminderService();
   final DailyFeedService _feed = DailyFeedService();
+  final LessonStore _lessons = LessonStore();
 
   @override
   void initState() {
@@ -50,6 +53,10 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
     // Der Tagesinhalt wird nur aus dem Speicher gelesen; geholt wird er erst,
     // wenn jemand den Bereich „Heute" öffnet.
     _feed.load();
+    // Die Abzeichen fürs Wissen zählen Lektionen; der Lernkern erfährt den
+    // Stand, statt den Speicher zu kennen.
+    _lessons.addListener(_meldeLektionen);
+    _lessons.load().then((_) => _meldeLektionen());
     _setUpReminders();
   }
 
@@ -66,11 +73,18 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
     );
   }
 
+  void _meldeLektionen() => _state.reportLessons(
+        done: _lessons.doneCount,
+        topicsUnderstood: _lessons.understoodIn(kKnowledgeCategories),
+      );
+
   @override
   void dispose() {
+    _lessons.removeListener(_meldeLektionen);
     _cards.removeListener(_state.contentChanged);
     _cards.dispose();
     _feed.dispose();
+    _lessons.dispose();
     _state.dispose();
     _speaker.dispose();
     _reminders.dispose();
@@ -83,7 +97,9 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
       state: _state,
       child: CustomCardScope(
         store: _cards,
-        child: DailyFeedScope(
+        child: LessonScope(
+          store: _lessons,
+          child: DailyFeedScope(
           service: _feed,
           child: SpeechScope(
             speaker: _speaker,
@@ -98,6 +114,7 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
               ),
             ),
           ),
+        ),
         ),
       ),
     );

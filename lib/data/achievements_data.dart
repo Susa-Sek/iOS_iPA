@@ -100,6 +100,43 @@ const List<Achievement> kAchievements = <Achievement>[
     target: 400,
     progress: _learned,
   ),
+
+  // ---- Wissen -----------------------------------------------------------
+  //
+  // Eigene Abzeichen, weil dort anders gelernt wird. Ein Wort ist gelernt
+  // oder nicht; ein Thema ist verstanden, wenn man es durchgearbeitet hat.
+  Achievement(
+    id: 'erste_lektion',
+    name: 'Erste Lektion',
+    description: 'Eine Lektion durchgearbeitet',
+    icon: Icons.menu_book_outlined,
+    target: 1,
+    progress: _lessons,
+  ),
+  Achievement(
+    id: 'thema_verstanden',
+    name: 'Verstanden',
+    description: 'Ein Thema ganz durchgearbeitet',
+    icon: Icons.psychology_outlined,
+    target: 1,
+    progress: _topics,
+  ),
+  Achievement(
+    id: 'zehn_lektionen',
+    name: 'Belesen',
+    description: '10 Lektionen durchgearbeitet',
+    icon: Icons.auto_stories_outlined,
+    target: 10,
+    progress: _lessons,
+  ),
+  Achievement(
+    id: 'fuenf_themen',
+    name: 'Weitgereist',
+    description: '5 Themen verstanden',
+    icon: Icons.explore_outlined,
+    target: 5,
+    progress: _topics,
+  ),
 ];
 
 int _learned(AchievementStats s) => s.learnedWords;
@@ -109,3 +146,5 @@ int _perfect(AchievementStats s) => s.perfectRounds;
 int _categories(AchievementStats s) => s.completedCategories;
 int _quran(AchievementStats s) => s.learnedQuranWords;
 int _level(AchievementStats s) => s.level;
+int _lessons(AchievementStats s) => s.lessonsDone;
+int _topics(AchievementStats s) => s.topicsUnderstood;

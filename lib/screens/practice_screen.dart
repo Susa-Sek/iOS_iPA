@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../data/knowledge/lessons.dart';
+import '../models/subject.dart';
+import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
+import '../state/lesson_store.dart';
 import '../state/quiz_builder.dart';
 import '../state/speech.dart';
 import '../theme/app_theme.dart';
@@ -11,6 +15,7 @@ import 'flashcard_screen.dart';
 import 'matching_screen.dart';
 import 'quiz_screen.dart';
 import 'quran_screen.dart';
+import 'lesson_screen.dart';
 import 'session_screen.dart';
 import 'typing_screen.dart';
 import 'verbs_screen.dart';
@@ -26,6 +31,9 @@ class PracticeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final LearningState state = LearningScope.of(context);
+    // Im Wissen wird gelesen, nicht gedrillt: Karteikarten, Zuordnen und
+    // Wort bauen sind Vokabelwerkzeuge und stehen dort nicht zur Wahl.
+    final bool sprache = state.subject == Subject.arabisch;
     final Speaker speaker = SpeechScope.of(context);
     final int due = state.dueCount;
 
@@ -42,22 +50,31 @@ class PracticeScreen extends StatelessWidget {
             const SizedBox(height: Insets.lg),
           ],
           const _SectionTitle('Übungen'),
-          _PracticeCard(
-            icon: Icons.play_arrow_rounded,
-            title: 'Kurzrunde',
-            subtitle: 'Mehrere Übungsarten, etwa zwei Minuten',
-            onTap: () => _open(context, const SessionScreen()),
-          ),
+          if (!sprache)
+            _PracticeCard(
+              icon: Icons.menu_book_outlined,
+              title: 'Lektion des Tages',
+              subtitle: 'Lesen, prüfen, mitnehmen — etwa fünf Minuten',
+              onTap: () => _lektion(context),
+            ),
+          if (sprache)
+            _PracticeCard(
+              icon: Icons.play_arrow_rounded,
+              title: 'Kurzrunde',
+              subtitle: 'Mehrere Übungsarten, etwa zwei Minuten',
+              onTap: () => _open(context, const SessionScreen()),
+            ),
           // Jede Übung ist eine Portion, kein Marathon: Fällige und schwache
           // Karten zuerst, dann ist Schluss. Wer mehr will, fängt neu an —
           // das ist der Unterschied zwischen „geschafft" und „abgebrochen".
-          _PracticeCard(
-            icon: Icons.style_outlined,
-            title: 'Karteikarten',
-            subtitle: '${state.dosePerRound} Karten für heute',
-            onTap: () => _open(
-                context, const FlashcardScreen(title: 'Tagesportion')),
-          ),
+          if (sprache)
+            _PracticeCard(
+              icon: Icons.style_outlined,
+              title: 'Karteikarten',
+              subtitle: '${state.dosePerRound} Karten für heute',
+              onTap: () => _open(
+                  context, const FlashcardScreen(title: 'Tagesportion')),
+            ),
           _PracticeCard(
             icon: Icons.quiz_outlined,
             title: 'Quiz',
@@ -65,20 +82,22 @@ class PracticeScreen extends StatelessWidget {
             onTap: () =>
                 _open(context, const QuizScreen(title: 'Tagesrunde')),
           ),
-          _PracticeCard(
-            icon: Icons.compare_arrows,
-            title: 'Zuordnen',
-            subtitle: 'Paare finden, gegen die Zeit im Kopf',
-            onTap: () =>
-                _open(context, const MatchingScreen(title: 'Tagesrunde')),
-          ),
-          _PracticeCard(
-            icon: Icons.grid_view,
-            title: 'Wort bauen',
-            subtitle: 'Das Wort aus seinen Buchstaben zusammensetzen',
-            onTap: () =>
-                _open(context, const BuildWordScreen(title: 'Tagesrunde')),
-          ),
+          if (sprache) ...<Widget>[
+            _PracticeCard(
+              icon: Icons.compare_arrows,
+              title: 'Zuordnen',
+              subtitle: 'Paare finden, gegen die Zeit im Kopf',
+              onTap: () =>
+                  _open(context, const MatchingScreen(title: 'Tagesrunde')),
+            ),
+            _PracticeCard(
+              icon: Icons.grid_view,
+              title: 'Wort bauen',
+              subtitle: 'Das Wort aus seinen Buchstaben zusammensetzen',
+              onTap: () =>
+                  _open(context, const BuildWordScreen(title: 'Tagesrunde')),
+            ),
+          ],
           _PracticeCard(
             icon: Icons.keyboard_alt_outlined,
             title: 'Tippen',
@@ -99,26 +118,28 @@ class PracticeScreen extends StatelessWidget {
                 ),
               ),
             ),
-          const SizedBox(height: Insets.xl),
-          const _SectionTitle('Nachschlagen'),
-          _PracticeCard(
-            icon: Icons.abc,
-            title: 'Alphabet & Zeichen',
-            subtitle: '28 Buchstaben und die Tashkīl-Zeichen',
-            onTap: () => _open(context, const AlphabetScreen()),
-          ),
-          _PracticeCard(
-            icon: Icons.table_chart_outlined,
-            title: 'Verben beugen',
-            subtitle: 'Acht Verben in allen Personen',
-            onTap: () => _open(context, const VerbsScreen()),
-          ),
-          _PracticeCard(
-            icon: Icons.menu_book_outlined,
-            title: 'Quran-Sprache',
-            subtitle: 'Kurze Suren, häufigste Wörter, Wurzeln',
-            onTap: () => _open(context, const QuranScreen()),
-          ),
+          if (sprache) ...<Widget>[
+            const SizedBox(height: Insets.xl),
+            const _SectionTitle('Nachschlagen'),
+            _PracticeCard(
+              icon: Icons.abc,
+              title: 'Alphabet & Zeichen',
+              subtitle: '28 Buchstaben und die Tashkīl-Zeichen',
+              onTap: () => _open(context, const AlphabetScreen()),
+            ),
+            _PracticeCard(
+              icon: Icons.table_chart_outlined,
+              title: 'Verben beugen',
+              subtitle: 'Acht Verben in allen Personen',
+              onTap: () => _open(context, const VerbsScreen()),
+            ),
+            _PracticeCard(
+              icon: Icons.menu_book_outlined,
+              title: 'Quran-Sprache',
+              subtitle: 'Kurze Suren, häufigste Wörter, Wurzeln',
+              onTap: () => _open(context, const QuranScreen()),
+            ),
+          ],
         ],
       ),
     );
@@ -128,6 +149,19 @@ class PracticeScreen extends StatelessWidget {
       Navigator.of(context).push(
         MaterialPageRoute<void>(builder: (_) => screen),
       );
+
+  /// Öffnet die Lektion, die als Nächstes dran ist.
+  static void _lektion(BuildContext context) {
+    final LearningState state = LearningScope.of(context);
+    final KnowledgeLesson? lesson = LessonScope.of(context).nextLesson(
+      <KnowledgeLesson>[
+        for (final CategoryGroup g in state.groups)
+          for (final VocabCategory c in g.categories) ...lessonsOf(c),
+      ],
+    );
+    if (lesson == null) return;
+    _open(context, LessonScreen(lesson: lesson));
+  }
 }
 
 class _SectionTitle extends StatelessWidget {
