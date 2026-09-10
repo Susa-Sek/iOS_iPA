@@ -6,6 +6,7 @@ import 'package:ipa_testing_github_action/data/vocabulary_data.dart';
 import 'package:ipa_testing_github_action/main.dart';
 import 'package:ipa_testing_github_action/models/vocabulary.dart';
 import 'package:ipa_testing_github_action/screens/quiz_screen.dart';
+import 'package:ipa_testing_github_action/state/learning_state.dart';
 import 'package:ipa_testing_github_action/widgets/word_tile.dart';
 
 void main() {
@@ -123,11 +124,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Zum Aufdecken tippen'), findsNothing);
 
-    // Rating a card moves on to the next one.
-    expect(find.text('Karte 1 von ${kAllEntries.length}'), findsOneWidget);
+    // Ohne ausgewähltes Thema ist der Stapel die Tagesportion, nicht der
+    // gesamte Bestand — sonst stünde hier „Karte 1 von 1102".
+    final int dose = LearningState().dosePerRound;
+    expect(find.text('Karte 1 von $dose'), findsOneWidget);
     await tester.tap(find.text('Kann ich'));
     await tester.pumpAndSettle();
-    expect(find.text('Karte 2 von ${kAllEntries.length}'), findsOneWidget);
+    expect(find.text('Karte 2 von $dose'), findsOneWidget);
   });
 
   testWidgets('Das Alphabet zeigt alle 28 Buchstaben',

@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:ipa_testing_github_action/data/content_registry.dart';
-import 'package:ipa_testing_github_action/data/vocabulary_data.dart';
 import 'package:ipa_testing_github_action/models/daily_item.dart';
 import 'package:ipa_testing_github_action/models/vocabulary.dart';
 import 'package:ipa_testing_github_action/state/custom_cards.dart';
@@ -101,14 +100,14 @@ void main() {
   });
 
   group('Registry mit gemerkten Karten', () {
-    test('reicht den arabischen Bestand unverändert durch', () async {
+    test('reicht den eingebauten Bestand unverändert durch', () async {
       final CustomCardStore store = CustomCardStore();
       await store.load();
       final ContentWithCustomCards content =
           ContentWithCustomCards(kDefaultContent, store);
 
-      expect(content.entries.length, kAllEntries.length);
-      expect(content.categories.length, kAllCategories.length);
+      expect(content.entries.length, kDefaultContent.entries.length);
+      expect(content.categories.length, kDefaultContent.categories.length);
       expect(content.groups.length, kDefaultContent.groups.length);
       // Ohne gemerkte Karten gibt es das Thema gar nicht.
       expect(content.categoryById(ContentWithCustomCards.customCategoryId),
@@ -121,7 +120,7 @@ void main() {
       final ContentWithCustomCards content =
           ContentWithCustomCards(kDefaultContent, store);
 
-      expect(content.entries.length, kAllEntries.length + 1);
+      expect(content.entries.length, kDefaultContent.entries.length + 1);
       expect(content.groups.length, kDefaultContent.groups.length + 1);
 
       final VocabCategory? thema =

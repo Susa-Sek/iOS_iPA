@@ -38,33 +38,36 @@ class PracticeScreen extends StatelessWidget {
             const SizedBox(height: Insets.lg),
           ],
           const _SectionTitle('Übungen'),
+          // Jede Übung ist eine Portion, kein Marathon: Fällige und schwache
+          // Karten zuerst, dann ist Schluss. Wer mehr will, fängt neu an —
+          // das ist der Unterschied zwischen „geschafft" und „abgebrochen".
           _PracticeCard(
             icon: Icons.style_outlined,
             title: 'Karteikarten',
-            subtitle: 'Aufdecken und selbst einschätzen',
+            subtitle: '${state.dosePerRound} Karten für heute',
             onTap: () => _open(
-                context, const FlashcardScreen(title: 'Alle Wörter')),
+                context, const FlashcardScreen(title: 'Tagesportion')),
           ),
           _PracticeCard(
             icon: Icons.quiz_outlined,
             title: 'Quiz',
-            subtitle: 'Vier Antworten, eine stimmt',
+            subtitle: '$kQuestionsPerRound Fragen, vier Antworten je Frage',
             onTap: () =>
-                _open(context, const QuizScreen(title: 'Alle Wörter')),
+                _open(context, const QuizScreen(title: 'Tagesrunde')),
           ),
           _PracticeCard(
             icon: Icons.compare_arrows,
             title: 'Zuordnen',
             subtitle: 'Paare finden, gegen die Zeit im Kopf',
             onTap: () =>
-                _open(context, const MatchingScreen(title: 'Alle Wörter')),
+                _open(context, const MatchingScreen(title: 'Tagesrunde')),
           ),
           _PracticeCard(
             icon: Icons.grid_view,
             title: 'Wort bauen',
             subtitle: 'Das Wort aus seinen Buchstaben zusammensetzen',
             onTap: () =>
-                _open(context, const BuildWordScreen(title: 'Alle Wörter')),
+                _open(context, const BuildWordScreen(title: 'Tagesrunde')),
           ),
           if (speaker.isAvailable)
             _PracticeCard(

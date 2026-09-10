@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:ipa_testing_github_action/data/content_registry.dart';
+import 'package:ipa_testing_github_action/data/knowledge/knowledge_data.dart';
 import 'package:ipa_testing_github_action/data/vocabulary_data.dart';
 import 'package:ipa_testing_github_action/models/vocabulary.dart';
 import 'package:ipa_testing_github_action/state/learning_state.dart';
@@ -43,12 +44,16 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues(<String, Object>{}));
 
   group('Registry', () {
-    test('die App-Registry liefert den arabischen Bestand', () {
+    test('die App-Registry führt Wortschatz und Wissen zusammen', () {
       const ContentRegistry content = AppContent();
-      expect(content.entries.length, kAllEntries.length);
-      expect(content.categories.length, kAllCategories.length);
+      expect(content.entries.length,
+          kAllEntries.length + kKnowledgeEntries.length);
+      expect(content.categories.length,
+          kAllCategories.length + kKnowledgeCategories.length);
       expect(content.groups, isNotEmpty);
+      // Aus beiden Fächern je ein Thema.
       expect(content.categoryById('allgemein'), isNotNull);
+      expect(content.categoryById('w_geografie'), isNotNull);
       expect(content.categoryById('gibtsnicht'), isNull);
     });
 

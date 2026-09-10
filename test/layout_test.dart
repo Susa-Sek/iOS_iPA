@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:ipa_testing_github_action/data/knowledge/knowledge_data.dart';
 import 'package:ipa_testing_github_action/data/vocabulary_data.dart';
 import 'package:ipa_testing_github_action/main.dart';
 import 'package:ipa_testing_github_action/models/vocabulary.dart';
@@ -234,6 +235,80 @@ void main() {
           then: (WidgetTester t) async {
         await t.drag(find.byType(ListView), const Offset(0, -400));
         await t.pumpAndSettle();
+      });
+    });
+  });
+
+  // ---- Wissenskarten ----------------------------------------------------
+  //
+  // Die Layouts sind für kurze Wörter gebaut. Wissenskarten bringen ganze
+  // Sätze mit — Frage, vier Antworten und eine Erklärung. Geprüft wird
+  // deshalb mit den längsten Texten, die im Bestand wirklich vorkommen, auf
+  // dem kleinsten Telefon und bei 150 Prozent Schrift.
+
+  group('Wissenskarten mit den längsten Texten', () {
+    List<VocabEntry> laengste() {
+      final List<VocabEntry> alle = List<VocabEntry>.of(kKnowledgeEntries)
+        ..sort((VocabEntry a, VocabEntry b) =>
+            (b.prompt.length + b.answer.length + (b.explanation?.length ?? 0))
+                .compareTo(a.prompt.length +
+                    a.answer.length +
+                    (a.explanation?.length ?? 0)));
+      return alle.take(12).toList();
+    }
+
+    testWidgets('Quiz auf 320 px', (WidgetTester tester) async {
+      await _withSize(tester, const Size(320, 568), () async {
+        await tester.pumpWidget(
+            _wrap(QuizScreen(entries: laengste(), title: 'Wissen')));
+        await tester.pumpAndSettle();
+        // Erst nach der Antwort erscheint die Erklärung — der Zustand, in
+        // dem am meisten Text auf einmal steht.
+        await tester.tap(find.byType(OutlinedButton).first);
+        await tester.pumpAndSettle();
+      });
+    });
+
+    testWidgets('Quiz bei 150 Prozent Schrift', (WidgetTester tester) async {
+      await _withSize(tester, const Size(320, 568), () async {
+        await tester.pumpWidget(
+            wrapScreenScaled(QuizScreen(entries: laengste(), title: 'Wissen')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byType(OutlinedButton).first);
+        await tester.pumpAndSettle();
+      });
+    });
+
+    testWidgets('Karteikarten auf 320 px', (WidgetTester tester) async {
+      await _withSize(tester, const Size(320, 568), () async {
+        await tester.pumpWidget(
+            _wrap(FlashcardScreen(entries: laengste(), title: 'Wissen')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Zum Aufdecken tippen'));
+        await tester.pumpAndSettle();
+      });
+    });
+
+    testWidgets('Karteikarten bei 150 Prozent Schrift',
+        (WidgetTester tester) async {
+      await _withSize(tester, const Size(320, 568), () async {
+        await tester.pumpWidget(wrapScreenScaled(
+            FlashcardScreen(entries: laengste(), title: 'Wissen')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Zum Aufdecken tippen'));
+        await tester.pumpAndSettle();
+      });
+    });
+
+    testWidgets('Thema mit Wissenskarten', (WidgetTester tester) async {
+      await _withSize(tester, const Size(320, 568), () async {
+        await tester.pumpWidget(
+            _wrap(CategoryScreen(category: kKnowledgeCategories.first)));
+        await tester.pumpAndSettle();
+        // Der Bildschirm hat oben eine waagerechte Leiste und darunter die
+        // eigentliche Liste — gemeint ist die letzte.
+        await tester.drag(find.byType(ListView).last, const Offset(0, -400));
+        await tester.pumpAndSettle();
       });
     });
   });

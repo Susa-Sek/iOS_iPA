@@ -35,10 +35,16 @@ const VocabCategory _wissen = VocabCategory(
     ),
     VocabEntry.fact('Inflation', 'Anhaltender Anstieg des Preisniveaus',
         explanation: 'Für dasselbe Geld bekommt man weniger.'),
+    // Jeder Eintrag trägt eine Erklärung — wie im echten Bestand, den
+    // `knowledge_data_test.dart` genau darauf prüft. Sonst hinge der Test
+    // unten davon ab, welche Karte die Runde zufällig zuerst zeigt.
     VocabEntry.fact('Photosynthese',
-        'Umwandlung von Licht in chemische Energie in Pflanzen'),
-    VocabEntry.fact('Demokratie', 'Herrschaft, die vom Volk ausgeht'),
-    VocabEntry.fact('Algorithmus', 'Eindeutige Folge von Anweisungen'),
+        'Umwandlung von Licht in chemische Energie in Pflanzen',
+        explanation: 'Dabei entsteht Sauerstoff.'),
+    VocabEntry.fact('Demokratie', 'Herrschaft, die vom Volk ausgeht',
+        explanation: 'Von griechisch dēmos, das Volk.'),
+    VocabEntry.fact('Algorithmus', 'Eindeutige Folge von Anweisungen',
+        explanation: 'Ein Kochrezept ist einer.'),
   ],
 );
 

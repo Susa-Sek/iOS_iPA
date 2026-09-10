@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/vocabulary.dart';
 import '../state/custom_cards.dart';
 import 'curriculum.dart';
+import 'knowledge/knowledge_data.dart';
 import 'quran_vocab.dart';
 import 'vocabulary_data.dart';
 
@@ -35,13 +36,16 @@ class AppContent implements ContentRegistry {
   const AppContent();
 
   @override
-  List<VocabCategory> get categories => kAllCategories;
+  List<VocabCategory> get categories =>
+      <VocabCategory>[...kAllCategories, ...kKnowledgeCategories];
 
   @override
-  List<VocabEntry> get entries => kAllEntries;
+  List<VocabEntry> get entries =>
+      <VocabEntry>[...kAllEntries, ...kKnowledgeEntries];
 
   @override
-  List<CategoryGroup> get groups => kGroups;
+  List<CategoryGroup> get groups =>
+      <CategoryGroup>[...kGroups, ...kKnowledgeGroups];
 
   @override
   VocabCategory? categoryById(String id) {

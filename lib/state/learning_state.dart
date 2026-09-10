@@ -281,6 +281,25 @@ class LearningState extends ChangeNotifier {
 
   int dueInGroup(CategoryGroup group) => dueEntries(group.entries).length;
 
+  /// Wie viele Karten eine Tagesportion umfasst.
+  ///
+  /// Alle 1.100 Karten am Stück durchzugehen, schafft niemand — und wer es
+  /// versucht, hört nach drei Tagen auf. Die Portion wächst mit dem
+  /// Tagesziel: Wer sich mehr vornimmt, bekommt mehr.
+  int get dosePerRound => (_dailyGoal * 2).clamp(10, 40);
+
+  /// Die Karten für heute: fällige zuerst, dann die schwächsten — und nicht
+  /// mehr, als in einer Sitzung zu schaffen ist.
+  List<VocabEntry> dailySelection({
+    List<VocabEntry>? pool,
+    int? size,
+    Random? random,
+  }) {
+    final List<VocabEntry> ordered =
+        trainingOrder(pool ?? _content.entries, random: random);
+    return ordered.take(min(size ?? dosePerRound, ordered.length)).toList();
+  }
+
   /// Training order: what is due comes first, then the weakest boxes,
   /// shuffled inside a group so a round never feels the same twice.
   List<VocabEntry> trainingOrder(List<VocabEntry> pool, {Random? random}) {

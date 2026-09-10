@@ -277,27 +277,31 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
           ),
           const SizedBox(height: 20),
+          // Antworten und Erklärung scrollen gemeinsam. Vorher stand die
+          // Erklärung fest unter der Liste — mit langen Wissensfragen und
+          // großer Schrift lief die Spalte dann unten über.
           Expanded(
             flex: 2,
-            child: ListView.separated(
-              itemCount: question.options.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
-              itemBuilder: (BuildContext context, int i) {
-                final String option = question.options[i];
-                return _AnswerButton(
-                  label: option,
-                  arabic: question.answersAreArabic,
-                  state: _stateFor(question, option),
-                  onTap: () => _answer(question, option),
-                );
-              },
-            ),
-          ),
-          RevealBox(
-            visible: _chosen != null && question.entry.explanation != null,
-            child: Padding(
-              padding: const EdgeInsets.only(top: Insets.md),
-              child: _Explanation(entry: question.entry),
+            child: ListView(
+              children: <Widget>[
+                for (int i = 0; i < question.options.length; i++) ...<Widget>[
+                  if (i > 0) const SizedBox(height: 10),
+                  _AnswerButton(
+                    label: question.options[i],
+                    arabic: question.answersAreArabic,
+                    state: _stateFor(question, question.options[i]),
+                    onTap: () => _answer(question, question.options[i]),
+                  ),
+                ],
+                RevealBox(
+                  visible:
+                      _chosen != null && question.entry.explanation != null,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: Insets.md),
+                    child: _Explanation(entry: question.entry),
+                  ),
+                ),
+              ],
             ),
           ),
           if (_chosen != null)

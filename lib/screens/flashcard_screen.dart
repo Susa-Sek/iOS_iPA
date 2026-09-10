@@ -22,7 +22,8 @@ class FlashcardScreen extends StatefulWidget {
     this.accentSoft,
   });
 
-  /// The words to train, or `null` for the whole vocabulary.
+  /// Die Wörter für diese Runde, oder `null` für die Tagesportion aus dem
+  /// gesamten Bestand.
   final List<VocabEntry>? entries;
   final String title;
   final Color? accent;
@@ -51,9 +52,13 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
 
   void _shuffle() {
     final LearningState state = LearningScope.of(context);
-    final List<VocabEntry> pool =
-        List<VocabEntry>.of(widget.entries ?? state.content.entries);
-    _cards = state.trainingOrder(pool, random: _random);
+    final List<VocabEntry>? chosen = widget.entries;
+    // Ein ausgewähltes Thema wird ganz durchgearbeitet; ohne Auswahl ist es
+    // die Tagesportion. Ein Stapel mit über tausend Karten ist keine Übung,
+    // sondern eine Drohung.
+    _cards = chosen != null
+        ? state.trainingOrder(List<VocabEntry>.of(chosen), random: _random)
+        : state.dailySelection(random: _random);
     _index = 0;
     _revealed = false;
   }

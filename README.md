@@ -44,6 +44,33 @@ Der Bereich lädt erst, wenn man ihn öffnet, und merkt sich den Stand für den
 Tag. Ohne Netz steht der letzte Stand mit seinem Datum da statt einer
 Fehlermeldung ins Leere — der Rest der App braucht kein Netz.
 
+## Wissen neben Sprache
+
+Neben rund 800 arabischen Wörtern stecken jetzt **301 Wissenskarten** in der
+App, in drei Fächern und 21 Themen:
+
+| Fach | Themen |
+| --- | --- |
+| **Allgemeinbildung** | Geografie, Geschichte, Naturwissenschaft, Körper & Medizin, Kunst & Literatur, Mathematik, Astronomie, Tiere & Pflanzen |
+| **Technik & Digitales** | Computer-Grundlagen, Internet & Netze, Datenschutz & Sicherheit, Künstliche Intelligenz, Alltagstechnik, Energie |
+| **Politik, Wirtschaft, Gesellschaft** | Staat & Verfassung, Wahlen & Parteien, Europa & Welt, Recht & Rechte, Wirtschaft & Geld, Arbeit & Soziales, Medien |
+
+Jede Karte ist entweder ein **Begriff** mit seiner Bedeutung oder eine **Frage
+mit vier Antworten** und einer Erklärung, die nach dem Antworten erscheint.
+
+**Regel für den festen Bestand: keine Frage, deren Antwort sich ändern kann.**
+Wer gerade Bundeskanzler ist, gehört in den Bereich „Heute" — nicht in eine
+Karte, die in drei Wochen wiederkommt.
+
+## Tagesportion statt Marathon
+
+Karteikarten und Quiz zeigen nicht den ganzen Bestand, sondern eine Portion:
+fällige und schwache Karten zuerst, dann ist Schluss. Die Portion wächst mit
+dem Tagesziel — wer sich mehr vornimmt, bekommt mehr. Ein Stapel mit über
+tausend Karten ist keine Übung, sondern eine Drohung; wer ihn einmal sieht,
+fängt gar nicht erst an. Ein ausgewähltes Thema wird weiterhin ganz
+durchgearbeitet.
+
 ## Übungen
 
 | Übung | Was man macht |
