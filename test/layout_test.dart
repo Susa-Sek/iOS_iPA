@@ -17,7 +17,6 @@ import 'package:ipa_testing_github_action/screens/roots_screen.dart';
 import 'package:ipa_testing_github_action/screens/sura_screen.dart';
 import 'package:ipa_testing_github_action/screens/verbs_screen.dart';
 import 'package:ipa_testing_github_action/screens/search_screen.dart';
-import 'package:ipa_testing_github_action/state/learning_state.dart';
 
 import 'helpers.dart';
 
