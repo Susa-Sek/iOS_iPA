@@ -426,10 +426,14 @@ const List<VocabCategory> kAllgemeinbildung = <VocabCategory>[
           explanation: 'Deshalb sind 1024 Byte ein Kibibyte.'),
       _K.fact('Durchschnitt', 'Summe geteilt durch Anzahl',
           explanation: 'Auch arithmetisches Mittel genannt.'),
-      _K.question('Welche Zahl ist weder Primzahl noch zusammengesetzt?', '1',
-          distractors: <String>['0', '2', '−1'],
-          explanation: 'Die 1 hat nur einen Teiler und fällt damit aus beiden '
-              'Gruppen.'),
+      _K.question('Wie viele Teiler hat eine Primzahl?', 'Genau zwei',
+          distractors: <String>[
+            'Genau einen',
+            'Genau drei',
+            'Beliebig viele'
+          ],
+          explanation: '1 und sich selbst — deshalb ist die 1 keine '
+              'Primzahl.'),
     ],
   ),
   VocabCategory(

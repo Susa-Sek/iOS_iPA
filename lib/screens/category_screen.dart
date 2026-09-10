@@ -4,6 +4,7 @@ import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
 import '../widgets/word_tile.dart';
 import 'build_word_screen.dart';
+import 'typing_screen.dart';
 import 'flashcard_screen.dart';
 import 'matching_screen.dart';
 import 'quiz_screen.dart';
@@ -84,17 +85,31 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     ),
                   ),
                 ),
-                _ExerciseChip(
-                  icon: Icons.grid_view,
-                  label: 'Wort bauen',
-                  onTap: () => _open(
-                    BuildWordScreen(
-                      entries: widget.category.entries,
-                      title: widget.category.name,
-                      accent: widget.category.color,
+                if (widget.category.entries.any(TypingScreen.isSuitable))
+                  _ExerciseChip(
+                    icon: Icons.keyboard_alt_outlined,
+                    label: 'Tippen',
+                    onTap: () => _open(
+                      TypingScreen(
+                        entries: widget.category.entries,
+                        title: widget.category.name,
+                      ),
                     ),
                   ),
-                ),
+                // „Wort bauen" setzt arabische Buchstaben voraus — bei einem
+                // Wissensthema gäbe es nichts zu bauen.
+                if (widget.category.entries.any(BuildWordScreen.isSuitable))
+                  _ExerciseChip(
+                    icon: Icons.grid_view,
+                    label: 'Wort bauen',
+                    onTap: () => _open(
+                      BuildWordScreen(
+                        entries: widget.category.entries,
+                        title: widget.category.name,
+                        accent: widget.category.color,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

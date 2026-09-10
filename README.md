@@ -79,6 +79,21 @@ mit vier Antworten** und einer Erklärung, die nach dem Antworten erscheint.
 Wer gerade Bundeskanzler ist, gehört in den Bereich „Heute" — nicht in eine
 Karte, die in drei Wochen wiederkommt.
 
+## Tippen
+
+Die härteste der Übungen: Die Antwort wird selbst geschrieben, statt aus
+vieren gewählt. Bei vier Antworten erkennt man oft wieder, was man nicht
+abrufen könnte.
+
+Getippt wird immer die **deutsche** Seite — ein arabisches Wort lässt sich auf
+einer deutschen Tastatur nicht eingeben. Verglichen wird nachsichtig: Groß-
+und Kleinschreibung, Umlautpunkte, Satzzeichen und ein vorangestellter Artikel
+entscheiden nichts, und ein Tippfehler in einem längeren Wort zählt als
+gewusst („Fast — so wird es geschrieben"). **Nachsicht endet aber dort, wo
+eine falsche Antwort durchginge:** „Totes Meer" ist von „Rotes Meer" nur einen
+Buchstaben entfernt und trotzdem ein anderes Meer. Liegt die Eingabe genauso
+nah an einem Ablenker wie an der Antwort, zählt sie nicht.
+
 ## Tagesportion statt Marathon
 
 Karteikarten und Quiz zeigen nicht den ganzen Bestand, sondern eine Portion:

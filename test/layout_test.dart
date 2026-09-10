@@ -274,6 +274,15 @@ void main() {
         await tester.pumpWidget(
             wrapScreenScaled(QuizScreen(entries: laengste(), title: 'Wissen')));
         await tester.pumpAndSettle();
+        // Bei dieser Schriftgröße füllt die Frage allein den Bildschirm; die
+        // Antworten stehen darunter. Die Liste scrollt — genau darum geht es.
+        // Ohne .first: Ein leerer .first-Finder wirft, statt „noch nicht
+        // da" zu melden — und genau darauf wartet dragUntilVisible.
+        await tester.dragUntilVisible(
+          find.byType(OutlinedButton),
+          find.byKey(QuizScreen.bodyKey),
+          const Offset(0, -80),
+        );
         await tester.tap(find.byType(OutlinedButton).first);
         await tester.pumpAndSettle();
       });

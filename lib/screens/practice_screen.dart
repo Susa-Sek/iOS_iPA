@@ -11,6 +11,7 @@ import 'flashcard_screen.dart';
 import 'matching_screen.dart';
 import 'quiz_screen.dart';
 import 'quran_screen.dart';
+import 'typing_screen.dart';
 import 'verbs_screen.dart';
 
 /// „Üben": alle Übungen und alles zum Nachschlagen, jeweils mit einem Satz,
@@ -68,6 +69,13 @@ class PracticeScreen extends StatelessWidget {
             subtitle: 'Das Wort aus seinen Buchstaben zusammensetzen',
             onTap: () =>
                 _open(context, const BuildWordScreen(title: 'Tagesrunde')),
+          ),
+          _PracticeCard(
+            icon: Icons.keyboard_alt_outlined,
+            title: 'Tippen',
+            subtitle: 'Die Antwort selbst schreiben — die härteste Übung',
+            onTap: () =>
+                _open(context, const TypingScreen(title: 'Tagesrunde')),
           ),
           if (speaker.isAvailable)
             _PracticeCard(

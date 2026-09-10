@@ -4,6 +4,7 @@ import 'package:ipa_testing_github_action/data/content_registry.dart';
 import 'package:ipa_testing_github_action/data/knowledge/knowledge_data.dart';
 import 'package:ipa_testing_github_action/data/vocabulary_data.dart';
 import 'package:ipa_testing_github_action/models/vocabulary.dart';
+import 'package:ipa_testing_github_action/state/typing_check.dart';
 
 /// Ein arabischer Buchstabe. In den Wissensdaten darf keiner vorkommen —
 /// das Gegenstück zu `vocabulary_data_test.dart`, das für `kAllEntries`
@@ -60,6 +61,20 @@ void main() {
             reason: 'doppelter Ablenker bei „${entry.german}"');
         for (final String ablenker in entry.distractors) {
           expect(ablenker.trim(), isNotEmpty, reason: entry.german);
+        }
+      }
+    });
+
+    test('kein Ablenker fällt mit der Antwort zusammen', () {
+      // Beim Tippen wird nachsichtig verglichen: ohne Groß- und
+      // Kleinschreibung, ohne Satzzeichen, ohne Umlautpunkte. Zwei Antworten,
+      // die sich nur darin unterscheiden, wären danach dieselbe — und der
+      // Ablenker ginge als richtig durch.
+      for (final VocabEntry entry in kKnowledgeEntries) {
+        final String antwort = normalizeAnswer(entry.answer);
+        for (final String ablenker in entry.distractors) {
+          expect(normalizeAnswer(ablenker), isNot(antwort),
+              reason: '„$ablenker" bei „${entry.german}"');
         }
       }
     });

@@ -28,12 +28,20 @@ class QuizScreen extends StatefulWidget {
 
   static const int questionsPerRound = kQuestionsPerRound;
 
+  /// Der scrollbare Körper einer Frage — benannt, damit Tests eindeutig
+  /// diese Liste scrollen können.
+  static const Key bodyKey = Key('quiz-body');
+
   @override
   State<QuizScreen> createState() => _QuizScreenState();
 }
 
 class _QuizScreenState extends State<QuizScreen> {
   final Random _random = Random();
+
+  /// Für die Antwortliste, damit die Erklärung nach dem Antworten von selbst
+  /// in den Blick rückt.
+  final ScrollController _answers = ScrollController();
 
   late List<VocabEntry> _pool;
   late QuizDirection _direction;
@@ -70,6 +78,12 @@ class _QuizScreenState extends State<QuizScreen> {
     _chosen = null;
   }
 
+  @override
+  void dispose() {
+    _answers.dispose();
+    super.dispose();
+  }
+
   void _answer(QuizQuestion question, String option) {
     if (_chosen != null) return;
     final bool correct = question.isCorrect(option);
@@ -83,6 +97,7 @@ class _QuizScreenState extends State<QuizScreen> {
       state.demote(question.entry);
     }
     setState(() => _chosen = option);
+    _showExplanation();
 
     // Letzte Frage richtig und keine einzige daneben: perfekte Runde.
     if (_index == _questions.length - 1 &&
@@ -92,11 +107,35 @@ class _QuizScreenState extends State<QuizScreen> {
     }
   }
 
+  /// Die Erklärung steht unter den vier Antworten. Auf einem kleinen
+  /// Telefon liegt sie damit unter dem Rand — wer sie erst suchen muss,
+  /// liest sie nicht. Also rückt sie selbst in den Blick.
+  void _showExplanation() {
+    if (_questions[_index].entry.explanation == null) return;
+    // Zwei Durchgänge: Der erste rückt so weit, wie die Liste gebaut ist,
+    // der zweite trifft das Ende, das dabei erst entstanden ist.
+    void rutschen(int uebrig) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Wer inzwischen weitergeblättert hat, will nicht, dass ein
+        // nachlaufender Ruck die neue Frage aus dem Bild schiebt.
+        if (!mounted || _chosen == null || !_answers.hasClients) return;
+        final double ziel = _answers.position.maxScrollExtent;
+        if (_answers.offset >= ziel) return;
+        _answers.animateTo(ziel,
+            duration: Motion.normal, curve: Motion.enter);
+        if (uebrig > 0) rutschen(uebrig - 1);
+      });
+    }
+
+    rutschen(2);
+  }
+
   void _next() {
     setState(() {
       _chosen = null;
       _index++;
     });
+    if (_answers.hasClients) _answers.jumpTo(0);
     _speakIfListening();
   }
 
@@ -191,19 +230,22 @@ class _QuizScreenState extends State<QuizScreen> {
 
     final QuizQuestion question = _questions[_index];
 
-    return Padding(
+    // Alles in einer Liste statt in einer Spalte aus festen und dehnbaren
+    // Teilen. Wissensfragen bringen ganze Sätze mit; jede feste Aufteilung
+    // läuft irgendwann über oder schneidet die Erklärung ab.
+    return ListView(
+      // Benannt, damit Tests eindeutig diese Liste scrollen können.
+      key: QuizScreen.bodyKey,
+      controller: _answers,
       padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
+      children: <Widget>[
           Text(
             'Frage ${_index + 1} von ${_questions.length}',
             style: theme.textTheme.labelLarge,
           ),
           const SizedBox(height: 16),
-          Flexible(
-            child: Card(
-            child: SingleChildScrollView(
+          Card(
+            child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
               child: Column(
                 children: <Widget>[
@@ -274,34 +316,22 @@ class _QuizScreenState extends State<QuizScreen> {
                 ],
               ),
             ),
-            ),
           ),
           const SizedBox(height: 20),
-          // Antworten und Erklärung scrollen gemeinsam. Vorher stand die
-          // Erklärung fest unter der Liste — mit langen Wissensfragen und
-          // großer Schrift lief die Spalte dann unten über.
-          Expanded(
-            flex: 2,
-            child: ListView(
-              children: <Widget>[
-                for (int i = 0; i < question.options.length; i++) ...<Widget>[
-                  if (i > 0) const SizedBox(height: 10),
-                  _AnswerButton(
-                    label: question.options[i],
-                    arabic: question.answersAreArabic,
-                    state: _stateFor(question, question.options[i]),
-                    onTap: () => _answer(question, question.options[i]),
-                  ),
-                ],
-                RevealBox(
-                  visible:
-                      _chosen != null && question.entry.explanation != null,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: Insets.md),
-                    child: _Explanation(entry: question.entry),
-                  ),
-                ),
-              ],
+          for (int i = 0; i < question.options.length; i++) ...<Widget>[
+            if (i > 0) const SizedBox(height: 10),
+            _AnswerButton(
+              label: question.options[i],
+              arabic: question.answersAreArabic,
+              state: _stateFor(question, question.options[i]),
+              onTap: () => _answer(question, question.options[i]),
+            ),
+          ],
+          RevealBox(
+            visible: _chosen != null && question.entry.explanation != null,
+            child: Padding(
+              padding: const EdgeInsets.only(top: Insets.md),
+              child: _Explanation(entry: question.entry),
             ),
           ),
           if (_chosen != null)
@@ -314,8 +344,7 @@ class _QuizScreenState extends State<QuizScreen> {
                     : 'Weiter'),
               ),
             ),
-        ],
-      ),
+      ],
     );
   }
 
