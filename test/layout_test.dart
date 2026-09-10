@@ -45,6 +45,29 @@ Future<void> _withSize(
 
 Widget _wrap(Widget child) => wrapScreen(child);
 
+/// Tippt die erste Antwort im Quiz an — und scrollt vorher hin.
+///
+/// Der Quizbildschirm ist eine Liste; bei großer Schrift auf kleinen
+/// Telefonen füllt die Frage allein das Bild, und die Antworten stehen
+/// darunter.
+///
+/// Von Hand statt mit `dragUntilVisible`: Das ruft am Ende `element(finder)`
+/// auf und verlangt damit **genau einen** Treffer — es gibt aber vier
+/// Antwortknöpfe. Und `.first` als Ziel scheidet aus, weil ein leerer
+/// `.first`-Finder wirft, statt „noch nicht da" zu melden.
+Future<void> _tapErsteAntwort(WidgetTester tester) async {
+  final Finder antworten = find.byType(OutlinedButton);
+  for (int i = 0; antworten.evaluate().isEmpty && i < 20; i++) {
+    await tester.drag(
+        find.byKey(QuizScreen.bodyKey), const Offset(0, -80));
+    await tester.pump();
+  }
+  await tester.ensureVisible(antworten.first);
+  await tester.pumpAndSettle();
+  await tester.tap(antworten.first);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   final VocabCategory category = kCategories.first;
 
@@ -84,8 +107,7 @@ void main() {
             QuizScreen(entries: category.entries, title: category.name),
           ));
           await tester.pumpAndSettle();
-          await tester.tap(find.byType(OutlinedButton).first);
-          await tester.pumpAndSettle();
+          await _tapErsteAntwort(tester);
         });
       });
 
@@ -210,10 +232,7 @@ void main() {
       await check(
         tester,
         QuizScreen(entries: category.entries, title: category.name),
-        then: (WidgetTester t) async {
-          await t.tap(find.byType(OutlinedButton).first);
-          await t.pumpAndSettle();
-        },
+        then: _tapErsteAntwort,
       );
     });
 
@@ -264,8 +283,7 @@ void main() {
         await tester.pumpAndSettle();
         // Erst nach der Antwort erscheint die Erklärung — der Zustand, in
         // dem am meisten Text auf einmal steht.
-        await tester.tap(find.byType(OutlinedButton).first);
-        await tester.pumpAndSettle();
+        await _tapErsteAntwort(tester);
       });
     });
 
@@ -274,17 +292,7 @@ void main() {
         await tester.pumpWidget(
             wrapScreenScaled(QuizScreen(entries: laengste(), title: 'Wissen')));
         await tester.pumpAndSettle();
-        // Bei dieser Schriftgröße füllt die Frage allein den Bildschirm; die
-        // Antworten stehen darunter. Die Liste scrollt — genau darum geht es.
-        // Ohne .first: Ein leerer .first-Finder wirft, statt „noch nicht
-        // da" zu melden — und genau darauf wartet dragUntilVisible.
-        await tester.dragUntilVisible(
-          find.byType(OutlinedButton),
-          find.byKey(QuizScreen.bodyKey),
-          const Offset(0, -80),
-        );
-        await tester.tap(find.byType(OutlinedButton).first);
-        await tester.pumpAndSettle();
+        await _tapErsteAntwort(tester);
       });
     });
 

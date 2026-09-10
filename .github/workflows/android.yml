@@ -26,6 +26,33 @@ jobs:
 
       - run: flutter pub get
 
+      # Der Signaturschlüssel kommt aus Secrets und darf fehlen: Ohne ihn
+      # baut Gradle mit dem Debug-Schlüssel weiter. Ein Fork oder ein frisch
+      # geklontes Repository soll bauen können, ohne dass jemand Geheimnisse
+      # hinterlegt hat.
+      - name: Signaturschlüssel einrichten (falls hinterlegt)
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        # Die Prüfung steht in der Shell und nicht in einem if: Der
+        # secrets-Kontext ist auf Schritt-Ebene nicht verfügbar.
+        run: |
+          set -eu
+          if [ -z "${KEYSTORE:-}" ]; then
+            echo "Kein Schlüssel hinterlegt — es wird mit dem Debug-Schlüssel gebaut."
+            exit 0
+          fi
+          echo "$KEYSTORE" | base64 --decode > android/upload.jks
+          {
+            echo "storeFile=upload.jks"
+            echo "storePassword=$STORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > android/key.properties
+          echo "Mit eigenem Schlüssel signieren."
+
       - name: Analyse
         run: flutter analyze
 
@@ -41,11 +68,16 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: arabisch-lernen-apk
+          name: taeglich-klueger-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
       - name: Upload App Bundle
         uses: actions/upload-artifact@v4
         with:
-          name: arabisch-lernen-aab
+          name: taeglich-klueger-aab
           path: build/app/outputs/bundle/release/app-release.aab
+
+      # Der Schlüssel hat auf dem Läufer nichts verloren, sobald gebaut ist.
+      - name: Signaturschlüssel entfernen
+        if: always()
+        run: rm -f android/upload.jks android/key.properties

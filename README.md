@@ -270,6 +270,59 @@ ohne sie vollständig funktionieren — der Feed ist Beiwerk, nicht Fundament.
 Getestet wird er gegen abgelegte echte Antworten unter `test/data/`, nicht
 gegen das Netz.
 
+## Eigenen Signaturschlüssel benutzen
+
+Ohne eigenen Schlüssel wird das Release-APK mit dem **Debug-Schlüssel**
+signiert. Es lässt sich installieren, aber **nicht** in den Play Store laden —
+und ein Update, das ein anderer Rechner baut, gilt als andere App.
+
+Einen eigenen Schlüssel erzeugt nur der Besitzer, niemand sonst:
+
+```bash
+keytool -genkey -v -keystore ~/upload.jks -keyalg RSA -keysize 2048 \
+        -validity 10000 -alias upload
+```
+
+Dann `android/key.properties` anlegen — die Datei steht in `.gitignore` und
+gehört nie ins Repository:
+
+```properties
+storeFile=/absoluter/pfad/upload.jks
+storePassword=…
+keyAlias=upload
+keyPassword=…
+```
+
+Ist die Datei da, signiert `flutter build apk --release` damit; fehlt sie,
+läuft der Bau unverändert mit dem Debug-Schlüssel weiter. Beide Wege sind
+geprüft: einmal ohne Datei, einmal mit einem Wegwerfschlüssel, dessen Zertifikat
+danach im APK stand.
+
+Für GitHub Actions dieselben Werte als Secrets hinterlegen —
+`ANDROID_KEYSTORE_BASE64` (`base64 -w0 upload.jks`),
+`ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`.
+Fehlen sie, baut der Workflow ebenfalls weiter.
+
+**Den Schlüssel nie verlieren.** Ohne ihn lässt sich eine im Play Store
+veröffentlichte App nicht mehr aktualisieren.
+
+## Bewusst offen
+
+Ehrlicher als eine halbe Umsetzung:
+
+* **Beispielsätze auf Arabisch.** Rund 800 Sätze mit vollständigem Tashkīl zu
+  schreiben ist eine eigene Etappe, keine Beigabe — und ohne Quelle nicht so
+  prüfbar, wie es der Quran-Text ist. Wissenskarten tragen ihren Kontext
+  dagegen schon in der Erklärung.
+* **Schreibtrainer** (Buchstabenformen nachziehen). Bräuchte Zeichenfläche und
+  Erkennung; „Wort bauen" übt dieselbe Fertigkeit ohne Gestenerkennung.
+* **iOS.** Der Ordner steht weitgehend auf der Vorlage; Anzeigename und
+  Version sind gesetzt. Ob ein `.ipa` durchläuft, **kann ich ohne Mac nicht
+  nachprüfen** — der Workflow dafür liegt bereit, gebaut habe ich ihn nie.
+* **Gerätefragen.** Ob die Erinnerung abends wirklich ankommt, wie die
+  arabische Sprachausgabe klingt und ob die Tagesinhalte eintreffen, zeigt
+  erst das Telefon.
+
 ## Herkunft
 
 Das Repository geht auf ein Tutorial von

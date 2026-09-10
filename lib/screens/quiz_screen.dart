@@ -230,15 +230,19 @@ class _QuizScreenState extends State<QuizScreen> {
 
     final QuizQuestion question = _questions[_index];
 
-    // Alles in einer Liste statt in einer Spalte aus festen und dehnbaren
-    // Teilen. Wissensfragen bringen ganze Sätze mit; jede feste Aufteilung
-    // läuft irgendwann über oder schneidet die Erklärung ab.
-    return ListView(
-      // Benannt, damit Tests eindeutig diese Liste scrollen können.
-      key: QuizScreen.bodyKey,
-      controller: _answers,
-      padding: const EdgeInsets.all(20),
+    // Frage, Antworten und Erklärung scrollen gemeinsam; „Weiter" bleibt
+    // darunter stehen. Wissensfragen bringen ganze Sätze mit — läge der
+    // Knopf in der Liste, stünde er auf kleinen Telefonen unter dem Rand,
+    // und der wichtigste Griff der Übung wäre nicht zu erreichen.
+    return Column(
       children: <Widget>[
+        Expanded(
+          child: ListView(
+            // Benannt, damit Tests eindeutig diese Liste scrollen können.
+            key: QuizScreen.bodyKey,
+            controller: _answers,
+            padding: const EdgeInsets.all(20),
+            children: <Widget>[
           Text(
             'Frage ${_index + 1} von ${_questions.length}',
             style: theme.textTheme.labelLarge,
@@ -334,9 +338,14 @@ class _QuizScreenState extends State<QuizScreen> {
               child: _Explanation(entry: question.entry),
             ),
           ),
-          if (_chosen != null)
-            Padding(
-              padding: const EdgeInsets.only(top: Insets.md),
+            ],
+          ),
+        ),
+        if (_chosen != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: SizedBox(
+              width: double.infinity,
               child: FilledButton(
                 onPressed: _next,
                 child: Text(_index == _questions.length - 1
@@ -344,6 +353,7 @@ class _QuizScreenState extends State<QuizScreen> {
                     : 'Weiter'),
               ),
             ),
+          ),
       ],
     );
   }

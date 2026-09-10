@@ -1,8 +1,28 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// Der eigene Signaturschlüssel, falls es einen gibt.
+//
+// android/key.properties steht in .gitignore und liegt nur auf dem Rechner
+// des Besitzers; im Workflow kommen dieselben Werte aus Secrets. Fehlt beides,
+// wird weiter mit dem Debug-Schlüssel gebaut — sonst hätte ich den Bau für
+// jeden kaputtgemacht, der den Schlüssel nicht hat.
+val keyProperties = Properties().apply {
+    val datei = rootProject.file("key.properties")
+    if (datei.exists()) datei.inputStream().use { load(it) }
+}
+
+fun signaturWert(name: String, umgebung: String): String? =
+    keyProperties.getProperty(name) ?: System.getenv(umgebung)
+
+val keystoreDatei: String? = signaturWert("storeFile", "ANDROID_KEYSTORE_FILE")
+val hatEigenenSchluessel: Boolean =
+    keystoreDatei != null && rootProject.file(keystoreDatei).exists()
 
 android {
     namespace = "de.susasek.arabischlernen"
@@ -32,11 +52,30 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (hatEigenenSchluessel) {
+            create("release") {
+                storeFile = rootProject.file(keystoreDatei!!)
+                storePassword =
+                    signaturWert("storePassword", "ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = signaturWert("keyAlias", "ANDROID_KEY_ALIAS")
+                keyPassword =
+                    signaturWert("keyPassword", "ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Mit eigenem Schlüssel signieren, wenn einer da ist; sonst mit
+            // dem Debug-Schlüssel, damit der Bau überall durchläuft. Ein mit
+            // dem Debug-Schlüssel signiertes APK lässt sich installieren,
+            // aber nicht in den Play Store laden.
+            signingConfig = if (hatEigenenSchluessel) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
