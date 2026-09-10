@@ -1,11 +1,28 @@
-# Arabisch lernen 🇩🇪 ↔ 🇸🇦
+# Täglich Klüger
 
-Ein interaktiver Arabisch-Deutsch-Vokabeltrainer, gebaut mit Flutter — für
-Android und iOS aus demselben Code.
+Eine Lern-App auf Deutsch, gebaut mit Flutter — für Android und iOS aus
+demselben Code. Zwei Fächer unter einem Dach:
 
-Die App ist komplett auf Deutsch, zeigt jedes Wort in arabischer Schrift und
-mit Lautschrift und besteht nicht aus Listen zum Durchlesen, sondern aus
-Übungen zum Mitmachen.
+* **Arabisch**, vollständig vokalisiert, mit Alphabet, Verben und
+  Quran-Sprache — der ursprüngliche Kern der App.
+* **Allgemeinwissen** in drei Fächern: Allgemeinbildung, Technik & Digitales,
+  Politik/Wirtschaft/Gesellschaft.
+
+Dazu jeden Tag etwas Neues aus dem Netz im Bereich „Heute".
+
+Es ist bewusst **eine** App geblieben: Die Lernmechanik — Leitner-Termine,
+Punkte, Serie, Erinnerung — ist themenneutral. Zwei Apps würden sie
+duplizieren und die Tagesserie zerteilen, also genau das zerstören, was zum
+täglichen Lernen führt.
+
+> Der Paket- und Ordnername lautet weiterhin `de.susasek.arabischlernen`. Das
+> ist Absicht: Er ist kein Anzeigename, sondern die Identität der
+> Installation. Würde er sich ändern, gälte die App auf jedem Gerät als neu —
+> ohne Lernstand. `test/naming_test.dart` friert ihn und alle sechs
+> Speicher-Schlüssel ein.
+
+Die App besteht nicht aus Listen zum Durchlesen, sondern aus Übungen zum
+Mitmachen.
 
 **Alle 801 arabischen Wörter sind vollständig vokalisiert** — mit Fatḥa,
 Kasra, Ḍamma, Sukūn, Shadda und Tanwīn (شُكْرًا statt شكرا). Ohne diese

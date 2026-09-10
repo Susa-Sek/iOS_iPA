@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:ipa_testing_github_action/state/custom_cards.dart';
+import 'package:ipa_testing_github_action/state/daily_feed.dart';
 import 'package:ipa_testing_github_action/state/progress_store.dart';
 import 'package:ipa_testing_github_action/state/reminders.dart';
 import 'package:ipa_testing_github_action/state/speech.dart';
@@ -28,6 +32,56 @@ void main() {
       expect(ReminderService.enabledKey, 'arabisch_lernen.reminder.enabled');
       expect(ReminderService.hourKey, 'arabisch_lernen.reminder.hour');
       expect(ReminderService.minuteKey, 'arabisch_lernen.reminder.minute');
+    });
+
+    test('Tagesinhalte', () {
+      expect(DailyFeedService.cacheKey, 'arabisch_lernen.feed.v1');
+    });
+
+    test('gemerkte Karten', () {
+      // Dieser Schlüssel hält die selbst gemerkten Karten. Geht er verloren,
+      // sind sie weg — sie stehen nirgends sonst.
+      expect(CustomCardStore.storageKey, 'arabisch_lernen.cards.v1');
+    });
+  });
+
+  group('Paketname bleibt', () {
+    test('Android-Anwendungs-id', () {
+      // Steht in android/app/build.gradle.kts. Ein anderer Paketname heißt:
+      // Die App gilt als andere App, kein Update, kein Lernstand.
+      final String gradle =
+          File('android/app/build.gradle.kts').readAsStringSync();
+      expect(gradle, contains('de.susasek.arabischlernen'));
+    });
+
+    test('Dart-Paketname', () {
+      // Er steckt in jedem Import der Tests; ein anderer Name wäre eine
+      // Umbenennung quer durch das ganze Projekt ohne jeden Gewinn.
+      final String pubspec = File('pubspec.yaml').readAsStringSync();
+      expect(pubspec, contains('name: ipa_testing_github_action'));
+    });
+  });
+
+  group('Anzeigename ist der neue', () {
+    test('Android nimmt ihn aus strings.xml', () {
+      // Direkt im Manifest wäre er nicht lokalisierbar und je nach
+      // Werkzeugkette anfällig für die Umlaute.
+      final String manifest =
+          File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
+      expect(manifest, contains('android:label="@string/app_name"'));
+
+      final String strings =
+          File('android/app/src/main/res/values/strings.xml').readAsStringSync();
+      expect(strings, contains('Täglich Klüger'));
+    });
+
+    test('iOS und Web tragen denselben Namen', () {
+      expect(File('ios/Runner/Info.plist').readAsStringSync(),
+          contains('Täglich Klüger'));
+      expect(File('web/index.html').readAsStringSync(),
+          contains('Täglich Klüger'));
+      expect(File('web/manifest.json').readAsStringSync(),
+          contains('Täglich Klüger'));
     });
   });
 }

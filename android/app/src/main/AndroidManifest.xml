@@ -8,7 +8,7 @@
          sie nur in die debug- und profile-Manifeste. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="Arabisch lernen"
+        android:label="@string/app_name"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

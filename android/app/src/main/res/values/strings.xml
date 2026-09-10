@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Der Anzeigename unter dem Symbol. Er steht hier und nicht im
+         Manifest: So ist er lokalisierbar, und die Umlaute überstehen jede
+         Werkzeugkette. Der Paketname bleibt davon unberührt — er ist der
+         Schlüssel für Updates und Lernstand. -->
+    <string name="app_name">Täglich Klüger</string>
+</resources>

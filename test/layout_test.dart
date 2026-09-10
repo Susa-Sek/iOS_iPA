@@ -52,7 +52,7 @@ void main() {
     group('${size.width.toInt()}x${size.height.toInt()}', () {
       testWidgets('Startseite', (WidgetTester tester) async {
         await _withSize(tester, size, () async {
-          await tester.pumpWidget(const ArabischLernenApp());
+          await tester.pumpWidget(const TaeglichKluegerApp());
           await tester.pumpAndSettle();
           await tester.drag(
               find.byType(CustomScrollView), const Offset(0, -600));

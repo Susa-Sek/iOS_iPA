@@ -44,7 +44,7 @@ void main() {
 
   testWidgets('Startseite zeigt Fortschritt, Übungen und Themen',
       (WidgetTester tester) async {
-    await tester.pumpWidget(const ArabischLernenApp());
+    await tester.pumpWidget(const TaeglichKluegerApp());
     await tester.pumpAndSettle();
 
     // Die vier Bereiche unten …
@@ -66,7 +66,7 @@ void main() {
 
   testWidgets('Der Bereich Üben führt alle Übungen auf',
       (WidgetTester tester) async {
-    await tester.pumpWidget(const ArabischLernenApp());
+    await tester.pumpWidget(const TaeglichKluegerApp());
     await tester.pumpAndSettle();
     await openPractice(tester);
 
@@ -89,7 +89,7 @@ void main() {
 
   testWidgets('Der Bereich Erfolge zeigt Level und Abzeichen',
       (WidgetTester tester) async {
-    await tester.pumpWidget(const ArabischLernenApp());
+    await tester.pumpWidget(const TaeglichKluegerApp());
     await tester.pumpAndSettle();
     await tester.tap(find.text('Erfolge'));
     await tester.pumpAndSettle();
@@ -99,7 +99,7 @@ void main() {
   });
 
   testWidgets('Ein Thema öffnet seine Wortliste', (WidgetTester tester) async {
-    await tester.pumpWidget(const ArabischLernenApp());
+    await tester.pumpWidget(const TaeglichKluegerApp());
     await tester.pumpAndSettle();
 
     await scrollToCategories(tester);
@@ -113,7 +113,7 @@ void main() {
 
   testWidgets('Karteikarte deckt die Übersetzung auf',
       (WidgetTester tester) async {
-    await tester.pumpWidget(const ArabischLernenApp());
+    await tester.pumpWidget(const TaeglichKluegerApp());
     await tester.pumpAndSettle();
 
     await openPractice(tester);
@@ -135,7 +135,7 @@ void main() {
 
   testWidgets('Das Alphabet zeigt alle 28 Buchstaben',
       (WidgetTester tester) async {
-    await tester.pumpWidget(const ArabischLernenApp());
+    await tester.pumpWidget(const TaeglichKluegerApp());
     await tester.pumpAndSettle();
 
     await openPractice(tester);
@@ -146,7 +146,7 @@ void main() {
   });
 
   testWidgets('Quiz wertet eine Antwort aus', (WidgetTester tester) async {
-    await tester.pumpWidget(const ArabischLernenApp());
+    await tester.pumpWidget(const TaeglichKluegerApp());
     await tester.pumpAndSettle();
 
     await openPractice(tester);
@@ -169,7 +169,7 @@ void main() {
   });
 
   testWidgets('Suche findet ein Wort', (WidgetTester tester) async {
-    await tester.pumpWidget(const ArabischLernenApp());
+    await tester.pumpWidget(const TaeglichKluegerApp());
     await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.search));

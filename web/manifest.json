@@ -1,11 +1,11 @@
 {
-    "name": "Arabisch lernen",
-    "short_name": "Arabisch",
+    "name": "Täglich Klüger",
+    "short_name": "Täglich Klüger",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "Interaktiver Arabisch-Deutsch-Vokabeltrainer.",
+    "description": "Arabisch und Allgemeinwissen, jeden Tag ein Stück.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

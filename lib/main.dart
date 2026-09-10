@@ -11,18 +11,23 @@ import 'state/speech.dart';
 import 'widgets/speak_button.dart';
 
 void main() {
-  runApp(const ArabischLernenApp());
+  runApp(const TaeglichKluegerApp());
 }
 
-/// "Arabisch lernen" — a small vocabulary trainer for German speakers.
-class ArabischLernenApp extends StatefulWidget {
-  const ArabischLernenApp({super.key});
+/// „Täglich Klüger" — Arabisch und Allgemeinwissen in einer App.
+///
+/// Der Paketname `de.susasek.arabischlernen` und der Dart-Paketname
+/// bleiben, wie sie sind: Sie sind kein Anzeigename, sondern die
+/// Identität der Installation. Ein anderer Paketname hieße für jedes
+/// Gerät: neue App, kein Lernstand.
+class TaeglichKluegerApp extends StatefulWidget {
+  const TaeglichKluegerApp({super.key});
 
   @override
-  State<ArabischLernenApp> createState() => _ArabischLernenAppState();
+  State<TaeglichKluegerApp> createState() => _TaeglichKluegerAppState();
 }
 
-class _ArabischLernenAppState extends State<ArabischLernenApp> {
+class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
   final CustomCardStore _cards = CustomCardStore();
   late final LearningState _state = LearningState(
     content: ContentWithCustomCards(kDefaultContent, _cards),
@@ -83,7 +88,7 @@ class _ArabischLernenAppState extends State<ArabischLernenApp> {
             child: ReminderScope(
               service: _reminders,
               child: MaterialApp(
-                title: 'Arabisch lernen',
+                title: 'Täglich Klüger',
                 debugShowCheckedModeBanner: false,
                 theme: buildAppTheme(Brightness.light),
                 darkTheme: buildAppTheme(Brightness.dark),
