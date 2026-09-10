@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ipa_testing_github_action/state/custom_cards.dart';
 import 'package:ipa_testing_github_action/state/daily_feed.dart';
+import 'package:ipa_testing_github_action/state/learning_state.dart';
 import 'package:ipa_testing_github_action/state/progress_store.dart';
 import 'package:ipa_testing_github_action/state/reminders.dart';
 import 'package:ipa_testing_github_action/state/speech.dart';
@@ -36,6 +37,10 @@ void main() {
 
     test('Tagesinhalte', () {
       expect(DailyFeedService.cacheKey, 'arabisch_lernen.feed.v1');
+    });
+
+    test('gewähltes Fach', () {
+      expect(LearningState.subjectKey, 'arabisch_lernen.subject');
     });
 
     test('gemerkte Karten', () {

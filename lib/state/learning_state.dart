@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/achievements_data.dart';
 import '../data/content_registry.dart';
 import '../models/achievement.dart';
+import '../models/subject.dart';
 import '../models/vocabulary.dart';
 import 'progress_store.dart';
 import 'word_progress.dart';
@@ -30,6 +32,55 @@ class LearningState extends ChangeNotifier {
   final ContentRegistry _content;
 
   ContentRegistry get content => _content;
+
+  // ---- Fach ---------------------------------------------------------------
+
+  /// Der Schlüssel des gewählten Fachs. Das Präfix bleibt „arabisch_lernen",
+  /// auch wenn die App anders heißt — siehe `naming_test.dart`.
+  static const String subjectKey = 'arabisch_lernen.subject';
+
+  Subject _subject = Subject.arabisch;
+
+  /// Das Fach, in dem gerade gelernt wird. Es ist immer genau eines aktiv.
+  ///
+  /// Hat das gewählte Fach keine Inhalte — bei einem Inhalt, der nur eines
+  /// von beiden mitbringt —, gilt das andere. Sonst stünde man vor einer
+  /// leeren Seite und einem Knopf, der nichts ändert.
+  Subject get subject =>
+      _hatInhalt(_subject) ? _subject : _anderes(_subject);
+
+  /// Ob ein Fach überhaupt etwas zu bieten hat.
+  bool hasContent(Subject subject) => _hatInhalt(subject);
+
+  bool _hatInhalt(Subject subject) =>
+      _content.groups.any((CategoryGroup g) => Subject.of(g) == subject);
+
+  static Subject _anderes(Subject subject) => subject == Subject.arabisch
+      ? Subject.wissen
+      : Subject.arabisch;
+
+  Future<void> setSubject(Subject subject) async {
+    if (_subject == subject) return;
+    _subject = subject;
+    notifyListeners();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(subjectKey, subject.id);
+  }
+
+  /// Die Bereiche des aktiven Fachs — das, was die Startseite zeigt.
+  List<CategoryGroup> get groups => groupsOf(subject);
+
+  List<CategoryGroup> groupsOf(Subject subject) => <CategoryGroup>[
+        for (final CategoryGroup g in _content.groups)
+          if (Subject.of(g) == subject) g,
+      ];
+
+  /// Der Vorrat des aktiven Fachs — die Grundlage jeder Übung.
+  List<VocabEntry> get activeEntries => entriesOf(subject);
+
+  List<VocabEntry> entriesOf(Subject subject) => <VocabEntry>[
+        for (final CategoryGroup g in groupsOf(subject)) ...g.entries,
+      ];
 
   /// Der Inhalt hat sich geändert — etwa weil eine Karte gemerkt wurde.
   ///
@@ -60,7 +111,12 @@ class LearningState extends ChangeNotifier {
   int get bestStreak => _bestStreak;
 
   int get dailyGoal => _dailyGoal;
-  int get totalCount => _content.entries.length;
+  /// Wörter im aktiven Fach.
+  int get totalCount => activeEntries.length;
+
+  /// Alles, was die App kennt — für die Abzeichen, die vom Fach unabhängig
+  /// sind.
+  int get totalCountOverall => _content.entries.length;
 
   // ---- Punkte und Level -------------------------------------------------
 
@@ -99,8 +155,10 @@ class LearningState extends ChangeNotifier {
 
   // ---- Abzeichen --------------------------------------------------------
 
+  /// Die Abzeichen hängen **nicht** am Fach: Wer umschaltet, hat nichts
+  /// verlernt. Deshalb zählen hier die Werte über beide Fächer.
   AchievementStats get achievementStats => AchievementStats(
-        learnedWords: learnedCount,
+        learnedWords: learnedCountOverall,
         dayStreak: dayStreak,
         answers: _answered,
         perfectRounds: _perfectRounds,
@@ -140,6 +198,10 @@ class LearningState extends ChangeNotifier {
     _xp = stored.xp;
     _perfectRounds = stored.perfectRounds;
     _goalDays = stored.goalDays;
+
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    _subject = Subject.byId(prefs.getString(subjectKey)) ?? Subject.arabisch;
+
     _loaded = true;
     notifyListeners();
   }
@@ -167,7 +229,14 @@ class LearningState extends ChangeNotifier {
 
   DateTime? dueDateOf(VocabEntry entry) => progressOfWord(entry).due;
 
-  int get learnedCount =>
+  /// Gelernte Wörter im aktiven Fach.
+  ///
+  /// Nicht die Zahl aller gespeicherten Einträge: Sonst stünde beim Wechsel
+  /// nach „Wissen" plötzlich „700 von 301 gelernt".
+  int get learnedCount => activeEntries.where(isLearned).length;
+
+  /// Über beide Fächer — die Grundlage der Abzeichen.
+  int get learnedCountOverall =>
       _words.values.where((WordProgress w) => w.isLearned).length;
 
   int get startedCount => _words.values
@@ -181,12 +250,40 @@ class LearningState extends ChangeNotifier {
   List<VocabEntry> dueEntries([List<VocabEntry>? pool]) {
     final DateTime now = _now();
     return <VocabEntry>[
-      for (final VocabEntry entry in pool ?? _content.entries)
+      for (final VocabEntry entry in pool ?? activeEntries)
         if (progressOfWord(entry).isDue(now)) entry,
     ];
   }
 
+  /// Fällige Wörter im aktiven Fach.
   int get dueCount => dueEntries().length;
+
+  /// Fällige Wörter in einem bestimmten Fach.
+  int dueCountIn(Subject subject) => dueEntries(entriesOf(subject)).length;
+
+  /// **Wiederholungen**, die in einem Fach anstehen — angefangene Wörter,
+  /// deren Termin gekommen ist.
+  ///
+  /// Das ist die Zahl für die Marke am anderen Fach. `dueCountIn` taugt dafür
+  /// nicht: Ein nie angefasstes Wort gilt als fällig, die Marke zeigte auf
+  /// einer frischen Installation also für immer „301" und sagte damit nichts.
+  /// Ein vergessenes Wort ist dringend, ein noch nie gesehenes nicht.
+  int repetitionsDueIn(Subject subject) {
+    final DateTime now = _now();
+    int offen = 0;
+    for (final VocabEntry entry in entriesOf(subject)) {
+      final WordProgress fortschritt = progressOfWord(entry);
+      // `due != null` heißt: Das Wort war schon einmal dran und hat einen
+      // Termin bekommen. Nicht `box > 0` — eine falsche Antwort setzt auf
+      // Fach 0 zurück, angefangen ist das Wort trotzdem.
+      if (fortschritt.due != null && fortschritt.isDue(now)) offen++;
+    }
+    return offen;
+  }
+
+  /// Fällige Wörter über beide Fächer. Die Abenderinnerung nennt diese Zahl:
+  /// Sie soll an das ganze Pensum erinnern, nicht an die Hälfte.
+  int get dueCountTotal => dueEntries(_content.entries).length;
 
   /// Answers given today, and whether the daily goal is reached.
   int get answeredToday => _history[dayKey(_now())] ?? 0;
@@ -296,7 +393,7 @@ class LearningState extends ChangeNotifier {
     Random? random,
   }) {
     final List<VocabEntry> ordered =
-        trainingOrder(pool ?? _content.entries, random: random);
+        trainingOrder(pool ?? activeEntries, random: random);
     return ordered.take(min(size ?? dosePerRound, ordered.length)).toList();
   }
 

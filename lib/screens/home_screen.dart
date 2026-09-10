@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../models/subject.dart';
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
 import '../state/reminders.dart';
 import '../theme/app_theme.dart';
+import '../widgets/subject_switch.dart';
 import 'category_screen.dart';
 import 'flashcard_screen.dart';
 import 'search_screen.dart';
@@ -16,7 +18,8 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final LearningState state = LearningScope.of(context);
-    final List<CategoryGroup> groups = state.content.groups;
+    // Aus dem Lernkern, nicht aus der Registry: Er kennt das gewählte Fach.
+    final List<CategoryGroup> groups = state.groups;
     final ThemeData theme = Theme.of(context);
 
     return Scaffold(
@@ -62,6 +65,14 @@ class HomeScreen extends StatelessWidget {
               ),
             ],
           ),
+          // Der Fachwechsel bleibt beim Scrollen stehen: Er ist der
+          // häufigste Griff auf dieser Seite.
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: SubjectSwitchHeader(
+              MediaQuery.textScalerOf(context).scale(1),
+            ),
+          ),
           SliverToBoxAdapter(child: _TodayCard(state: state)),
           SliverToBoxAdapter(child: _ProgressCard(state: state)),
           SliverToBoxAdapter(
@@ -78,7 +89,9 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: Insets.sm),
                   Text(
-                    '${state.totalCount} Wörter',
+                    state.subject == Subject.arabisch
+                        ? '${state.totalCount} Wörter'
+                        : '${state.totalCount} Karten',
                     style: theme.textTheme.labelMedium,
                   ),
                 ],

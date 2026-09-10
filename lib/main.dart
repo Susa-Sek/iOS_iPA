@@ -60,7 +60,9 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
     if (!_state.isLoaded) await _state.load();
     await _reminders.refresh(
       goalReachedToday: _state.goalReached,
-      dueCount: _state.dueCount,
+      // Über beide Fächer: Die Erinnerung soll an das ganze Pensum
+      // erinnern, nicht nur an das gerade gewählte Fach.
+      dueCount: _state.dueCountTotal,
     );
   }
 

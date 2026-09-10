@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:ipa_testing_github_action/data/content_registry.dart';
 import 'package:ipa_testing_github_action/models/daily_item.dart';
+import 'package:ipa_testing_github_action/models/subject.dart';
 import 'package:ipa_testing_github_action/models/vocabulary.dart';
 import 'package:ipa_testing_github_action/state/custom_cards.dart';
 import 'package:ipa_testing_github_action/state/learning_state.dart';
@@ -137,10 +138,16 @@ void main() {
         content: ContentWithCustomCards(kDefaultContent, store),
       );
       await state.load();
-      final int vorher = state.totalCount;
+      // Über beide Fächer gezählt: `totalCount` bezieht sich seit dem
+      // Fach-Umschalter nur auf das aktive Fach, und gemerkte Karten gehören
+      // zu Wissen.
+      final int vorher = state.totalCountOverall;
 
       await store.add(_karte);
-      expect(state.totalCount, vorher + 1);
+      expect(state.totalCountOverall, vorher + 1);
+
+      await state.setSubject(Subject.wissen);
+      expect(state.activeEntries, contains(_karte));
     });
 
     test('eine Nachricht kommt dort nie an', () {

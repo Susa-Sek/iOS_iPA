@@ -54,7 +54,7 @@ class _BuildWordScreenState extends State<BuildWordScreen> {
   void initState() {
     super.initState();
     final List<VocabEntry> pool = (widget.entries ??
-            LearningScope.of(context).content.entries)
+            LearningScope.of(context).activeEntries)
         .where(BuildWordScreen.isSuitable)
         .toList()
       ..shuffle(_random);

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:ipa_testing_github_action/data/content_registry.dart';
+import 'package:ipa_testing_github_action/models/subject.dart';
 import 'package:ipa_testing_github_action/models/vocabulary.dart';
 import 'package:ipa_testing_github_action/screens/home_screen.dart';
 import 'package:ipa_testing_github_action/screens/today_screen.dart';
@@ -127,6 +128,8 @@ void main() {
       );
       await state.load();
       cards.addListener(state.contentChanged);
+      // Gemerkte Karten gehören zum Fach Wissen — dort muss die Zahl steigen.
+      await state.setSubject(Subject.wissen);
       final int vorher = state.totalCount;
 
       await tester.pumpWidget(wrapScreen(const TodayScreen(),
@@ -153,6 +156,7 @@ void main() {
         content: ContentWithCustomCards(kDefaultContent, cards),
       );
       await state.load();
+      await state.setSubject(Subject.wissen);
 
       await tester.pumpWidget(
           wrapScreen(const HomeScreen(), cards: cards, state: state));
@@ -172,6 +176,7 @@ void main() {
         content: ContentWithCustomCards(kDefaultContent, cards),
       );
       await state.load();
+      await state.setSubject(Subject.wissen);
 
       await tester.pumpWidget(
           wrapScreen(const HomeScreen(), cards: cards, state: state));

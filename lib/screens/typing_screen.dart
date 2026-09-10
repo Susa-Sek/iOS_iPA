@@ -62,7 +62,7 @@ class _TypingScreenState extends State<TypingScreen> {
 
   void _deal() {
     final LearningState state = LearningScope.of(context);
-    final List<VocabEntry> pool = (widget.entries ?? state.content.entries)
+    final List<VocabEntry> pool = (widget.entries ?? state.activeEntries)
         .where(TypingScreen.isSuitable)
         .toList();
     _round = state

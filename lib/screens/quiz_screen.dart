@@ -60,7 +60,7 @@ class _QuizScreenState extends State<QuizScreen> {
       // Der Vorrat kommt aus der Registry, nicht mehr aus einem festen
       // Datensatz — so übt "Alle Wörter" auch neue Fächer mit.
       _pool = List<VocabEntry>.of(
-          widget.entries ?? LearningScope.of(context).content.entries);
+          widget.entries ?? LearningScope.of(context).activeEntries);
       setState(_buildQuestions);
     });
   }

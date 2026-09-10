@@ -57,7 +57,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
   void initState() {
     super.initState();
     _pool = List<VocabEntry>.of(widget.entries ??
-            LearningScope.of(context).content.entries)
+            LearningScope.of(context).activeEntries)
         .where(MatchingScreen.isSuitable)
         .toList();
     _round = <VocabEntry>[];

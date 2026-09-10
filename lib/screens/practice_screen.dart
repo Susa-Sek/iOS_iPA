@@ -29,7 +29,9 @@ class PracticeScreen extends StatelessWidget {
     final int due = state.dueCount;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Üben')),
+      // Das Fach im Titel: Wer hier landet, soll ohne Nachdenken wissen,
+      // woraus die Übungen kommen.
+      appBar: AppBar(title: Text('Üben · ${state.subject.label}')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
             Insets.lg, Insets.sm, Insets.lg, Insets.xxl),

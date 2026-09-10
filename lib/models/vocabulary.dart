@@ -225,6 +225,14 @@ class CategoryGroup {
 
   List<VocabEntry> get entries =>
       <VocabEntry>[for (final VocabCategory c in categories) ...c.entries];
+
+  /// Ob der Bereich Sprache übt — daraus leitet sich sein Fach ab.
+  ///
+  /// Ein Bereich enthält entweder nur Sprache oder nur Wissen; ein Test
+  /// hält das fest. Deshalb genügt hier eine Ableitung, es braucht keine
+  /// zusätzliche Angabe an den Daten, die jemand vergessen könnte.
+  bool get isLanguage =>
+      categories.isNotEmpty && categories.every((VocabCategory c) => c.isLanguage);
 }
 
 /// Eine Person in der Konjugationstabelle.

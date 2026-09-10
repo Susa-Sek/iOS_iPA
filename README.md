@@ -30,6 +30,23 @@ Zeichen schreibt Arabisch nur die Konsonanten, und Anfänger können nicht
 wissen, wie ein Wort klingt. Ein Test setzt das durch: kommt ein Wort ohne
 Zeichen dazu, schlägt er an.
 
+## Ein Fach zur Zeit
+
+Oben auf „Lernen" stehen zwei Knöpfe: **Arabisch** und **Wissen**. Es ist
+immer genau eines aktiv, und alles folgt der Wahl — Tagesportion, Lernweg,
+jede Übung, die Zahl unten am Symbol. Eine Runde aus Vokabeln und
+Wissensfragen durcheinander lernt sich schlechter als zehn Minuten in einer
+Sache.
+
+Die Leiste bleibt beim Scrollen stehen; der Fachwechsel ist der häufigste
+Griff auf dieser Seite.
+
+**Damit nichts verschwindet**, trägt der *nicht* gewählte Knopf die Zahl
+seiner offenen Wiederholungen. Gezählt werden nur angefangene Wörter, deren
+Termin gekommen ist — ein nie angesehenes Wort wäre eine Zahl, die sich nie
+ändert. Die Abenderinnerung zählt beide Fächer zusammen, und die **Abzeichen
+hängen nicht am Fach**: Wer umschaltet, hat nichts verlernt.
+
 ## Aufbau der App
 
 Unten vier Bereiche, statt alles auf einer Seite:
@@ -214,6 +231,25 @@ Die Wörter stehen in Pausalform: innen voll vokalisiert, ohne Kasusendung am
 Wortende — so, wie man sie einzeln ausspricht. Wo das Tanwīn zur Aussprache
 gehört (شُكْرًا, غَدًا, مُبَاشَرَةً), steht es. Die Suche findet ein Wort mit
 und ohne Zeichen: Wer كتاب tippt, findet كِتَاب.
+
+## Das Symbol
+
+Ein fast geschlossener Ring — die Tagesrunde, die sich füllt — und ein Funke
+darin. Erzeugt wird es aus einer einzigen Zeichnung:
+
+```bash
+python3 tool/make_icons.py             # alle Größen schreiben
+python3 tool/make_icons.py --preview   # nur ansehen
+```
+
+Das Skript schreibt Android (Symbol, adaptives Vordergrundbild,
+Benachrichtigung), iOS und Web. Es liegt bewusst im Repository: Der Erzeuger
+des ersten Symbols lag nur in einem Arbeitsverzeichnis und ist weg — jenes
+Symbol ließe sich heute nicht mehr nachbauen.
+
+Das **Benachrichtigungssymbol** bleibt eine flache weiße Silhouette. Android
+färbt es selbst ein und benutzt nur den Alphakanal; alles mit Farbverlauf
+würde dort zu einem grauen Klecks.
 
 ## Projektstruktur
 
