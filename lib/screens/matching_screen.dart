@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../data/vocabulary_data.dart';
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
 import '../widgets/arabic_text.dart';
@@ -26,6 +25,16 @@ class MatchingScreen extends StatefulWidget {
   /// Pairs shown per round.
   static const int pairsPerRound = 6;
 
+  /// Wie lang eine Antwort höchstens sein darf.
+  ///
+  /// Sechs Paare stehen nebeneinander in zwei schmalen Spalten. Ein ganzer
+  /// Erklärungssatz sprengt die Spalte, deshalb bleiben lange Antworten den
+  /// anderen Übungen überlassen.
+  static const int maxAnswerLength = 28;
+
+  static bool isSuitable(VocabEntry entry) =>
+      entry.answer.trim().length <= maxAnswerLength;
+
   @override
   State<MatchingScreen> createState() => _MatchingScreenState();
 }
@@ -47,7 +56,10 @@ class _MatchingScreenState extends State<MatchingScreen> {
   @override
   void initState() {
     super.initState();
-    _pool = List<VocabEntry>.of(widget.entries ?? kAllEntries);
+    _pool = List<VocabEntry>.of(widget.entries ??
+            LearningScope.of(context).content.entries)
+        .where(MatchingScreen.isSuitable)
+        .toList();
     _round = <VocabEntry>[];
     WidgetsBinding.instance.addPostFrameCallback((_) => _deal());
   }

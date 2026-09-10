@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../data/vocabulary_data.dart';
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
 import '../theme/app_theme.dart';
@@ -51,9 +50,10 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
   }
 
   void _shuffle() {
+    final LearningState state = LearningScope.of(context);
     final List<VocabEntry> pool =
-        List<VocabEntry>.of(widget.entries ?? kAllEntries);
-    _cards = LearningScope.of(context).trainingOrder(pool, random: _random);
+        List<VocabEntry>.of(widget.entries ?? state.content.entries);
+    _cards = state.trainingOrder(pool, random: _random);
     _index = 0;
     _revealed = false;
   }

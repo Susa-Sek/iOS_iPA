@@ -2,32 +2,14 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../data/vocabulary_data.dart';
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
+import '../state/quiz_builder.dart';
 import '../state/speech.dart';
 import '../theme/app_theme.dart';
 import '../widgets/answer_feedback.dart';
 import '../widgets/arabic_text.dart';
 import '../widgets/speak_button.dart';
-
-/// Which way round the quiz asks.
-enum QuizDirection {
-  /// Arabic word is shown, the German meaning has to be picked.
-  arabicToGerman,
-
-  /// German word is shown, the Arabic word has to be picked.
-  germanToArabic,
-
-  /// Only the spoken word is given — the hardest and most useful direction.
-  listening;
-
-  String get label => switch (this) {
-        QuizDirection.arabicToGerman => 'Arabisch → Deutsch',
-        QuizDirection.germanToArabic => 'Deutsch → Arabisch',
-        QuizDirection.listening => 'Hören → Deutsch',
-      };
-}
 
 /// Multiple-choice quiz in both directions. Words that are still weak are
 /// asked first, a wrong answer sends a word back to the first Leitner box.
@@ -44,7 +26,7 @@ class QuizScreen extends StatefulWidget {
   final String title;
   final QuizDirection direction;
 
-  static const int questionsPerRound = 10;
+  static const int questionsPerRound = kQuestionsPerRound;
 
   @override
   State<QuizScreen> createState() => _QuizScreenState();
@@ -55,55 +37,42 @@ class _QuizScreenState extends State<QuizScreen> {
 
   late List<VocabEntry> _pool;
   late QuizDirection _direction;
-  List<_Question> _questions = <_Question>[];
+  List<QuizQuestion> _questions = <QuizQuestion>[];
 
   int _index = 0;
   int _correct = 0;
-  VocabEntry? _chosen;
+  String? _chosen;
 
   @override
   void initState() {
     super.initState();
     _direction = widget.direction;
-    _pool = List<VocabEntry>.of(widget.entries ?? kAllEntries);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(_buildQuestions);
+      if (!mounted) return;
+      // Der Vorrat kommt aus der Registry, nicht mehr aus einem festen
+      // Datensatz — so übt "Alle Wörter" auch neue Fächer mit.
+      _pool = List<VocabEntry>.of(
+          widget.entries ?? LearningScope.of(context).content.entries);
+      setState(_buildQuestions);
     });
   }
 
   /// Weak words first, so a round trains what is actually missing.
   void _buildQuestions() {
-    final List<VocabEntry> ordered =
-        LearningScope.of(context).trainingOrder(_pool, random: _random);
-    final int count = min(QuizScreen.questionsPerRound, ordered.length);
-    _questions = <_Question>[
-      for (final VocabEntry entry in ordered.take(count))
-        _Question(entry: entry, options: _optionsFor(entry)),
-    ];
+    _questions = buildQuizRound(
+      ordered: LearningScope.of(context).trainingOrder(_pool, random: _random),
+      pool: _pool,
+      direction: _direction,
+      random: _random,
+    );
     _index = 0;
     _correct = 0;
     _chosen = null;
   }
 
-  /// The right answer plus up to three distractors, shuffled.
-  List<VocabEntry> _optionsFor(VocabEntry entry) {
-    final List<VocabEntry> options = <VocabEntry>[entry];
-    final List<VocabEntry> candidates =
-        List<VocabEntry>.of(_pool.length >= 4 ? _pool : kAllEntries)
-          ..shuffle(_random);
-
-    for (final VocabEntry candidate in candidates) {
-      if (options.length == 4) break;
-      final bool clash = options.any((VocabEntry o) =>
-          o.german == candidate.german || o.arabic == candidate.arabic);
-      if (!clash) options.add(candidate);
-    }
-    return options..shuffle(_random);
-  }
-
-  void _answer(_Question question, VocabEntry option) {
+  void _answer(QuizQuestion question, String option) {
     if (_chosen != null) return;
-    final bool correct = option.id == question.entry.id;
+    final bool correct = question.isCorrect(option);
     final LearningState state = LearningScope.of(context);
     AnswerFeedback.tap(correct: correct);
     state.recordAnswer(correct: correct);
@@ -220,7 +189,7 @@ class _QuizScreenState extends State<QuizScreen> {
       );
     }
 
-    final _Question question = _questions[_index];
+    final QuizQuestion question = _questions[_index];
 
     return Padding(
       padding: const EdgeInsets.all(20),
@@ -266,36 +235,38 @@ class _QuizScreenState extends State<QuizScreen> {
                             ?.copyWith(fontStyle: FontStyle.italic),
                       ),
                     ],
-                  ] else if (arabicPrompt) ...<Widget>[
+                  ] else if (question.promptIsArabic) ...<Widget>[
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         Flexible(
                           child: ArabicText(
-                            question.entry.arabic,
+                            question.prompt,
                             fontSize: 36,
                             color: theme.colorScheme.primary,
                             textAlign: TextAlign.center,
                           ),
                         ),
                         SpeakButton(
-                          text: question.entry.arabic,
+                          text: question.prompt,
                           size: 26,
                           color: theme.colorScheme.primary,
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      question.entry.transliteration,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontStyle: FontStyle.italic),
-                    ),
+                    if (question.entry.transliteration.isNotEmpty) ...<Widget>[
+                      const SizedBox(height: Insets.sm),
+                      Text(
+                        question.entry.transliteration,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.titleMedium
+                            ?.copyWith(fontStyle: FontStyle.italic),
+                      ),
+                    ],
                   ] else
                     Text(
-                      question.entry.german,
+                      question.prompt,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.headlineSmall
                           ?.copyWith(fontWeight: FontWeight.w600),
@@ -312,10 +283,10 @@ class _QuizScreenState extends State<QuizScreen> {
               itemCount: question.options.length,
               separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (BuildContext context, int i) {
-                final VocabEntry option = question.options[i];
+                final String option = question.options[i];
                 return _AnswerButton(
-                  option: option,
-                  arabic: !arabicPrompt,
+                  label: option,
+                  arabic: question.answersAreArabic,
                   state: _stateFor(question, option),
                   onTap: () => _answer(question, option),
                 );
@@ -344,32 +315,25 @@ class _QuizScreenState extends State<QuizScreen> {
     );
   }
 
-  _AnswerState _stateFor(_Question question, VocabEntry option) {
+  _AnswerState _stateFor(QuizQuestion question, String option) {
     if (_chosen == null) return _AnswerState.open;
-    if (option.id == question.entry.id) return _AnswerState.correct;
-    if (option.id == _chosen!.id) return _AnswerState.wrong;
+    if (question.isCorrect(option)) return _AnswerState.correct;
+    if (option == _chosen) return _AnswerState.wrong;
     return _AnswerState.muted;
   }
 }
 
 enum _AnswerState { open, correct, wrong, muted }
 
-class _Question {
-  const _Question({required this.entry, required this.options});
-
-  final VocabEntry entry;
-  final List<VocabEntry> options;
-}
-
 class _AnswerButton extends StatelessWidget {
   const _AnswerButton({
-    required this.option,
+    required this.label,
     required this.arabic,
     required this.state,
     required this.onTap,
   });
 
-  final VocabEntry option;
+  final String label;
   final bool arabic;
   final _AnswerState state;
   final VoidCallback onTap;
@@ -395,10 +359,10 @@ class _AnswerButton extends StatelessWidget {
         break;
     }
 
-    final Widget label = arabic
-        ? ArabicText(option.arabic, fontSize: 24, color: foreground)
+    final Widget content = arabic
+        ? ArabicText(label, fontSize: 24, color: foreground)
         : Text(
-            option.german,
+            label,
             style: theme.textTheme.titleMedium?.copyWith(color: foreground),
           );
 
@@ -411,7 +375,7 @@ class _AnswerButton extends StatelessWidget {
       button: true,
       enabled: state == _AnswerState.open,
       label: decided
-          ? '${arabic ? option.arabic : option.german}, '
+          ? '$label, '
               '${AnswerFeedback.label(correct: state == _AnswerState.correct)}'
           : null,
       child: OutlinedButton(
@@ -426,7 +390,7 @@ class _AnswerButton extends StatelessWidget {
         ),
         child: Row(
           children: <Widget>[
-            Expanded(child: label),
+            Expanded(child: content),
             if (decided)
               Icon(
                 AnswerFeedback.icon(

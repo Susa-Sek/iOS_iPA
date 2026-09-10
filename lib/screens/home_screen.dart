@@ -339,7 +339,6 @@ class _ProgressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final int percent = (state.overallProgress * 100).round();
 
     return Card(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -357,12 +356,14 @@ class _ProgressCard extends StatelessWidget {
                     width: 64,
                     height: 64,
                     child: CircularProgressIndicator(
-                      value: state.overallProgress,
+                      value: state.levelProgress,
                       strokeWidth: 7,
                       backgroundColor: theme.colorScheme.primaryContainer,
                     ),
                   ),
-                  Text('$percent%', style: theme.textTheme.labelLarge),
+                  Text('${state.level}',
+                      style: theme.textTheme.titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -384,10 +385,14 @@ class _ProgressCard extends StatelessWidget {
                           style: theme.textTheme.labelMedium),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: Insets.xs),
+                  // Absolute Zahlen statt einer Prozentzahl über alles: Die
+                  // fiele sichtbar ab, sobald ein weiteres Fach dazukommt,
+                  // ohne dass jemand etwas verlernt hätte. Wie weit man in
+                  // einem Gebiet ist, steht beim jeweiligen Bereich.
                   Text(
-                    '${state.learnedCount} von ${state.totalCount} Wörtern '
-                    'sitzen, ${state.startedCount} sind angefangen',
+                    '${state.learnedCount} gelernt · '
+                    '${state.startedCount} angefangen',
                     style: theme.textTheme.bodyMedium,
                   ),
                   if (state.answered > 0) ...<Widget>[
@@ -423,8 +428,8 @@ class _GroupCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final List<VocabEntry> entries = group.entries;
-    final int learned = entries.where(state.isLearned).length;
-    final int due = state.dueEntries(entries).length;
+    final int learned = state.learnedInGroup(group);
+    final int due = state.dueInGroup(group);
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
@@ -453,7 +458,7 @@ class _GroupCard extends StatelessWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: LinearProgressIndicator(
-                  value: entries.isEmpty ? 0 : learned / entries.length,
+                  value: state.progressOfGroup(group),
                   minHeight: 4,
                   backgroundColor: theme.colorScheme.primaryContainer,
                 ),

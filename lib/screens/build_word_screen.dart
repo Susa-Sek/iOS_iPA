@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../data/vocabulary_data.dart';
 import '../models/arabic.dart';
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
@@ -27,6 +26,10 @@ class BuildWordScreen extends StatefulWidget {
   /// Only short single words can be assembled letter by letter. Counted in
   /// letters, not code points — a letter carrying Fatḥa is still one letter.
   static bool isSuitable(VocabEntry entry) {
+    // Für "Wann fiel die Mauer?" gibt es kein Wort zum Bauen. Wissenskarten
+    // bleiben deshalb außen vor - auch in gemischten Vorräten wie
+    // "Heute fällig" oder der Suche.
+    if (!entry.isLanguage) return false;
     final String word = entry.arabic;
     if (word.contains(' ')) return false;
     final int letters = arabicLetterUnits(word).length;
@@ -50,7 +53,8 @@ class _BuildWordScreenState extends State<BuildWordScreen> {
   @override
   void initState() {
     super.initState();
-    final List<VocabEntry> pool = (widget.entries ?? kAllEntries)
+    final List<VocabEntry> pool = (widget.entries ??
+            LearningScope.of(context).content.entries)
         .where(BuildWordScreen.isSuitable)
         .toList()
       ..shuffle(_random);
