@@ -7,6 +7,8 @@ import 'package:ipa_testing_github_action/models/vocabulary.dart';
 import 'package:ipa_testing_github_action/screens/achievements_screen.dart';
 import 'package:ipa_testing_github_action/screens/alphabet_screen.dart';
 import 'package:ipa_testing_github_action/screens/build_word_screen.dart';
+import 'package:ipa_testing_github_action/screens/home_screen.dart';
+import 'package:ipa_testing_github_action/screens/practice_screen.dart';
 import 'package:ipa_testing_github_action/screens/category_screen.dart';
 import 'package:ipa_testing_github_action/screens/flashcard_screen.dart';
 import 'package:ipa_testing_github_action/screens/matching_screen.dart';
@@ -170,4 +172,69 @@ void main() {
       });
     });
   }
+
+  // ---- Große Schrift ----------------------------------------------------
+
+  group('Schrift auf 150 Prozent', () {
+    const Size size = Size(390, 844);
+
+    Future<void> check(WidgetTester tester, Widget screen,
+        {Future<void> Function(WidgetTester)? then}) async {
+      await _withSize(tester, size, () async {
+        await tester.pumpWidget(wrapScreenScaled(screen));
+        await tester.pumpAndSettle();
+        if (then != null) await then(tester);
+      });
+    }
+
+    testWidgets('Startseite', (WidgetTester tester) async {
+      await check(tester, const HomeScreen(), then: (WidgetTester t) async {
+        await t.drag(find.byType(CustomScrollView), const Offset(0, -400));
+        await t.pumpAndSettle();
+      });
+    });
+
+    testWidgets('Karteikarten', (WidgetTester tester) async {
+      await check(
+        tester,
+        FlashcardScreen(entries: category.entries, title: category.name),
+        then: (WidgetTester t) async {
+          await t.tap(find.text('Zum Aufdecken tippen'));
+          await t.pumpAndSettle();
+        },
+      );
+    });
+
+    testWidgets('Quiz', (WidgetTester tester) async {
+      await check(
+        tester,
+        QuizScreen(entries: category.entries, title: category.name),
+        then: (WidgetTester t) async {
+          await t.tap(find.byType(OutlinedButton).first);
+          await t.pumpAndSettle();
+        },
+      );
+    });
+
+    testWidgets('Zuordnen', (WidgetTester tester) async {
+      await check(tester,
+          MatchingScreen(entries: category.entries, title: category.name));
+    });
+
+    testWidgets('Üben', (WidgetTester tester) async {
+      await check(tester, const PracticeScreen(),
+          then: (WidgetTester t) async {
+        await t.drag(find.byType(ListView), const Offset(0, -400));
+        await t.pumpAndSettle();
+      });
+    });
+
+    testWidgets('Erfolge', (WidgetTester tester) async {
+      await check(tester, const AchievementsScreen(),
+          then: (WidgetTester t) async {
+        await t.drag(find.byType(ListView), const Offset(0, -400));
+        await t.pumpAndSettle();
+      });
+    });
+  });
 }

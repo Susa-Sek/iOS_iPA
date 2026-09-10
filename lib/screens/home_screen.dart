@@ -4,16 +4,10 @@ import '../data/curriculum.dart';
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
 import '../state/reminders.dart';
-import 'achievements_screen.dart';
-import 'alphabet_screen.dart';
-import 'build_word_screen.dart';
+import '../theme/app_theme.dart';
 import 'category_screen.dart';
 import 'flashcard_screen.dart';
-import 'matching_screen.dart';
-import 'quiz_screen.dart';
-import 'quran_screen.dart';
 import 'search_screen.dart';
-import 'verbs_screen.dart';
 
 /// Start screen: progress at a glance, the training modes and the list of
 /// vocabulary categories.
@@ -29,13 +23,8 @@ class HomeScreen extends StatelessWidget {
       body: CustomScrollView(
         slivers: <Widget>[
           SliverAppBar.large(
-            title: const Text('Arabisch lernen'),
+            title: const Text('Lernen'),
             actions: <Widget>[
-              IconButton(
-                icon: const Icon(Icons.emoji_events_outlined),
-                tooltip: 'Erfolge',
-                onPressed: () => _push(context, const AchievementsScreen()),
-              ),
               IconButton(
                 icon: const Icon(Icons.search),
                 tooltip: 'Suchen',
@@ -77,90 +66,17 @@ class HomeScreen extends StatelessWidget {
           SliverToBoxAdapter(child: _ProgressCard(state: state)),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-              child: Text(
-                'Üben',
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 122,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: <Widget>[
-                  _ModeCard(
-                    icon: Icons.style_outlined,
-                    label: 'Karteikarten',
-                    hint: 'Aufdecken',
-                    onTap: () => _push(
-                      context,
-                      const FlashcardScreen(title: 'Alle Wörter'),
-                    ),
-                  ),
-                  _ModeCard(
-                    icon: Icons.quiz_outlined,
-                    label: 'Quiz',
-                    hint: '4 Antworten',
-                    onTap: () => _push(
-                      context,
-                      const QuizScreen(title: 'Alle Wörter'),
-                    ),
-                  ),
-                  _ModeCard(
-                    icon: Icons.compare_arrows,
-                    label: 'Zuordnen',
-                    hint: 'Paare finden',
-                    onTap: () => _push(
-                      context,
-                      const MatchingScreen(title: 'Alle Wörter'),
-                    ),
-                  ),
-                  _ModeCard(
-                    icon: Icons.grid_view,
-                    label: 'Wort bauen',
-                    hint: 'Buchstaben',
-                    onTap: () => _push(
-                      context,
-                      const BuildWordScreen(title: 'Alle Wörter'),
-                    ),
-                  ),
-                  _ModeCard(
-                    icon: Icons.abc,
-                    label: 'Alphabet',
-                    hint: '28 Buchstaben',
-                    onTap: () => _push(context, const AlphabetScreen()),
-                  ),
-                  _ModeCard(
-                    icon: Icons.table_chart_outlined,
-                    label: 'Verben',
-                    hint: 'beugen',
-                    onTap: () => _push(context, const VerbsScreen()),
-                  ),
-                  _ModeCard(
-                    icon: Icons.menu_book_outlined,
-                    label: 'Quran',
-                    hint: 'Suren & Wurzeln',
-                    onTap: () => _push(context, const QuranScreen()),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
               child: Row(
                 children: <Widget>[
-                  Text(
-                    'Lernweg',
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
+                  Expanded(
+                    child: Text(
+                      'Lernweg',
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: Insets.sm),
                   Text(
                     '${state.totalCount} Wörter',
                     style: theme.textTheme.labelMedium,
@@ -492,73 +408,6 @@ class _ProgressCard extends StatelessWidget {
   }
 }
 
-class _ModeCard extends StatelessWidget {
-  const _ModeCard({
-    required this.icon,
-    required this.label,
-    required this.hint,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final String hint;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(right: 12),
-      child: Material(
-        color: theme.colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: onTap,
-          child: SizedBox(
-            width: 124,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Icon(icon, color: theme.colorScheme.onPrimaryContainer),
-                  const SizedBox(height: 8),
-                  Flexible(
-                    child: Text(
-                      label,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: theme.colorScheme.onPrimaryContainer,
-                      ),
-                    ),
-                  ),
-                  Flexible(
-                    child: Text(
-                      hint,
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onPrimaryContainer,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// One area of the learning path: a headline with its own progress, and the
-/// themes inside it. Collapsed by default so ~30 themes stay manageable.
 class _GroupCard extends StatelessWidget {
   const _GroupCard({
     required this.group,

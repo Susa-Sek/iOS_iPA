@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'screens/home_screen.dart';
+import 'screens/app_shell.dart';
+import 'theme/app_theme.dart';
 import 'state/learning_state.dart';
 import 'state/reminders.dart';
 import 'state/speech.dart';
@@ -52,20 +53,6 @@ class _ArabischLernenAppState extends State<ArabischLernenApp> {
     super.dispose();
   }
 
-  ThemeData _theme(Brightness brightness) {
-    final ColorScheme scheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF1F7A6C),
-      brightness: brightness,
-    );
-    return ThemeData(
-      colorScheme: scheme,
-      useMaterial3: true,
-      scaffoldBackgroundColor: brightness == Brightness.light
-          ? const Color(0xFFF7F6F2)
-          : scheme.surface,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return LearningScope(
@@ -77,9 +64,9 @@ class _ArabischLernenAppState extends State<ArabischLernenApp> {
         child: MaterialApp(
           title: 'Arabisch lernen',
           debugShowCheckedModeBanner: false,
-          theme: _theme(Brightness.light),
-          darkTheme: _theme(Brightness.dark),
-          home: const HomeScreen(),
+          theme: buildAppTheme(Brightness.light),
+          darkTheme: buildAppTheme(Brightness.dark),
+          home: const AppShell(),
         ),
         ),
       ),

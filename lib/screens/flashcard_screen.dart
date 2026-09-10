@@ -5,9 +5,12 @@ import 'package:flutter/material.dart';
 import '../data/vocabulary_data.dart';
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
+import '../theme/app_theme.dart';
+import '../widgets/answer_feedback.dart';
 import '../widgets/arabic_text.dart';
-import '../widgets/speak_button.dart';
+import '../widgets/flip_card.dart';
 import '../widgets/level_dots.dart';
+import '../widgets/speak_button.dart';
 
 /// Flashcards with a flip: German on the front, Arabic and the
 /// transliteration on the back — or the other way round.
@@ -56,6 +59,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
   }
 
   void _rate({required bool known}) {
+    AnswerFeedback.tap(correct: known);
     final LearningState state = LearningScope.of(context);
     if (known) {
       state.promote(_cards[_index]);
@@ -137,8 +141,12 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Text('Karte ${_index + 1} von ${_cards.length}',
-                    style: theme.textTheme.labelLarge),
+                Flexible(
+                  child: Text('Karte ${_index + 1} von ${_cards.length}',
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelLarge),
+                ),
+                const SizedBox(width: Insets.sm),
                 LevelDots(
                   box: state.boxOf(card),
                   color: accent,
@@ -148,13 +156,16 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _revealed = !_revealed),
-                child: Card(
-                  elevation: 2,
-                  child: Center(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(24),
+              child: Semantics(
+                button: true,
+                label: _revealed
+                    ? 'Karte aufgedeckt. Zum Zudecken tippen.'
+                    : 'Karte verdeckt. Zum Aufdecken tippen.',
+                child: GestureDetector(
+                  onTap: () => setState(() => _revealed = !_revealed),
+                  child: FlipCard(
+                    showBack: _revealed,
+                    front: _CardFace(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
@@ -167,30 +178,46 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                               style: theme.textTheme.headlineSmall
                                   ?.copyWith(fontWeight: FontWeight.w600),
                             ),
-                          const SizedBox(height: 28),
-                          if (_revealed) ...<Widget>[
-                            if (_arabicFirst)
-                              Text(
-                                card.german,
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.headlineSmall
-                                    ?.copyWith(fontWeight: FontWeight.w600),
-                              )
-                            else
-                              _SpokenWord(word: card.arabic, color: accent),
-                            const SizedBox(height: 12),
+                          const SizedBox(height: Insets.xl),
+                          Text(
+                            'Zum Aufdecken tippen',
+                            style: theme.textTheme.bodyMedium
+                                ?.copyWith(color: theme.hintColor),
+                          ),
+                        ],
+                      ),
+                    ),
+                    back: _CardFace(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          if (_arabicFirst)
+                            Text(
+                              card.german,
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.headlineSmall
+                                  ?.copyWith(fontWeight: FontWeight.w600),
+                            )
+                          else
+                            _SpokenWord(word: card.arabic, color: accent),
+                          if (card.transliteration.isNotEmpty) ...<Widget>[
+                            const SizedBox(height: Insets.md),
                             Text(
                               card.transliteration,
                               textAlign: TextAlign.center,
                               style: theme.textTheme.titleMedium
                                   ?.copyWith(fontStyle: FontStyle.italic),
                             ),
-                          ] else
+                          ],
+                          if (card.explanation != null) ...<Widget>[
+                            const SizedBox(height: Insets.md),
                             Text(
-                              'Zum Aufdecken tippen',
+                              card.explanation!,
+                              textAlign: TextAlign.center,
                               style: theme.textTheme.bodyMedium
                                   ?.copyWith(color: theme.hintColor),
                             ),
+                          ],
                         ],
                       ),
                     ),
@@ -248,6 +275,29 @@ class _SpokenWord extends StatelessWidget {
         ),
         SpeakButton(text: word, size: 28, color: color),
       ],
+    );
+  }
+}
+
+/// Die Fläche einer Karteikarte — beide Seiten sehen gleich aus, damit die
+/// Drehung nicht springt.
+class _CardFace extends StatelessWidget {
+  const _CardFace({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 2,
+      child: SizedBox.expand(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(Insets.xl),
+            child: child,
+          ),
+        ),
+      ),
     );
   }
 }

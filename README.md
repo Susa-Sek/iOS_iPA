@@ -13,6 +13,16 @@ Zeichen schreibt Arabisch nur die Konsonanten, und Anfänger können nicht
 wissen, wie ein Wort klingt. Ein Test setzt das durch: kommt ein Wort ohne
 Zeichen dazu, schlägt er an.
 
+## Aufbau der App
+
+Unten drei Bereiche, statt alles auf einer Seite:
+
+| Bereich | Inhalt |
+| --- | --- |
+| **Lernen** | Was heute fällig ist, Tagesziel, Serie, Level — darunter der Lernweg mit allen Themen. Die Zahl am Symbol zeigt die fälligen Wörter. |
+| **Üben** | Alle Übungen und alles zum Nachschlagen, jeweils mit einem Satz dazu, was einen erwartet. |
+| **Erfolge** | Level, Punkte, Serie und die zwölf Abzeichen. |
+
 ## Übungen
 
 | Übung | Was man macht |
@@ -133,11 +143,14 @@ lib/
 ├── models/                VocabEntry, VocabCategory, ArabicLetter,
 │                          ArabicDiacritic + Tashkīl-Hilfsfunktionen
 ├── data/                  Wortschatz, Lernweg, Alphabet, Verben, Quran
+├── theme/                 Abstände, Radien, Bewegung, Erscheinungsbild
 ├── state/                 Lernstufen & Termine, Speicherung, Punkte,
 │                          Sprachausgabe, Erinnerungen
+├── data/                  Wortschatz, Lernweg, Registry, Alphabet, Verben
 ├── screens/               Start, Thema, Karteikarten, Quiz, Zuordnen,
 │                          Wort bauen, Alphabet & Zeichen, Suche,
-│                          Quran-Übersicht, Sure, Wurzeln, Verbtabellen
+│                          Quran-Übersicht, Sure, Wurzeln, Verbtabellen,
+│                          Navigationsgerüst, Übungsübersicht
 └── widgets/               Arabische Textausgabe (RTL), Wortzeile, Lernboxen
 ```
 
@@ -145,9 +158,10 @@ lib/
 
 ```bash
 flutter pub get
-flutter test        # 128 Tests: Daten, Lernlogik, Speicherung, Sprachausgabe,
+flutter test        # 154 Tests: Daten, Lernlogik, Speicherung, Sprachausgabe,
                     # Quran-Text gegen die Quelle, Verbtabellen,
-                    # Erinnerungsplan, Punkte & Abzeichen, Layout
+                    # Erinnerungsplan, Punkte & Abzeichen, Registry,
+                    # Layout auf drei Displaygrößen und bei 150 % Schrift
 flutter analyze
 flutter run
 ```

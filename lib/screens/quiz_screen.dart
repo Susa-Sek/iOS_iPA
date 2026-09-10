@@ -6,6 +6,8 @@ import '../data/vocabulary_data.dart';
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
 import '../state/speech.dart';
+import '../theme/app_theme.dart';
+import '../widgets/answer_feedback.dart';
 import '../widgets/arabic_text.dart';
 import '../widgets/speak_button.dart';
 
@@ -103,6 +105,7 @@ class _QuizScreenState extends State<QuizScreen> {
     if (_chosen != null) return;
     final bool correct = option.id == question.entry.id;
     final LearningState state = LearningScope.of(context);
+    AnswerFeedback.tap(correct: correct);
     state.recordAnswer(correct: correct);
     if (correct) {
       state.promote(question.entry);
@@ -319,9 +322,16 @@ class _QuizScreenState extends State<QuizScreen> {
               },
             ),
           ),
+          RevealBox(
+            visible: _chosen != null && question.entry.explanation != null,
+            child: Padding(
+              padding: const EdgeInsets.only(top: Insets.md),
+              child: _Explanation(entry: question.entry),
+            ),
+          ),
           if (_chosen != null)
             Padding(
-              padding: const EdgeInsets.only(top: 12),
+              padding: const EdgeInsets.only(top: Insets.md),
               child: FilledButton(
                 onPressed: _next,
                 child: Text(_index == _questions.length - 1
@@ -385,21 +395,97 @@ class _AnswerButton extends StatelessWidget {
         break;
     }
 
-    return OutlinedButton(
-      onPressed: state == _AnswerState.open ? onTap : null,
-      style: OutlinedButton.styleFrom(
-        backgroundColor: background,
-        foregroundColor: foreground,
-        disabledForegroundColor: foreground,
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-        alignment: arabic ? Alignment.centerRight : Alignment.centerLeft,
+    final Widget label = arabic
+        ? ArabicText(option.arabic, fontSize: 24, color: foreground)
+        : Text(
+            option.german,
+            style: theme.textTheme.titleMedium?.copyWith(color: foreground),
+          );
+
+    // Farbe allein trägt die Rückmeldung nicht — im Dunkeln, bei
+    // Farbenblindheit oder aus dem Augenwinkel. Deshalb das Zeichen dazu.
+    final bool decided =
+        state == _AnswerState.correct || state == _AnswerState.wrong;
+
+    return Semantics(
+      button: true,
+      enabled: state == _AnswerState.open,
+      label: decided
+          ? '${arabic ? option.arabic : option.german}, '
+              '${AnswerFeedback.label(correct: state == _AnswerState.correct)}'
+          : null,
+      child: OutlinedButton(
+        onPressed: state == _AnswerState.open ? onTap : null,
+        style: OutlinedButton.styleFrom(
+          backgroundColor: background,
+          foregroundColor: foreground,
+          disabledForegroundColor: foreground,
+          padding: const EdgeInsets.symmetric(
+              vertical: Insets.lg, horizontal: Insets.lg),
+          alignment: arabic ? Alignment.centerRight : Alignment.centerLeft,
+        ),
+        child: Row(
+          children: <Widget>[
+            Expanded(child: label),
+            if (decided)
+              Icon(
+                AnswerFeedback.icon(
+                    correct: state == _AnswerState.correct),
+                color: foreground,
+                size: 20,
+              ),
+          ],
+        ),
       ),
-      child: arabic
-          ? ArabicText(option.arabic, fontSize: 24, color: foreground)
-          : Text(
-              option.german,
-              style: theme.textTheme.titleMedium?.copyWith(color: foreground),
+    );
+  }
+}
+
+/// Die Erklärung nach der Antwort — bei Wissensfragen der eigentliche
+/// Lerneffekt, deshalb bekommt sie eine eigene Fläche statt einer Fußnote.
+class _Explanation extends StatelessWidget {
+  const _Explanation({required this.entry});
+
+  final VocabEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return Card(
+      color: theme.colorScheme.secondaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(Insets.md),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Icon(Icons.lightbulb_outline,
+                size: 20, color: theme.colorScheme.onSecondaryContainer),
+            const SizedBox(width: Insets.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    entry.explanation ?? '',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSecondaryContainer,
+                    ),
+                  ),
+                  if (entry.source != null) ...<Widget>[
+                    const SizedBox(height: Insets.xs),
+                    Text(
+                      'Quelle: ${entry.source}',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSecondaryContainer,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
+          ],
+        ),
+      ),
     );
   }
 }

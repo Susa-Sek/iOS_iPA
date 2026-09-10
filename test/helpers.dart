@@ -65,3 +65,34 @@ Widget wrapScreen(
         ),
       ),
     );
+
+/// Wie [wrapScreen], aber mit vergrößerter Schrift.
+///
+/// Wer die Systemschrift hochstellt — und das tun viele —, bekommt jeden Text
+/// größer. Layouts, die auf die Standardgröße gebaut sind, brechen dann. Der
+/// Test deckt das auf, bevor es ein Nutzer tut.
+Widget wrapScreenScaled(
+  Widget child, {
+  double scale = 1.5,
+  LearningState? state,
+  Speaker? speaker,
+  ReminderService? reminders,
+}) =>
+    LearningScope(
+      state: state ?? LearningState(),
+      child: SpeechScope(
+        speaker: speaker ?? Speaker(backend: FakeSpeechBackend()),
+        child: ReminderScope(
+          service: reminders ??
+              ReminderService(backend: FakeReminderBackend()),
+          child: MaterialApp(
+            builder: (BuildContext context, Widget? widget) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(scale)),
+              child: widget!,
+            ),
+            home: child,
+          ),
+        ),
+      ),
+    );

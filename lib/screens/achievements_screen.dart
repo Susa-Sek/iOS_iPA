@@ -23,7 +23,10 @@ class AchievementsScreen extends StatelessWidget {
               b.ratio(stats).compareTo(a.ratio(stats)));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Erfolge')),
+      appBar: AppBar(
+        title: const Text('Erfolge'),
+        automaticallyImplyLeading: false,
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: <Widget>[
