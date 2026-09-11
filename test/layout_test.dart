@@ -20,6 +20,7 @@ import 'package:ipa_testing_github_action/screens/roots_screen.dart';
 import 'package:ipa_testing_github_action/screens/sura_screen.dart';
 import 'package:ipa_testing_github_action/screens/verbs_screen.dart';
 import 'package:ipa_testing_github_action/screens/search_screen.dart';
+import 'package:ipa_testing_github_action/screens/shorts_screen.dart';
 
 import 'helpers.dart';
 
@@ -317,16 +318,32 @@ void main() {
       });
     });
 
-    testWidgets('Thema mit Wissenskarten', (WidgetTester tester) async {
-      await _withSize(tester, const Size(320, 568), () async {
-        await tester.pumpWidget(
-            _wrap(CategoryScreen(category: kKnowledgeCategories.first)));
-        await tester.pumpAndSettle();
-        // Der Bildschirm hat oben eine waagerechte Leiste und darunter die
-        // eigentliche Liste — gemeint ist die letzte.
-        await tester.drag(find.byType(ListView).last, const Offset(0, -400));
-        await tester.pumpAndSettle();
+    // Ein Wissensthema ist seit dem Umbau kein Karteikasten mehr, sondern
+    // ein Feed: eine Karte je Bildschirm. Geprüft wird deshalb der Feed —
+    // `CategoryScreen` ist wieder rein für den Wortschatz da.
+    for (final Size size in _sizes) {
+      testWidgets('Thema als Feed bei ${size.width.toInt()} px',
+          (WidgetTester tester) async {
+        await _withSize(tester, size, () async {
+          await tester.pumpWidget(
+              _wrap(ShortsScreen(category: kKnowledgeCategories.first)));
+          await tester.pumpAndSettle();
+          // Ein paar Karten weit: Fakt, Frage, beantwortete Frage.
+          for (int i = 0; i < 3; i++) {
+            // Nur die Knöpfe der sichtbaren Karte — der Feed baut die
+            // nächste Seite schon unterhalb des Randes mit auf.
+            final Finder antworten =
+                find.byType(OutlinedButton).hitTestable();
+            if (antworten.evaluate().length == 4) {
+              await tester.tap(antworten.first);
+              await tester.pumpAndSettle();
+            }
+            await tester.fling(
+                find.byType(PageView), const Offset(0, -400), 1200);
+            await tester.pumpAndSettle();
+          }
+        });
       });
-    });
+    }
   });
 }

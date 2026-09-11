@@ -25,8 +25,8 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
           'Schneller Speicher für laufende Programme',
           distractors: <String>[
             'Dauerhafter Speicher für Dateien',
-            'Der Bildschirmspeicher',
-            'Ein Speicher im Netz'
+            'Speicher für die Bildausgabe',
+            'Speicher auf fremden Rechnern',
           ],
           explanation: 'Er ist beim Ausschalten leer — anders als eine '
               'Festplatte.'),
@@ -55,9 +55,9 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
       _K.question('Was macht ein Compiler?',
           'Er übersetzt Quelltext in Maschinencode',
           distractors: <String>[
-            'Er packt Dateien zusammen',
-            'Er sucht Fehler im Netz',
-            'Er zeigt Bilder an'
+            'Er führt Quelltext Zeile für Zeile aus',
+            'Er sucht Fehler im laufenden Programm',
+            'Er packt Dateien zu einem Archiv zusammen',
           ],
           explanation: 'Ein Interpreter führt den Quelltext dagegen Zeile für '
               'Zeile aus.'),
@@ -65,7 +65,11 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
           explanation: 'Bequem — aber die Daten liegen dann nicht mehr bei '
               'einem selbst.'),
       _K.question('Wie viele Byte hat ein Kilobyte nach SI?', '1000',
-          distractors: <String>['1024', '100', '512'],
+          distractors: <String>[
+            '1024',
+            '8000',
+            '1048576',
+          ],
           explanation: '1024 Byte heißen korrekt ein Kibibyte; im Alltag wird '
               'beides vermischt.'),
       _K.fact('Backup', 'Zweite Kopie von Daten an einem anderen Ort',
@@ -111,9 +115,9 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
               'Seite zusammen.'),
       _K.question('Was ist ein Server?', 'Ein Rechner, der Dienste bereitstellt',
           distractors: <String>[
-            'Ein besonders schneller PC',
-            'Ein Netzwerkkabel',
-            'Ein Programm im Browser'
+            'Ein Rechner, der Daten weiterleitet',
+            'Ein Rechner, der besonders schnell rechnet',
+            'Ein Rechner, der Seiten anzeigt',
           ],
           explanation: 'Der anfragende Rechner heißt Client.'),
       _K.fact('WLAN', 'Drahtloses lokales Netz per Funk',
@@ -121,9 +125,9 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
               'Wohnung.'),
       _K.question('Was ist eine URL?', 'Die Adresse einer Ressource im Netz',
           distractors: <String>[
-            'Ein Dateiformat',
-            'Ein Verschlüsselungsverfahren',
-            'Ein Netzwerkkabel'
+            'Der Name eines Rechners im Netz',
+            'Die Nummer eines Anschlusses im Netz',
+            'Die Kennung eines Datenpakets im Netz',
           ],
           explanation: 'Sie nennt Protokoll, Rechner und Pfad.'),
       _K.fact('Bandbreite', 'Datenmenge, die je Zeit übertragen werden kann',
@@ -131,9 +135,9 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
               'Verzögerung.'),
       _K.question('Was misst die Latenz?', 'Die Verzögerung einer Übertragung',
           distractors: <String>[
-            'Die Datenmenge',
-            'Die Fehlerrate',
-            'Die Signalstärke'
+            'Die Menge einer Übertragung',
+            'Die Fehlerzahl einer Übertragung',
+            'Die Stärke eines Signals',
           ],
           explanation: 'Für Videotelefonie und Spiele wichtiger als die reine '
               'Geschwindigkeit.'),
@@ -143,9 +147,9 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
       _K.question('Was ist ein VPN?',
           'Ein verschlüsselter Tunnel durch ein fremdes Netz',
           distractors: <String>[
-            'Ein besonders schnelles WLAN',
-            'Ein Virenschutz',
-            'Ein Werbeblocker'
+            'Ein abgeschottetes Netz innerhalb einer Firma',
+            'Ein Zwischenspeicher für oft besuchte Seiten',
+            'Ein Verzeichnis aller Rechner im Netz',
           ],
           explanation: 'Es schützt die Verbindung — nicht vor allem '
               'anderen.'),
@@ -177,9 +181,9 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
       _K.question('Was ist Zwei-Faktor-Authentifizierung?',
           'Anmeldung mit zwei verschiedenen Nachweisen',
           distractors: <String>[
-            'Zwei Passwörter hintereinander',
-            'Zwei Konten für einen Dienst',
-            'Ein doppelt langes Passwort'
+            'Anmeldung mit zwei Passwörtern nacheinander',
+            'Anmeldung an zwei Konten desselben Dienstes',
+            'Anmeldung mit einem doppelt langen Passwort',
           ],
           explanation: 'Etwa Passwort plus Code aus einer App — ein '
               'gestohlenes Passwort allein nützt dann nichts.'),
@@ -188,9 +192,9 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
       _K.question('Was regelt die DSGVO?',
           'Den Umgang mit personenbezogenen Daten',
           distractors: <String>[
-            'Die Netzgeschwindigkeit',
-            'Den Jugendschutz im Netz',
-            'Das Urheberrecht'
+            'Den Umgang mit urheberrechtlichen Werken',
+            'Den Umgang mit jugendgefährdenden Inhalten',
+            'Den Umgang mit unerwünschter Werbung',
           ],
           explanation: 'Seit 2018 in der ganzen EU unmittelbar gültig.'),
       _K.fact('Verschlüsselung', 'Umwandlung von Daten in unlesbare Form',
@@ -210,9 +214,9 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
       _K.question('Was macht Ransomware?',
           'Sie verschlüsselt Daten und fordert Lösegeld',
           distractors: <String>[
-            'Sie zeigt Werbung',
-            'Sie liest Passwörter mit',
-            'Sie verlangsamt den Rechner'
+            'Sie liest Passwörter mit und sendet sie weiter',
+            'Sie zeigt unerwünschte Werbung und leitet um',
+            'Sie löscht Dateien und hinterlässt keine Spur',
           ],
           explanation: 'Ein aktuelles Backup an einem getrennten Ort ist der '
               'beste Schutz.'),
@@ -236,8 +240,8 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
           'Ungefähren Ort und Anbieter',
           distractors: <String>[
             'Den Namen des Nutzers',
-            'Das Passwort',
-            'Den genauen Gerätetyp'
+            'Das benutzte Betriebssystem',
+            'Die genaue Wohnanschrift',
           ],
           explanation: 'Für die Zuordnung zu einer Person braucht es eine '
               'Auskunft des Anbieters.'),
@@ -248,8 +252,8 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
           'An Zeitdruck und am Ziel des Links',
           distractors: <String>[
             'An Rechtschreibfehlern allein',
-            'An der Uhrzeit der Mail',
-            'An der Dateigröße'
+            'Am Namen des Absenders allein',
+            'An der Uhrzeit der Zustellung',
           ],
           explanation: 'Absenderadressen lassen sich leicht fälschen — wohin '
               'ein Link führt, nicht.'),
@@ -269,9 +273,9 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
       _K.question('Was ist maschinelles Lernen?',
           'Regeln aus Beispielen ableiten',
           distractors: <String>[
-            'Ein Rechner, der von selbst startet',
-            'Programmieren ohne Tastatur',
-            'Ein besonders schneller Prozessor'
+            'Regeln von Hand einprogrammieren',
+            'Beispiele in einer Datenbank nachschlagen',
+            'Rechenschritte auf viele Rechner verteilen',
           ],
           explanation: 'Statt die Regeln zu programmieren, findet das '
               'Programm Muster in Daten.'),
@@ -280,9 +284,9 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
       _K.question('Was bedeutet Bias in einem Modell?',
           'Eine systematische Verzerrung',
           distractors: <String>[
-            'Ein Rechenfehler',
-            'Eine langsame Antwort',
-            'Ein Speicherproblem'
+            'Ein zufälliger Rechenfehler',
+            'Eine unvollständige Antwort',
+            'Ein Fehler beim Einlesen',
           ],
           explanation: 'Sie stammt meist aus den Daten, nicht aus dem '
               'Verfahren.'),
@@ -293,9 +297,9 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
       _K.question('Was ist eine Halluzination bei Sprachmodellen?',
           'Eine erfundene, plausibel klingende Aussage',
           distractors: <String>[
-            'Ein Absturz',
-            'Ein Übersetzungsfehler',
-            'Ein Bildfehler'
+            'Eine wörtlich abgeschriebene Textstelle',
+            'Eine Antwort in der falschen Sprache',
+            'Eine abgebrochene, unvollständige Antwort',
           ],
           explanation: 'Deshalb gehören Angaben aus solchen Modellen '
               'nachgeprüft.'),
@@ -313,9 +317,9 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
       _K.question('Warum brauchen große Modelle so viel Strom?',
           'Weil das Training enorm viele Rechenschritte kostet',
           distractors: <String>[
-            'Weil sie ständig im Netz suchen',
-            'Weil sie große Bildschirme brauchen',
-            'Weil sie Daten kühlen müssen'
+            'Weil sie ständig im Netz nachschlagen',
+            'Weil sie jede Antwort neu trainieren',
+            'Weil sie alle Daten dauerhaft speichern',
           ],
           explanation: 'Der spätere Betrieb ist deutlich günstiger als das '
               'einmalige Training.'),
@@ -325,9 +329,9 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
       _K.question('Darf man Ausgaben eines Sprachmodells ungeprüft übernehmen?',
           'Nein, sie können falsch sein',
           distractors: <String>[
-            'Ja, sie sind geprüft',
-            'Nur bei Zahlen',
-            'Nur bei Texten'
+            'Ja, sie sind vorher geprüft',
+            'Nur bei Zahlen und Daten',
+            'Nur bei kurzen Antworten',
           ],
           explanation: 'Verantwortlich bleibt, wer sie verwendet.'),
       _K.fact('Automatisierung', 'Übertragung von Arbeitsschritten an Maschinen',
@@ -353,9 +357,9 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
       _K.question('Warum wärmt eine Mikrowelle Speisen?',
           'Sie versetzt Wassermoleküle in Schwingung',
           distractors: <String>[
-            'Sie strahlt Hitze ab',
-            'Sie erzeugt Infrarotlicht',
-            'Sie presst Luft zusammen'
+            'Sie strahlt Hitze von einem Heizdraht ab',
+            'Sie erzeugt Infrarotlicht wie ein Grill',
+            'Sie presst heiße Luft durch die Speise',
           ],
           explanation: 'Deshalb wird trockenes Brot darin kaum warm.'),
       _K.fact('Sicherung', 'Schutz, der den Stromkreis bei Überlast trennt',
@@ -394,9 +398,9 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
       _K.question('Warum gehören Elektrogeräte nicht in den Hausmüll?',
           'Sie enthalten Schadstoffe und Wertstoffe',
           distractors: <String>[
-            'Sie sind zu schwer',
-            'Sie sind zu groß',
-            'Sie riechen'
+            'Sie enthalten zu viel Metall für die Tonne',
+            'Sie sind zu schwer für die Abfuhr',
+            'Sie verbrennen in der Anlage nicht',
           ],
           explanation: 'Rücknahmestellen sind gesetzlich vorgeschrieben.'),
       _K.fact('Standby', 'Bereitschaftsbetrieb mit geringem Dauerverbrauch',
@@ -404,9 +408,9 @@ const List<VocabCategory> kTechnik = <VocabCategory>[
       _K.question('Was bedeutet die Schutzart IP68?',
           'Staubdicht und gegen Untertauchen geschützt',
           distractors: <String>[
-            'Besonders bruchfest',
-            'Besonders leicht',
-            'Gegen Hitze geschützt'
+            'Spritzwassergeschützt, aber nicht staubdicht',
+            'Staubdicht, aber nicht wassergeschützt',
+            'Gegen Hitze und Kälte geschützt',
           ],
           explanation: 'Die erste Ziffer steht für Staub, die zweite für '
               'Wasser.'),

@@ -96,9 +96,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Wer kann das Grundgesetz ändern?',
           'Bundestag und Bundesrat mit Zweidrittelmehrheit',
           distractors: <String>[
-            'Die Regierung allein',
-            'Das Volk in einer Abstimmung',
-            'Das Verfassungsgericht'
+            'Der Bundestag allein mit einfacher Mehrheit',
+            'Das Volk in einer Volksabstimmung',
+            'Das Bundesverfassungsgericht durch Urteil',
           ],
           explanation: 'Menschenwürde und Bundesstaat sind der Änderung ganz '
               'entzogen.'),
@@ -133,9 +133,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Was bedeutet „geheime Wahl"?',
           'Niemand darf erfahren, wie man gewählt hat',
           distractors: <String>[
-            'Die Kandidaten sind unbekannt',
-            'Das Ergebnis wird spät verkündet',
-            'Die Wahl findet nachts statt'
+            'Niemand erfährt vorher die Kandidaten',
+            'Niemand erfährt das Ergebnis vor Schluss',
+            'Niemand darf über die Wahl berichten',
           ],
           explanation: 'Einer der fünf Wahlrechtsgrundsätze.'),
       _K.fact('Opposition', 'Parteien im Parlament, die nicht regieren',
@@ -154,9 +154,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Was ist ein Volksentscheid?',
           'Eine Abstimmung des Volkes über eine Sachfrage',
           distractors: <String>[
-            'Eine Wahl von Abgeordneten',
-            'Eine Meinungsumfrage',
-            'Eine Parteiversammlung'
+            'Eine Wahl des Volkes zwischen Kandidaten',
+            'Eine Befragung des Volkes ohne Bindung',
+            'Eine Abstimmung des Parlaments über ein Gesetz',
           ],
           explanation: 'Auf Bundesebene ist er in Deutschland kaum '
               'vorgesehen.'),
@@ -175,9 +175,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Was kennzeichnet eine Verhältniswahl?',
           'Sitze nach Stimmenanteilen',
           distractors: <String>[
-            'Der Sieger bekommt alle Sitze',
-            'Nur Direktkandidaten ziehen ein',
-            'Das Los entscheidet'
+            'Sitze nach gewonnenen Wahlkreisen',
+            'Sitze nach der Mitgliederzahl der Parteien',
+            'Sitze nach der Reihenfolge der Anmeldung',
           ],
           explanation: 'Beim Mehrheitswahlrecht gewinnt je Wahlkreis nur '
               'einer, der Rest der Stimmen verfällt.'),
@@ -203,9 +203,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Was ist der Schengen-Raum?',
           'Ein Gebiet ohne Kontrollen an den Binnengrenzen',
           distractors: <String>[
-            'Die Zone des Euro',
-            'Ein Handelsabkommen',
-            'Ein Militärbündnis'
+            'Ein Gebiet mit einer gemeinsamen Währung',
+            'Ein Gebiet mit einheitlichen Zöllen nach außen',
+            'Ein Gebiet mit gemeinsamer Verteidigung',
           ],
           explanation: 'Er ist nicht deckungsgleich mit der EU.'),
       _K.fact('Euro', 'Gemeinsame Währung eines Teils der EU-Staaten',
@@ -229,9 +229,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Was regeln die Genfer Konventionen?',
           'Den Schutz von Menschen im Krieg',
           distractors: <String>[
-            'Den Welthandel',
-            'Das Klima',
-            'Die Seefahrt'
+            'Den Schutz von Kulturgütern im Krieg',
+            'Den Schutz der Meere vor Verschmutzung',
+            'Den Handel zwischen den Staaten',
           ],
           explanation: 'Sie schützen Verwundete, Gefangene und Zivilisten.'),
       _K.fact('Allgemeine Erklärung der Menschenrechte',
@@ -241,9 +241,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Was regelt das Pariser Abkommen von 2015?',
           'Die Begrenzung der Erderwärmung',
           distractors: <String>[
-            'Den Welthandel',
-            'Die Seefahrt',
-            'Die Raumfahrt'
+            'Die Begrenzung des Welthandels',
+            'Die Begrenzung der Atomwaffen',
+            'Die Begrenzung der Meeresfischerei',
           ],
           explanation: 'Ziel ist deutlich unter zwei Grad gegenüber '
               'vorindustrieller Zeit.'),
@@ -289,9 +289,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Was ist ein Vertrag?',
           'Eine Einigung, aus der Pflichten entstehen',
           distractors: <String>[
-            'Ein einseitiges Versprechen',
-            'Ein Antrag ohne Antwort',
-            'Eine Quittung'
+            'Ein Versprechen, das nur einen bindet',
+            'Ein Angebot, das noch nicht angenommen ist',
+            'Ein Beleg über eine gezahlte Summe',
           ],
           explanation: 'Er kann auch mündlich zustande kommen.'),
       _K.fact('Widerrufsrecht',
@@ -330,9 +330,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Was ist Notwehr?',
           'Abwehr eines gegenwärtigen rechtswidrigen Angriffs',
           distractors: <String>[
-            'Rache nach einer Tat',
-            'Hilfe für die Polizei',
-            'Ein Vertrag unter Zwang'
+            'Vergeltung nach einem beendeten Angriff',
+            'Abwehr eines erst befürchteten Angriffs',
+            'Abwehr eines erlaubten Eingriffs',
           ],
           explanation: 'Sie muss erforderlich sein — und darf nicht über das '
               'Nötige hinausgehen.'),
@@ -342,9 +342,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Was bedeutet „im Zweifel für den Angeklagten"?',
           'Bei Zweifeln muss freigesprochen werden',
           distractors: <String>[
-            'Der Angeklagte wählt das Gericht',
-            'Die Strafe wird halbiert',
-            'Das Verfahren wird vertagt'
+            'Bei Zweifeln wird die Strafe gemildert',
+            'Bei Zweifeln entscheidet das höhere Gericht',
+            'Bei Zweifeln wird das Verfahren vertagt',
           ],
           explanation: 'Lateinisch: in dubio pro reo.'),
     ],
@@ -386,9 +386,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Was ist die Rendite?',
           'Der Ertrag im Verhältnis zum Einsatz',
           distractors: <String>[
-            'Der eingezahlte Betrag',
-            'Die Laufzeit',
-            'Die Gebühr'
+            'Der eingezahlte Betrag ohne Zinsen',
+            'Die Dauer bis zur Auszahlung',
+            'Die Gebühr im Verhältnis zum Einsatz',
           ],
           explanation: 'Höhere Rendite geht regelmäßig mit höherem Risiko '
               'einher.'),
@@ -397,9 +397,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Was bedeutet Diversifikation bei der Geldanlage?',
           'Das Risiko auf viele Anlagen verteilen',
           distractors: <String>[
-            'Möglichst oft kaufen und verkaufen',
-            'Nur in eine Branche gehen',
-            'Nur Bargeld halten'
+            'Das Geld auf eine einzige Anlage setzen',
+            'Das Depot möglichst oft umschichten',
+            'Das Risiko durch eine Versicherung abdecken',
           ],
           explanation: 'Nicht alles auf eine Karte — die einfachste Regel der '
               'Geldanlage.'),
@@ -416,9 +416,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Was ist ein Monopol?',
           'Ein Anbieter beherrscht einen Markt allein',
           distractors: <String>[
-            'Viele Anbieter, ein Käufer',
-            'Ein Preisabkommen',
-            'Ein Staatsbetrieb'
+            'Ein Käufer beherrscht einen Markt allein',
+            'Mehrere Anbieter teilen einen Markt unter sich',
+            'Der Staat betreibt ein Unternehmen allein',
           ],
           explanation: 'Ohne Wettbewerb fehlt der Druck auf Preis und '
               'Qualität.'),
@@ -459,9 +459,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Was ist ein Tarifvertrag?',
           'Vereinbarung zwischen Gewerkschaft und Arbeitgebern',
           distractors: <String>[
-            'Ein Vertrag mit dem Finanzamt',
-            'Ein einzelner Arbeitsvertrag',
-            'Eine Betriebsordnung'
+            'Vereinbarung zwischen Betrieb und Betriebsrat',
+            'Vereinbarung zwischen Arbeitgeber und Beschäftigtem',
+            'Vereinbarung zwischen Staat und Gewerkschaft',
           ],
           explanation: 'Er regelt Lohn und Bedingungen für eine ganze '
               'Branche.'),
@@ -478,9 +478,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Wie funktioniert die Rente im Umlageverfahren?',
           'Die Beiträge von heute zahlen die Renten von heute',
           distractors: <String>[
-            'Jeder spart für sich selbst',
-            'Der Staat zahlt aus Steuern',
-            'Die Arbeitgeber zahlen allein'
+            'Die Beiträge von heute werden für später angespart',
+            'Die Renten von heute zahlt der Staat aus Steuern',
+            'Die Renten von heute zahlen die Arbeitgeber allein',
           ],
           explanation: 'Deshalb hängt sie am Verhältnis von Beitragszahlern '
               'zu Rentnern.'),
@@ -544,7 +544,11 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
           explanation: 'Wer keine nennt, verlangt Glauben statt Prüfung.'),
       _K.question('Was ist Desinformation?',
           'Absichtlich verbreitete Falschinformation',
-          distractors: <String>['Ein Irrtum', 'Eine Meinung', 'Eine Satire'],
+          distractors: <String>[
+            'Versehentlich verbreitete Falschinformation',
+            'Zugespitzt verbreitete Meinung',
+            'Erkennbar überzeichnete Satire',
+          ],
           explanation: 'Der Unterschied zum Irrtum liegt in der Absicht.'),
       _K.fact('Öffentlich-rechtlicher Rundfunk',
           'Rundfunk, der aus Beiträgen statt aus Werbung lebt',
@@ -552,9 +556,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Was ist eine Filterblase?',
           'Eine Auswahl, die nur Passendes zeigt',
           distractors: <String>[
-            'Ein Werbeblocker',
-            'Ein Spamfilter',
-            'Eine Verschlüsselung'
+            'Ein Filter, der Werbung ausblendet',
+            'Ein Filter, der unerwünschte Post aussortiert',
+            'Eine Auswahl, die zufällig zusammengestellt ist',
           ],
           explanation: 'Programme zeigen bevorzugt, was zur bisherigen '
               'Nutzung passt.'),
@@ -575,9 +579,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Was prüft man am besten vor dem Teilen einer Meldung?',
           'Wer sie verbreitet und wann sie entstand',
           distractors: <String>[
-            'Wie viele sie geteilt haben',
-            'Ob sie Bilder hat',
-            'Ob sie kurz ist'
+            'Wie viele sie bereits geteilt haben',
+            'Ob sie ein passendes Bild enthält',
+            'Ob sie sich flüssig lesen lässt',
           ],
           explanation: 'Alte Meldungen tauchen oft als neue wieder auf.'),
       _K.fact('Zitat', 'Wörtlich übernommene Äußerung mit Quellenangabe',
@@ -585,9 +589,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Was kennzeichnet eine Verschwörungserzählung?',
           'Sie behauptet einen geheimen Plan hinter Ereignissen',
           distractors: <String>[
-            'Sie ist immer politisch',
-            'Sie stammt aus dem Ausland',
-            'Sie ist ein Gerücht ohne Absicht'
+            'Sie entsteht aus einem Gerücht ohne Absicht',
+            'Sie richtet sich immer gegen die Regierung',
+            'Sie verbreitet sich nur in sozialen Netzen',
           ],
           explanation: 'Sie ist meist so gebaut, dass Gegenbeweise als Teil '
               'des Plans gelten — und damit unwiderlegbar.'),
@@ -597,9 +601,9 @@ const List<VocabCategory> kGesellschaft = <VocabCategory>[
       _K.question('Warum sagt die Zahl der Klicks nichts über Wahrheit?',
           'Weil Aufmerksamkeit sich nicht nach Richtigkeit richtet',
           distractors: <String>[
-            'Weil Klicks nicht gezählt werden',
-            'Weil Server langsam sind',
-            'Weil Werbung stört'
+            'Weil Klicks technisch nicht zuverlässig zählbar sind',
+            'Weil jede Meldung gleich viele Klicks bekommt',
+            'Weil nur bezahlte Meldungen Klicks bekommen',
           ],
           explanation: 'Empörendes verbreitet sich schneller als '
               'Zutreffendes.'),

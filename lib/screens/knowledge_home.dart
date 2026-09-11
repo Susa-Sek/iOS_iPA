@@ -8,8 +8,8 @@ import '../state/learning_state.dart';
 import '../state/lesson_store.dart';
 import '../theme/app_theme.dart';
 import '../widgets/subject_switch.dart';
-import 'category_screen.dart';
 import 'lesson_screen.dart';
+import 'shorts_screen.dart';
 import 'today_screen.dart';
 
 /// Die Startseite im Fach Wissen.
@@ -382,9 +382,11 @@ class _ThemaZeile extends StatelessWidget {
       trailing: verstanden
           ? Icon(Icons.check_circle, color: theme.colorScheme.primary)
           : const Icon(Icons.chevron_right),
+      // Ein Thema ist hier kein Karteikasten, sondern ein Feed: eine Karte
+      // füllt den Schirm, nach oben wischen heißt weiter.
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (_) => CategoryScreen(category: category),
+          builder: (_) => ShortsScreen(category: category),
         ),
       ),
     );

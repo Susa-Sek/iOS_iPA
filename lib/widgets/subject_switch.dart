@@ -183,12 +183,35 @@ class SubjectSwitchHeader extends SliverPersistentHeaderDelegate {
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     final ThemeData theme = Theme.of(context);
-    return SizedBox(
-      height: _height,
-      child: Material(
+    // Läuft Inhalt darunter durch, braucht die Leiste eine sichtbare Kante.
+    // Ohne sie schneidet sie den Text der Karte darunter mitten im
+    // Buchstaben ab, und das sieht nicht nach „angeheftet" aus, sondern
+    // nach kaputt.
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        // Deckend, nicht durchscheinend: Sonst schimmert die Schrift
+        // darunter durch die Leiste.
         color: theme.scaffoldBackgroundColor,
-        elevation: overlapsContent ? 1 : 0,
-        child: const SubjectSwitch(),
+        border: overlapsContent
+            ? Border(
+                bottom: BorderSide(color: theme.dividerColor, width: 0.5))
+            : null,
+        boxShadow: overlapsContent
+            ? <BoxShadow>[
+                BoxShadow(
+                  color: theme.shadowColor.withValues(alpha: 0.06),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
+      ),
+      child: SizedBox(
+        height: _height,
+        child: const Material(
+          type: MaterialType.transparency,
+          child: SubjectSwitch(),
+        ),
       ),
     );
   }

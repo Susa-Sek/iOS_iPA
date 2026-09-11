@@ -17,6 +17,7 @@ import 'quiz_screen.dart';
 import 'quran_screen.dart';
 import 'lesson_screen.dart';
 import 'session_screen.dart';
+import 'shorts_screen.dart';
 import 'typing_screen.dart';
 import 'verbs_screen.dart';
 
@@ -56,6 +57,13 @@ class PracticeScreen extends StatelessWidget {
               title: 'Lektion des Tages',
               subtitle: 'Lesen, prüfen, mitnehmen — etwa fünf Minuten',
               onTap: () => _lektion(context),
+            ),
+          if (!sprache)
+            _PracticeCard(
+              icon: Icons.swipe_up_alt_outlined,
+              title: 'Durch ein Thema wischen',
+              subtitle: 'Fakt, Frage, Fakt — eine Karte je Bildschirm',
+              onTap: () => _wischen(context),
             ),
           if (sprache)
             _PracticeCard(
@@ -161,6 +169,22 @@ class PracticeScreen extends StatelessWidget {
     );
     if (lesson == null) return;
     _open(context, LessonScreen(lesson: lesson));
+  }
+
+  /// Öffnet das Thema, in dem am wenigsten erledigt ist — und bei
+  /// Gleichstand das erste. Wer hier landet, will loslegen, nicht wählen.
+  static void _wischen(BuildContext context) {
+    final LearningState state = LearningScope.of(context);
+    final LessonStore store = LessonScope.of(context);
+    final List<VocabCategory> themen = <VocabCategory>[
+      for (final CategoryGroup g in state.groups) ...g.categories,
+    ];
+    if (themen.isEmpty) return;
+    VocabCategory offen = themen.first;
+    for (final VocabCategory c in themen) {
+      if (store.progressIn(c) < store.progressIn(offen)) offen = c;
+    }
+    _open(context, ShortsScreen(category: offen));
   }
 }
 

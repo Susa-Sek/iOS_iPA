@@ -280,7 +280,11 @@ const List<VocabCategory> kAllgemeinbildung = <VocabCategory>[
           explanation: 'Angegeben in zwei Werten, etwa 120 zu 80.'),
       _K.question('Welcher Teil des Gehirns steuert die Atmung?',
           'Der Hirnstamm',
-          distractors: <String>['Die Großhirnrinde', 'Das Kleinhirn', 'Das Auge'],
+          distractors: <String>[
+            'Die Großhirnrinde',
+            'Das Kleinhirn',
+            'Der Thalamus',
+          ],
           explanation: 'Deshalb atmet man auch im Schlaf weiter.'),
       _K.fact('Placebo', 'Scheinbehandlung ohne Wirkstoff',
           explanation: 'Sie kann trotzdem wirken — deshalb wird in Studien '
@@ -557,9 +561,9 @@ const List<VocabCategory> kAllgemeinbildung = <VocabCategory>[
       _K.question('Was ist ein Pilz, den man im Wald sammelt?',
           'Der Fruchtkörper',
           distractors: <String>[
-            'Die Wurzel',
-            'Die ganze Pflanze',
-            'Ein Blatt'
+            'Das Myzel',
+            'Die Sporen',
+            'Der Stiel allein',
           ],
           explanation: 'Der eigentliche Pilz ist ein weit verzweigtes '
               'Geflecht im Boden.'),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
-import '../widgets/knowledge_tile.dart';
 import '../widgets/word_tile.dart';
 import 'build_word_screen.dart';
 import 'typing_screen.dart';
@@ -10,8 +9,13 @@ import 'flashcard_screen.dart';
 import 'matching_screen.dart';
 import 'quiz_screen.dart';
 
-/// All words of one category: the four exercises for exactly this list, a
-/// filter field and the words themselves.
+/// Alle Wörter eines Themas: die Übungen für genau diese Liste, ein
+/// Suchfeld und die Wörter selbst.
+///
+/// Das ist ein **Wortschatz**bildschirm. Wissen wird nicht so gelernt und
+/// hat seit dem Umbau seinen eigenen Weg — die Lektion und den Feed
+/// (`ShortsScreen`). Hier steht deshalb nichts mehr, was beides bedienen
+/// müsste.
 class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key, required this.category});
 
@@ -34,9 +38,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
   @override
   Widget build(BuildContext context) {
     final LearningState state = LearningScope.of(context);
-    // Sprache und Wissen werden verschieden gelernt — und deshalb hier auch
-    // verschieden gezeigt.
-    final bool sprache = widget.category.isLanguage;
     final List<VocabEntry> entries = widget.category.entries
         .where((VocabEntry e) => e.matches(_query))
         .where((VocabEntry e) => !_onlyOpen || !state.isLearned(e))
@@ -120,10 +121,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
             child: TextField(
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search),
-                hintText: sprache ? 'Wort suchen …' : 'Karte suchen …',
-                border: const OutlineInputBorder(),
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                hintText: 'Wort suchen …',
+                border: OutlineInputBorder(),
                 isDense: true,
               ),
               onChanged: (String value) => setState(() => _query = value),
@@ -133,26 +134,19 @@ class _CategoryScreenState extends State<CategoryScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
               children: <Widget>[
-                // „Nur offene Wörter" ergibt im Wissen keinen Sinn: Dort ist
-                // nichts „offen" oder „gelernt", dort ist ein Thema
-                // durchgearbeitet oder nicht.
-                if (sprache) ...<Widget>[
-                  Flexible(
-                    child: FilterChip(
-                      label: const Text(
-                        'Nur offene Wörter',
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      selected: _onlyOpen,
-                      onSelected: (bool value) =>
-                          setState(() => _onlyOpen = value),
+                Flexible(
+                  child: FilterChip(
+                    label: const Text(
+                      'Nur offene Wörter',
+                      overflow: TextOverflow.ellipsis,
                     ),
+                    selected: _onlyOpen,
+                    onSelected: (bool value) =>
+                        setState(() => _onlyOpen = value),
                   ),
-                  const SizedBox(width: 8),
-                ],
-                Text(sprache
-                    ? '${entries.length} Wörter'
-                    : '${entries.length} Karten'),
+                ),
+                const SizedBox(width: 8),
+                Text('${entries.length} Wörter'),
                 const SizedBox(width: 8),
               ],
             ),
@@ -164,16 +158,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 : ListView.separated(
                     itemCount: entries.length,
                     separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (BuildContext context, int index) => sprache
-                        ? WordTile(
-                            entry: entries[index],
-                            accent: widget.category.color,
-                            accentSoft: widget.category.softColor,
-                          )
-                        : KnowledgeTile(
-                            entry: entries[index],
-                            accent: widget.category.color,
-                          ),
+                    itemBuilder: (BuildContext context, int index) => WordTile(
+                      entry: entries[index],
+                      accent: widget.category.color,
+                      accentSoft: widget.category.softColor,
+                    ),
                   ),
           ),
         ],

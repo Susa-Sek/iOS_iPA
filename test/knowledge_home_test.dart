@@ -9,6 +9,7 @@ import 'package:ipa_testing_github_action/screens/home_screen.dart';
 import 'package:ipa_testing_github_action/screens/knowledge_home.dart';
 import 'package:ipa_testing_github_action/screens/lesson_screen.dart';
 import 'package:ipa_testing_github_action/screens/practice_screen.dart';
+import 'package:ipa_testing_github_action/screens/shorts_screen.dart';
 import 'package:ipa_testing_github_action/state/learning_state.dart';
 import 'package:ipa_testing_github_action/state/lesson_store.dart';
 
@@ -61,6 +62,36 @@ void main() {
       await tester.tap(find.text('Lektion des Tages'));
       await tester.pumpAndSettle();
       expect(find.byType(LessonScreen), findsOneWidget);
+    });
+
+    testWidgets('ein Thema öffnet den Feed, nicht den Vokabelbildschirm',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(420, 2000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      final (LearningState state, LessonStore store) = await wissen();
+      await tester.pumpWidget(wrapScreen(const KnowledgeHome(),
+          state: state, lessons: store));
+      await tester.pumpAndSettle();
+
+      // Erst das Fach aufklappen, dann das erste Thema darin antippen.
+      final String fach = state.groups.first.name;
+      await tester.ensureVisible(find.text(fach));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(fach));
+      await tester.pumpAndSettle();
+
+      final String thema = state.groups.first.categories.first.name;
+      await tester.ensureVisible(find.text(thema));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(thema));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ShortsScreen), findsOneWidget);
+      // Kein Suchfeld, keine Kartei — das war der ganze Punkt.
+      expect(find.byType(TextField), findsNothing);
+      expect(find.text('Karteikarten'), findsNothing);
     });
 
     testWidgets('erledigte Lektionen zählen im Fach mit',
@@ -117,6 +148,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Lektion des Tages'), findsOneWidget);
+      expect(find.text('Durch ein Thema wischen'), findsOneWidget);
       expect(find.text('Quiz'), findsOneWidget);
       // Vokabelwerkzeuge haben hier nichts zu suchen.
       expect(find.text('Karteikarten'), findsNothing);
@@ -143,6 +175,7 @@ void main() {
       expect(find.text('Kurzrunde'), findsOneWidget);
       expect(find.text('Alphabet & Zeichen'), findsOneWidget);
       expect(find.text('Lektion des Tages'), findsNothing);
+      expect(find.text('Durch ein Thema wischen'), findsNothing);
     });
   });
 

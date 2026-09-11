@@ -104,10 +104,58 @@ läuft für die Fragen im Hintergrund weiter — sie wird im Wissen nur nirgends
 angezeigt.
 
 Entsprechend gibt es dort **keine Karteikarten, kein Zuordnen, kein Wort
-bauen**: Das sind Vokabelwerkzeuge. Es bleiben Lektion und Quiz. Und der
+bauen**: Das sind Vokabelwerkzeuge. Es bleiben Lektion, Feed und Quiz. Und der
 Tagesstoff aus dem Netz steht jetzt dort, wo er hingehört — auf der
 Wissens-Startseite statt in einem eigenen Bereich. Unten sind es dadurch drei
 Bereiche statt vier.
+
+## Ein Thema ist ein Feed
+
+Die Lektion ist der geführte Weg. Wer nur zwei Minuten hat und stöbern will,
+tippt ein **Thema** an — und bekommt keinen Karteikasten, sondern einen
+**Feed zum Wischen**: eine Karte füllt den Bildschirm, nach oben wischen heißt
+weiter.
+
+* **Fakt und Frage wechseln sich ab**, beginnend mit einem Fakt: erst etwas
+  erfahren, dann geprüft werden. Wer durchwischt, ohne zu lesen, merkt es an
+  der nächsten Frage.
+* Bei einer Frage stehen die **vier Antworten eng untereinander am unteren
+  Rand** — in der Daumenzone, ohne dass die Hand umgreifen muss. Antippen
+  färbt sofort und schiebt die Erklärung an die Stelle der Frage; weiter geht
+  es per Wisch.
+* Oben läuft ein **Fortschrittsbalken** über das ganze Thema, wie bei Stories.
+* Am Ende steht, wie viele Fragen saßen — „Nochmal" oder zurück zur Übersicht.
+
+Der Lernstand läuft dabei still mit: Fragen wandern im Leitner-Kasten wie
+überall, Lesekarten ändern nichts. Der Feed ist eine neue **Oberfläche**, kein
+zweiter Speicher.
+
+Der Vokabelbildschirm mit Suchfeld und Wortliste gehört damit wieder allein
+dem Wortschatz.
+
+## Antworten, die nah beieinander liegen
+
+Bei etlichen Wissensfragen fiel eine der vier Antworten schon der **Form** nach
+heraus, ohne dass man etwas wissen musste:
+
+> **Was ist ein Server?**
+> Ein Rechner, der Dienste bereitstellt · Ein besonders schneller PC ·
+> ~~Ein Netzwerkkabel~~ · Ein Programm im Browser
+
+Ein Kabel ist keine Art von Rechner — die Antwort fällt raus, ohne dass man
+etwas weiß. Alle 155 Fragen sind deshalb durchgesehen und die Ablenker von 42
+davon neu geschrieben: Sie sind jetzt **dieselbe Art Ding** wie die richtige
+Antwort.
+
+> **Was ist ein Server?**
+> Ein Rechner, der Dienste bereitstellt · Ein Rechner, der Daten weiterleitet ·
+> Ein Rechner, der besonders schnell rechnet · Ein Rechner, der Seiten anzeigt
+
+Kategoriefehler kann kein Test finden; die sind von Hand ausgeräumt.
+`test/knowledge_data_test.dart` hält das Ergebnis fest und fängt den Rückfall:
+höchstens zwei Bauformen je Frage, kein Ablenker unter 45 % oder über 220 %
+der Länge einer Definition, zu einer Zahl nur Zahlen, und Jahreszahlen im
+selben Jahrhundert.
 
 ## Wissen neben Sprache
 
@@ -310,11 +358,13 @@ lib/
 │                          gemerkte Karten
 ├── data/                  Wortschatz, Lernweg, Registry, Alphabet, Verben,
 │                          Quran
-├── screens/               Start, Heute, Thema, Karteikarten, Quiz, Zuordnen,
+├── screens/               Start (Arabisch), Start (Wissen), Heute, Lektion,
+│                          Feed, Thema, Karteikarten, Quiz, Zuordnen,
 │                          Wort bauen, Alphabet & Zeichen, Suche,
 │                          Quran-Übersicht, Sure, Wurzeln, Verbtabellen,
 │                          Navigationsgerüst, Übungsübersicht
-└── widgets/               Arabische Textausgabe (RTL), Wortzeile, Lernboxen
+└── widgets/               Arabische Textausgabe (RTL), Wortzeile, Lernboxen,
+                           Fachumschalter
 ```
 
 ## Entwickeln
