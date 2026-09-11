@@ -7,6 +7,7 @@ import 'package:ipa_testing_github_action/state/daily_feed.dart';
 import 'package:ipa_testing_github_action/state/learning_state.dart';
 import 'package:ipa_testing_github_action/state/lesson_store.dart';
 import 'package:ipa_testing_github_action/state/progress_store.dart';
+import 'package:ipa_testing_github_action/state/duel_store.dart';
 import 'package:ipa_testing_github_action/state/reminders.dart';
 import 'package:ipa_testing_github_action/state/reward_store.dart';
 import 'package:ipa_testing_github_action/state/speech.dart';
@@ -55,6 +56,12 @@ void main() {
       // Hier steht, welche Abzeichen schon gezeigt wurden. Ein neuer
       // Schlüssel hieße: Beim nächsten Update gehen alle noch einmal hoch.
       expect(RewardStore.storageKey, 'arabisch_lernen.rewards.v1');
+    });
+
+    test('Duelle', () {
+      // Hier liegen die gespielten Duelle. Ohne sie lässt sich ein
+      // zurückgeschickter Ergebnis-Code niemandem zuordnen.
+      expect(DuelStore.storageKey, 'arabisch_lernen.duels.v1');
     });
 
     test('gemerkte Karten', () {

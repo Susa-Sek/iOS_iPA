@@ -4,6 +4,7 @@ import 'package:flutter/material.dart' hide Feedback;
 
 import '../data/knowledge/lessons.dart';
 import '../models/vocabulary.dart';
+import '../widgets/share_result.dart';
 import '../state/learning_state.dart';
 import '../state/lesson_store.dart';
 import '../state/daily_quests.dart';
@@ -466,10 +467,18 @@ class _Fazit extends StatelessWidget {
         ),
         Padding(
           padding: Insets.card,
-          child: SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-                onPressed: onFertig, child: const Text('Fertig')),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              FilledButton(
+                  onPressed: onFertig, child: const Text('Fertig')),
+              if (gesamt > 0)
+                ShareResultButton(
+                  was: lesson.title,
+                  richtig: richtig,
+                  gesamt: gesamt,
+                ),
+            ],
           ),
         ),
       ],

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../models/vocabulary.dart';
+import '../widgets/share_result.dart';
 import '../state/learning_state.dart';
 import '../state/quiz_builder.dart';
 import '../state/speech.dart';
@@ -20,7 +21,9 @@ class QuizScreen extends StatefulWidget {
     required this.title,
     this.direction = QuizDirection.arabicToGerman,
     this.count,
+    this.questions,
     this.onFinished,
+    this.onResult,
     this.embedded = false,
   });
 
@@ -36,8 +39,18 @@ class QuizScreen extends StatefulWidget {
   /// Gerüst.
   final int? count;
 
+  /// Eine **fertig gebaute** Runde statt einer neu gezogenen.
+  ///
+  /// Gebraucht vom Duell: Dort muss auf beiden Telefonen dieselbe Runde
+  /// laufen, und die entsteht aus dem Code (`buildDuelRound`), nicht aus dem
+  /// Lernstand des einen Geräts.
+  final List<QuizQuestion>? questions;
+
   /// Wird statt der eigenen Schlussbilanz gerufen, sobald die Runde durch ist.
   final VoidCallback? onFinished;
+
+  /// Wie die Runde ausging — für alles, was das Ergebnis weiterverwendet.
+  final void Function(int correct, int total)? onResult;
 
   /// Ohne eigenes `Scaffold` und ohne Kopfzeile.
   final bool embedded;
@@ -67,6 +80,9 @@ class _QuizScreenState extends State<QuizScreen> {
   int _correct = 0;
   String? _chosen;
 
+  /// Das Ergebnis wird einmal gemeldet, nicht bei jedem Neuzeichnen.
+  bool _gemeldet = false;
+
   @override
   void initState() {
     super.initState();
@@ -83,6 +99,14 @@ class _QuizScreenState extends State<QuizScreen> {
 
   /// Weak words first, so a round trains what is actually missing.
   void _buildQuestions() {
+    final List<QuizQuestion>? vorgegeben = widget.questions;
+    if (vorgegeben != null) {
+      _questions = vorgegeben;
+      _index = 0;
+      _correct = 0;
+      _chosen = null;
+      return;
+    }
     _questions = buildQuizRound(
       ordered: LearningScope.of(context).trainingOrder(_pool, random: _random),
       pool: _pool,
@@ -229,6 +253,12 @@ class _QuizScreenState extends State<QuizScreen> {
     }
 
     if (_index >= _questions.length) {
+      final void Function(int, int)? ergebnis = widget.onResult;
+      if (ergebnis != null && !_gemeldet) {
+        _gemeldet = true;
+        WidgetsBinding.instance.addPostFrameCallback(
+            (_) => ergebnis(_correct, _questions.length));
+      }
       // In einer Kurzrunde übernimmt der Rahmen die Bilanz.
       final VoidCallback? fertig = widget.onFinished;
       if (fertig != null) {
@@ -259,6 +289,11 @@ class _QuizScreenState extends State<QuizScreen> {
               icon: const Icon(Icons.replay),
               label: const Text('Neue Runde'),
               onPressed: () => setState(_buildQuestions),
+            ),
+            ShareResultButton(
+              was: widget.title,
+              richtig: _correct,
+              gesamt: _questions.length,
             ),
           ],
         ),

@@ -11,6 +11,7 @@ import '../theme/app_theme.dart';
 import '../widgets/speak_button.dart';
 import 'alphabet_screen.dart';
 import 'build_word_screen.dart';
+import 'duel_screen.dart';
 import 'flashcard_screen.dart';
 import 'matching_screen.dart';
 import 'quiz_screen.dart';
@@ -106,6 +107,14 @@ class PracticeScreen extends StatelessWidget {
                   _open(context, const BuildWordScreen(title: 'Tagesrunde')),
             ),
           ],
+          // Das Duell gibt es in beiden Fächern: Es braucht nur Fragen,
+          // keine bestimmte Art zu lernen.
+          _PracticeCard(
+            icon: Icons.sports_kabaddi,
+            title: 'Duell',
+            subtitle: 'Jemanden herausfordern — dieselben Fragen, ein Code',
+            onTap: () => _open(context, const DuelScreen()),
+          ),
           _PracticeCard(
             icon: Icons.keyboard_alt_outlined,
             title: 'Tippen',

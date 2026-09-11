@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../models/vocabulary.dart';
+import '../widgets/share_result.dart';
 import '../state/learning_state.dart';
 import '../state/daily_quests.dart';
 import '../state/reward_store.dart';
@@ -273,6 +274,11 @@ class _Bilanz extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Fertig'),
+            ),
+            ShareResultButton(
+              was: 'Kurzrunde',
+              richtig: beantwortet,
+              gesamt: aufgaben,
             ),
           ],
         ),

@@ -175,6 +175,80 @@ mit vier Antworten** und einer Erklärung, die nach dem Antworten erscheint.
 Wer gerade Bundeskanzler ist, gehört in den Bereich „Heute" — nicht in eine
 Karte, die in drei Wochen wiederkommt.
 
+## Dranbleiben: Jokertag, Tagesaufgaben, Belohnung
+
+Punkte, Level und Tagesserie gab es von Anfang an — mit drei Löchern, die
+man im Betrieb sofort merkt.
+
+**Ein verpasster Tag löschte die Serie.** Wer dreißig Tage geschafft hat und
+einmal krank ist, stand wieder bei null. Es gibt jetzt **Jokertage**. Sie
+werden von selbst eingesetzt, und die Grenzen sind der Punkt:
+
+* höchstens **drei Tage am Stück**,
+* nur **unmittelbar vor heute**,
+* und nur, wenn davor überhaupt eine Serie stand.
+
+Wer nach drei Monaten zurückkommt, verbraucht keinen einzigen — dort gibt es
+nichts zu halten. Verdient wird ein Joker, nicht geschenkt: für einen Tag,
+an dem alle drei Tagesaufgaben erledigt sind, höchstens drei auf Vorrat.
+
+**Jeder Tag sah gleich aus.** Neben dem Tagesziel stehen jetzt drei
+**Tagesaufgaben** — eine zählende („15 Fragen beantworten") und zwei ganze
+Übungen („eine Lektion", „ein Thema durchwischen", „eine Runde ohne
+Fehler"). Sie sind aus dem **Datum abgeleitet**, nicht gewürfelt: Ein
+Neustart der App darf sie nicht neu mischen, sonst wäre jeder Fortschritt
+daran wertlos. Angeboten wird nur, wofür es Inhalt gibt.
+
+**Man sah nie, dass man etwas gewinnt.** Serie und Punkte standen nur im
+Reiter „Erfolge". Sie stehen jetzt in der **Kopfzeile beider Startseiten**;
+die Flamme brennt erst, wenn das Tagesziel gefallen ist. Und ein Abzeichen
+schaltete sich lautlos frei — eine Belohnung, die niemand bemerkt, ist
+keine. Jetzt meldet sich jedes neue mit einem Blatt von unten, immer nur
+eines auf einmal. Beim ersten Start nach dem Update geht **kein Schwall**
+alter Abzeichen hoch: Sie gelten als gesehen.
+
+Gezählt wird an einer Stelle. Jede Antwort läuft ohnehin durch den Lernkern,
+und der erreicht die Tagesaufgaben über einen Rückruf — nicht acht
+Übungsbildschirme, die einzeln daran denken müssten.
+
+## Duell — Community ohne Server
+
+Die App hat **kein Konto, keinen Server und keine Anmeldung**, und ein Duell
+braucht das auch nicht. Beide Seiten bauen aus **derselben Zahl** dieselbe
+Runde: dieselben Fragen, in derselben Reihenfolge, mit den Antworten an
+denselben Stellen. Verschickt wird deshalb nur diese Zahl, als kurzer Code
+in einer gewöhnlichen Nachricht.
+
+```
+Duell: Geografie
+Ich hatte 8 von 10. Schaffst du mehr?
+
+TK-4G7Q-M2XP-RB91-KTZ4
+```
+
+Drei Wege unter „Üben · Duell":
+
+1. **Herausfordern** — Thema wählen, selbst spielen, Code verschicken.
+2. **Annehmen** — die Nachricht einfügen; die App sucht sich den Code
+   heraus und spielt genau dieselbe Runde.
+3. **Ergebnis eintragen** — die Antwort des anderen einfügen, und es steht
+   „Du 8 : 6".
+
+Der Code ist in **Crockford-Base32** geschrieben, ohne I, L, O und U: Das
+sind die Zeichen, die man beim Abtippen mit 1, 0 und V verwechselt. Ein
+verdrehtes Zeichen ergibt deshalb **keine andere Runde, sondern gar keine**.
+
+Darin steckt außerdem ein **Fingerabdruck** des Fragenbestands. Hat der
+Freund eine ältere App-Version mit anderen Fragen, sagt die App das — statt
+stillschweigend andere Fragen zu stellen und die Ergebnisse trotzdem zu
+vergleichen.
+
+**Was das Gerät verlässt:** nur der Text, den man selbst verschickt. Beim
+Teilen eines Ergebnisses sind das Ergebnis, Serie und Level — kein Name,
+keine Kennung, nichts über das Gerät. Man sieht ihn vor dem Senden im
+Teilen-Blatt. Gibt es keines, landet er in der Zwischenablage, und es steht
+dabei.
+
 ## Tippen
 
 Die härteste der Übungen: Die Antwort wird selbst geschrieben, statt aus
@@ -354,17 +428,19 @@ lib/
 │                          ArabicDiacritic + Tashkīl-Hilfsfunktionen
 ├── theme/                 Abstände, Radien, Bewegung, Erscheinungsbild
 ├── state/                 Lernstufen & Termine, Speicherung, Punkte,
+│                          Jokertage, Tagesaufgaben, Duell-Codes, Teilen,
 │                          Sprachausgabe, Erinnerungen, Tagesinhalte,
 │                          gemerkte Karten
 ├── data/                  Wortschatz, Lernweg, Registry, Alphabet, Verben,
 │                          Quran
 ├── screens/               Start (Arabisch), Start (Wissen), Heute, Lektion,
 │                          Feed, Thema, Karteikarten, Quiz, Zuordnen,
-│                          Wort bauen, Alphabet & Zeichen, Suche,
+│                          Wort bauen, Duell, Alphabet & Zeichen, Suche,
 │                          Quran-Übersicht, Sure, Wurzeln, Verbtabellen,
 │                          Navigationsgerüst, Übungsübersicht
 └── widgets/               Arabische Textausgabe (RTL), Wortzeile, Lernboxen,
-                           Fachumschalter
+                           Fachumschalter, Serienanzeige, Tagesaufgaben,
+                           Belohnungsblatt
 ```
 
 ## Entwickeln
@@ -454,6 +530,14 @@ Ehrlicher als eine halbe Umsetzung:
 * **Gerätefragen.** Ob die Erinnerung abends wirklich ankommt, wie die
   arabische Sprachausgabe klingt und ob die Tagesinhalte eintreffen, zeigt
   erst das Telefon.
+* **Ob das Teilen-Blatt aufgeht** und wie ein Code in WhatsApp ankommt, ist
+  nur am Gerät zu sehen — `share_plus` gehört dem Betriebssystem. Im Test
+  liegt eine Attrappe dahinter, und der Rückfall auf die Zwischenablage ist
+  geprüft; das Blatt selbst nicht.
+* **Ein Duell über zwei echte Telefone** ist hier nicht nachstellbar. Dass
+  beide Seiten aus demselben Code dieselben Fragen mit derselben
+  Antwortreihenfolge bauen, prüft `test/duel_test.dart` — zwei Geräte im
+  selben Raum ersetzt das nicht.
 
 ## Herkunft
 

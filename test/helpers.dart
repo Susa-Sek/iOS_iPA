@@ -7,7 +7,9 @@ import 'package:ipa_testing_github_action/state/daily_feed.dart';
 import 'package:ipa_testing_github_action/state/learning_state.dart';
 import 'package:ipa_testing_github_action/state/lesson_store.dart';
 import 'package:ipa_testing_github_action/state/reminders.dart';
+import 'package:ipa_testing_github_action/state/duel_store.dart';
 import 'package:ipa_testing_github_action/state/reward_store.dart';
+import 'package:ipa_testing_github_action/state/sharing.dart';
 import 'package:ipa_testing_github_action/state/speech.dart';
 import 'package:ipa_testing_github_action/widgets/speak_button.dart';
 
@@ -51,6 +53,29 @@ class FakeReminderBackend implements ReminderBackend {
 
   @override
   Future<void> cancelAll() async => scheduled.clear();
+}
+
+/// Teilen im Test: schickt nichts, merkt sich alles.
+class FakeShareBackend implements ShareBackend {
+  FakeShareBackend({this.canShare = true});
+
+  /// Ob das Teilen-Blatt aufgeht. `false` erzwingt den Rückfall auf die
+  /// Zwischenablage — den Fall, der auf einem Gerät ohne Teilen-Ziel
+  /// eintritt.
+  final bool canShare;
+
+  final List<String> shared = <String>[];
+  final List<String> copied = <String>[];
+
+  @override
+  Future<bool> share(String text, {String? subject}) async {
+    if (!canShare) return false;
+    shared.add(text);
+    return true;
+  }
+
+  @override
+  Future<void> copy(String text) async => copied.add(text);
 }
 
 /// Ein Netz, das nichts hergibt — der Regelfall im Test.
@@ -100,6 +125,8 @@ Widget wrapScreen(
   CustomCardStore? cards,
   LessonStore? lessons,
   RewardStore? rewards,
+  DuelStore? duels,
+  Sharer? sharer,
 }) =>
     LearningScope(
       state: state ?? LearningState(),
@@ -107,6 +134,10 @@ Widget wrapScreen(
         store: lessons ?? LessonStore(),
         child: RewardScope(
         store: rewards ?? RewardStore(),
+        child: DuelScope(
+        store: duels ?? DuelStore(),
+        child: ShareScope(
+        sharer: sharer ?? Sharer(backend: FakeShareBackend()),
         child: CustomCardScope(
         store: cards ?? CustomCardStore(),
         child: DailyFeedScope(
@@ -119,6 +150,8 @@ Widget wrapScreen(
               child: MaterialApp(home: child),
             ),
           ),
+        ),
+        ),
         ),
         ),
         ),
@@ -140,6 +173,8 @@ Widget wrapScreenScaled(
   CustomCardStore? cards,
   LessonStore? lessons,
   RewardStore? rewards,
+  DuelStore? duels,
+  Sharer? sharer,
 }) =>
     LearningScope(
       state: state ?? LearningState(),
@@ -147,6 +182,10 @@ Widget wrapScreenScaled(
         store: lessons ?? LessonStore(),
         child: RewardScope(
         store: rewards ?? RewardStore(),
+        child: DuelScope(
+        store: duels ?? DuelStore(),
+        child: ShareScope(
+        sharer: sharer ?? Sharer(backend: FakeShareBackend()),
         child: CustomCardScope(
         store: cards ?? CustomCardStore(),
         child: DailyFeedScope(
@@ -166,6 +205,8 @@ Widget wrapScreenScaled(
               ),
             ),
           ),
+        ),
+        ),
         ),
         ),
         ),

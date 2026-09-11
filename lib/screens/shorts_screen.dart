@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart' hide Feedback;
 
 import '../models/vocabulary.dart';
+import '../widgets/share_result.dart';
 import '../state/learning_state.dart';
 import '../state/daily_quests.dart';
 import '../state/quiz_builder.dart';
@@ -131,6 +132,7 @@ class _ShortsScreenState extends State<ShortsScreen> {
           itemBuilder: (BuildContext context, int seite) {
             if (seite == _feed.length) {
               return _Abschluss(
+                thema: widget.category.name,
                 richtig: _richtig,
                 gesamt: _fragen,
                 onNochmal: _nochmal,
@@ -415,12 +417,14 @@ class _WischHinweis extends StatelessWidget {
 /// Die letzte Karte: was saß, und wie es weitergeht.
 class _Abschluss extends StatelessWidget {
   const _Abschluss({
+    required this.thema,
     required this.richtig,
     required this.gesamt,
     required this.onNochmal,
     required this.onFertig,
   });
 
+  final String thema;
   final int richtig;
   final int gesamt;
   final VoidCallback onNochmal;
@@ -464,6 +468,12 @@ class _Abschluss extends StatelessWidget {
               const SizedBox(height: Insets.sm),
               OutlinedButton(
                   onPressed: onFertig, child: const Text('Nächstes Thema')),
+              if (gesamt > 0)
+                ShareResultButton(
+                  was: thema,
+                  richtig: richtig,
+                  gesamt: gesamt,
+                ),
             ],
           ),
         ),
