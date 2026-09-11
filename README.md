@@ -211,6 +211,58 @@ Gezählt wird an einer Stelle. Jede Antwort läuft ohnehin durch den Lernkern,
 und der erreicht die Tagesaufgaben über einen Rückruf — nicht acht
 Übungsbildschirme, die einzeln daran denken müssten.
 
+## Der Feed zieht nicht
+
+Ein Wisch-Feed ist ein gefährliches Werkzeug: Dieselbe Form, die Wissen
+nebenbei vermittelt, hält abends um eins noch am Telefon. Die erste Fassung
+hatte genau diesen Fehler — am Ende eines Themas stand **„Nochmal" als
+größter, gefüllter Knopf**, und Themen ließen sich endlos aneinanderreihen.
+Der auffälligste Griff schob einen zurück in den Feed.
+
+Das ist umgedreht:
+
+* **„Fertig" ist der Knopf.** „Nochmal durchgehen" steht nur noch als Zeile
+  darunter — der ehrliche Fall (drei von acht richtig) bleibt möglich, der
+  Reflex ist weg.
+* **„Nächstes Thema" ist gestrichen.** Der Knopf hat nie ein nächstes Thema
+  geöffnet, sondern nur geschlossen. Wer eins will, wählt eins; das ist eine
+  Entscheidung mehr, und genau darum geht es.
+* **Eine Tagesportion.** Sie ist `dosePerRound` — dieselbe Zahl, die auch
+  Karteikarten und Kurzrunde begrenzt, also standardmäßig 20 Karten und mit
+  dem Tagesziel wachsend. Es gibt keine zweite Zahl daneben.
+* **Gezählt wird die Karte, nicht das Thema.** Wer auf halber Strecke
+  aussteigt und das nächste Thema öffnet, spürt die Grenze genauso. Zurück-
+  und wieder Vorwischen zählt nicht doppelt.
+* **Die Grenze entscheidet über das nächste Thema, nicht über das laufende.**
+  Ein begonnenes darf man zu Ende bringen — mitten aus dem Zusammenhang
+  gerissen zu werden wäre Schikane, keine Bremse.
+* **Man sieht das Ende kommen.** Unter den Story-Strichen läuft leise
+  „heute 12 von 20", und in der Themenliste steht „Portion für heute
+  erledigt", bevor man antippt.
+
+Ist die Portion durch, kommt statt des Feeds:
+
+```
+              ✓
+        Das war deine Portion
+
+    20 Karten heute. Morgen geht es weiter.
+
+   ┌──────────────────────────┐
+   │         Fertig           │
+   └──────────────────────────┘
+          Trotzdem weiter          ← Zeile, kein Knopf
+```
+
+**Warum es „Trotzdem weiter" gibt.** Eine Mauer in der eigenen Lern-App wäre
+bevormundend — wer wirklich zehn Minuten hat, soll lernen dürfen. Aber es
+steht als Zeile unter dem Hauptknopf und gilt nur für dieses eine Thema.
+Damit wird aus einem Reflex eine Entscheidung.
+
+Damit gilt der Satz, der hier seit Langem steht, endlich überall: *Jede
+Übung ist eine Portion, kein Marathon.* Der Feed war die letzte Stelle, die
+sich davor gedrückt hat.
+
 ## Die App geht nie aus
 
 Nachgemessen: **42 Lektionen, 21 Themen.** Wer eine Lektion am Tag macht, ist
@@ -488,7 +540,7 @@ lib/
 │                          Navigationsgerüst, Übungsübersicht
 └── widgets/               Arabische Textausgabe (RTL), Wortzeile, Lernboxen,
                            Fachumschalter, Serienanzeige, Tagesaufgaben,
-                           Belohnungsblatt, Tagesfund-Karte
+                           Belohnungsblatt, Tagesfund-Karte, Portionsende
 ```
 
 ## Entwickeln

@@ -6,6 +6,7 @@ import '../models/vocabulary.dart';
 import '../state/daily_feed.dart';
 import '../state/learning_state.dart';
 import '../state/lesson_store.dart';
+import '../state/reward_store.dart';
 import '../theme/app_theme.dart';
 import '../widgets/daily_find_card.dart';
 import '../widgets/quest_card.dart';
@@ -380,12 +381,20 @@ class _ThemaZeile extends StatelessWidget {
     final int fertig = store.doneIn(category);
     final bool verstanden = store.isUnderstood(category);
 
+    // Ehrlichkeit vor dem Antippen: Wer die Tagesportion durch hat, soll das
+    // hier sehen und nicht erst im Feed. Gesperrt wird nichts.
+    final int heute = RewardScope.of(context).shortsToday;
+    final int portion = LearningScope.of(context).dosePerRound;
+    final bool portionDurch = heute >= portion;
+
     return ListTile(
       leading: Icon(category.icon, color: category.color),
       title: Text(category.name),
-      subtitle: Text(verstanden
-          ? 'Verstanden'
-          : '$fertig von ${lektionen.length} Lektionen'),
+      subtitle: Text(portionDurch
+          ? 'Portion für heute erledigt'
+          : verstanden
+              ? 'Verstanden'
+              : '$fertig von ${lektionen.length} Lektionen'),
       trailing: verstanden
           ? Icon(Icons.check_circle, color: theme.colorScheme.primary)
           : const Icon(Icons.chevron_right),

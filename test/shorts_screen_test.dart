@@ -135,7 +135,7 @@ void main() {
   });
 
   group('Abschluss', () {
-    testWidgets('am Ende steht die Abschlusskarte',
+    testWidgets('am Ende steht ein Schlusspunkt, kein Sprungbrett',
         (WidgetTester tester) async {
       await aufbauen(tester);
       for (int i = 0; i < thema.entries.length; i++) {
@@ -143,17 +143,39 @@ void main() {
         await _wischen(tester);
       }
       expect(find.text('Thema durch'), findsOneWidget);
-      expect(find.text('Nochmal'), findsOneWidget);
-      expect(find.text('Nächstes Thema'), findsOneWidget);
+
+      // „Fertig" ist der Knopf. Vorher schob der auffälligste Knopf am Ende
+      // einen zurück in den Feed — genau das soll nicht mehr sein.
+      expect(
+        find.descendant(
+          of: find.byType(FilledButton),
+          matching: find.text('Fertig'),
+        ),
+        findsOneWidget,
+      );
+      // „Nächstes Thema" hat nie ein nächstes Thema geöffnet, sondern nur
+      // geschlossen. Ein Knopf, der lügt, ist weg.
+      expect(find.text('Nächstes Thema'), findsNothing);
+      // „Nochmal" bleibt möglich, aber als Zeile, nicht als Einladung.
+      expect(
+        find.descendant(
+          of: find.byType(FilledButton),
+          matching: find.text('Nochmal durchgehen'),
+        ),
+        findsNothing,
+      );
     });
 
-    testWidgets('„Nochmal" fängt wieder vorn an', (WidgetTester tester) async {
+    testWidgets('„Nochmal durchgehen" fängt wieder vorn an',
+        (WidgetTester tester) async {
       await aufbauen(tester);
       for (int i = 0; i < thema.entries.length; i++) {
         if (find.text('Thema durch').evaluate().isNotEmpty) break;
         await _wischen(tester);
       }
-      await tester.tap(find.text('Nochmal'));
+      await tester.ensureVisible(find.text('Nochmal durchgehen'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Nochmal durchgehen'));
       await tester.pumpAndSettle();
 
       final VocabEntry ersterFakt = thema.entries

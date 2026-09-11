@@ -11,6 +11,7 @@ import '../state/reward_store.dart';
 import '../state/shorts_feed.dart';
 import '../theme/app_theme.dart';
 import '../widgets/answer_feedback.dart';
+import '../widgets/portion_done.dart';
 
 /// Ein Thema als Feed: eine Karte füllt den Schirm, nach oben wischen heißt
 /// weiter.
@@ -52,6 +53,30 @@ class _ShortsScreenState extends State<ShortsScreen> {
   /// soll sie nicht ein zweites Mal erledigen.
   bool _gemeldet = false;
 
+  /// Welche Karten dieses Themas schon gezählt wurden.
+  ///
+  /// Als Menge und nicht als Zähler: Wer zurück- und wieder vorwischt, hat
+  /// keine neue Karte gesehen, und die Tagesportion soll davon nicht
+  /// schrumpfen.
+  final Set<int> _gezaehlt = <int>{};
+
+  /// Ob der Mensch die Portion für dieses Thema bewusst übergangen hat.
+  ///
+  /// Gilt nur für diesen Bildschirm: Beim nächsten Thema steht die Frage
+  /// wieder da. Sonst wäre das „Trotzdem weiter" ein Schalter, der die
+  /// Bremse dauerhaft löst.
+  bool _trotzdem = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Die erste Karte zählt beim Öffnen: `onPageChanged` feuert für Seite 0
+    // nicht, und ungezählt wäre sie die eine Karte, die immer gratis ist.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _zaehle(0);
+    });
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -88,15 +113,38 @@ class _ShortsScreenState extends State<ShortsScreen> {
     setState(() {
       _feed = buildShorts(category: widget.category, random: _random);
       _gewaehlt.clear();
+      _gezaehlt.clear();
       _richtig = 0;
       _index = 0;
     });
     _controller.jumpToPage(0);
   }
 
+  /// Zählt eine Karte für die Tagesportion — jede genau einmal.
+  void _zaehle(int seite) {
+    if (seite >= _feed.length || !_gezaehlt.add(seite)) return;
+    RewardScope.maybeOf(context)?.reportShorts(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final LearningState state = LearningScope.of(context);
+    final RewardStore? rewards = RewardScope.maybeOf(context);
+
+    // Die Grenze entscheidet über das **nächste** Thema, nicht über das
+    // laufende: Ein begonnenes darf man zu Ende bringen. Mitten aus dem
+    // Zusammenhang gerissen zu werden wäre Schikane, keine Bremse.
+    final int heute = rewards?.shortsToday ?? 0;
+    final int portion = state.dosePerRound;
+    if (!_trotzdem && _gezaehlt.isEmpty && heute >= portion) {
+      return PortionDone(
+        gesehen: heute,
+        portion: portion,
+        onFertig: () => Navigator.of(context).pop(),
+        onTrotzdem: () => setState(() => _trotzdem = true),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -107,11 +155,13 @@ class _ShortsScreenState extends State<ShortsScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(Insets.md),
+          preferredSize: const Size.fromHeight(Insets.xl),
           child: _StoryBalken(
             gesamt: _feed.length,
             index: _index,
             farbe: widget.category.color,
+            heute: heute,
+            portion: portion,
           ),
         ),
       ),
@@ -122,6 +172,7 @@ class _ShortsScreenState extends State<ShortsScreen> {
           itemCount: _feed.length + 1,
           onPageChanged: (int seite) {
             setState(() => _index = seite);
+            _zaehle(seite);
             // Durchgewischt bis zur Abschlusskarte: Das ist die Aufgabe.
             if (seite == _feed.length && !_gemeldet) {
               _gemeldet = true;
@@ -135,6 +186,8 @@ class _ShortsScreenState extends State<ShortsScreen> {
                 thema: widget.category.name,
                 richtig: _richtig,
                 gesamt: _fragen,
+                heute: heute,
+                portion: portion,
                 onNochmal: _nochmal,
                 onFertig: () => Navigator.of(context).pop(),
               );
@@ -171,37 +224,62 @@ class _StoryBalken extends StatelessWidget {
     required this.gesamt,
     required this.index,
     required this.farbe,
+    required this.heute,
+    required this.portion,
   });
 
   final int gesamt;
   final int index;
   final Color farbe;
 
+  /// Karten heute insgesamt, über alle Themen — und wie viele die
+  /// Tagesportion umfasst.
+  final int heute;
+  final int portion;
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    if (gesamt <= 0) return const SizedBox(height: Insets.md);
+    if (gesamt <= 0) return const SizedBox(height: Insets.xl);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-          Insets.lg, 0, Insets.lg, Insets.sm),
-      child: Row(
+          Insets.lg, 0, Insets.lg, Insets.xs),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          for (int i = 0; i < gesamt; i++) ...<Widget>[
-            if (i > 0) const SizedBox(width: 3),
-            Expanded(
-              child: AnimatedContainer(
-                duration: Motion.fast,
-                height: 3,
-                decoration: BoxDecoration(
-                  color: i <= index
-                      ? farbe
-                      : theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: const BorderRadius.all(Radius.circular(2)),
+          Row(
+            children: <Widget>[
+              for (int i = 0; i < gesamt; i++) ...<Widget>[
+                if (i > 0) const SizedBox(width: 3),
+                Expanded(
+                  child: AnimatedContainer(
+                    duration: Motion.fast,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: i <= index
+                          ? farbe
+                          : theme.colorScheme.surfaceContainerHighest,
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(2)),
+                    ),
+                  ),
                 ),
-              ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 4),
+          // Die Striche zeigen das Thema, diese Zeile den Tag. Man soll das
+          // Ende kommen sehen, bevor es da ist — das ist der Unterschied
+          // zwischen gebremst und abgewürgt.
+          Text(
+            'heute $heute von $portion',
+            textAlign: TextAlign.right,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
             ),
-          ],
+          ),
         ],
       ),
     );
@@ -420,6 +498,8 @@ class _Abschluss extends StatelessWidget {
     required this.thema,
     required this.richtig,
     required this.gesamt,
+    required this.heute,
+    required this.portion,
     required this.onNochmal,
     required this.onFertig,
   });
@@ -427,6 +507,8 @@ class _Abschluss extends StatelessWidget {
   final String thema;
   final int richtig;
   final int gesamt;
+  final int heute;
+  final int portion;
   final VoidCallback onNochmal;
   final VoidCallback onFertig;
 
@@ -454,6 +536,15 @@ class _Abschluss extends StatelessWidget {
                       : '$richtig von $gesamt Fragen saßen.',
                   style: theme.textTheme.bodyLarge,
                 ),
+                const SizedBox(height: Insets.sm),
+                Text(
+                  heute >= portion
+                      ? 'Heute $heute Karten — das war deine Portion.'
+                      : 'Heute $heute von $portion Karten.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
@@ -463,11 +554,22 @@ class _Abschluss extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
+              // „Fertig" ist der Knopf, nicht „Nochmal". Vorher schob der
+              // auffälligste Knopf am Ende einen zurück in den Feed — genau
+              // das Muster, das abends um eins noch am Telefon hält.
               FilledButton(
-                  onPressed: onNochmal, child: const Text('Nochmal')),
-              const SizedBox(height: Insets.sm),
-              OutlinedButton(
-                  onPressed: onFertig, child: const Text('Nächstes Thema')),
+                  onPressed: onFertig, child: const Text('Fertig')),
+              // Der ehrliche Fall bleibt möglich (drei von acht richtig, das
+              // will man nochmal) — aber als Zeile, nicht als Einladung. Ist
+              // die Portion aufgebraucht, fällt er ganz weg.
+              if (heute < portion)
+                TextButton(
+                  onPressed: onNochmal,
+                  style: TextButton.styleFrom(
+                    foregroundColor: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  child: const Text('Nochmal durchgehen'),
+                ),
               if (gesamt > 0)
                 ShareResultButton(
                   was: thema,

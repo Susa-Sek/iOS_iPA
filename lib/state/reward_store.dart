@@ -25,6 +25,7 @@ class RewardStore extends ChangeNotifier {
 
   String _tag = '';
   final Map<QuestKind, int> _stand = <QuestKind, int>{};
+  int _shortsHeute = 0;
   bool _jokerHeute = false;
   final Set<String> _gemeldet = <String>{};
 
@@ -44,6 +45,24 @@ class RewardStore extends ChangeNotifier {
   int progressOf(QuestKind kind) => _stand[kind] ?? 0;
 
   bool get freezeEarnedToday => _jokerHeute;
+
+  /// Wie viele Feed-Karten heute schon gesehen wurden.
+  ///
+  /// Gezählt wird die **Karte**, nicht das abgeschlossene Thema: Wer auf
+  /// halber Strecke aussteigt und das nächste Thema öffnet, soll die
+  /// Tagesportion genauso spüren. Sonst wäre die Grenze mit einem
+  /// Rückwärtstippen zu umgehen.
+  int get shortsToday => _shortsHeute;
+
+  /// Meldet gesehene Feed-Karten.
+  Future<void> reportShorts(int cards) async {
+    if (cards <= 0) return;
+    await load();
+    _rollOver();
+    _shortsHeute += cards;
+    notifyListeners();
+    await _save();
+  }
 
   bool wasAnnounced(String achievementId) => _gemeldet.contains(achievementId);
 
@@ -101,6 +120,7 @@ class RewardStore extends ChangeNotifier {
   Future<void> reset() async {
     _tag = '';
     _stand.clear();
+    _shortsHeute = 0;
     _jokerHeute = false;
     _gemeldet.clear();
     _frisch = true;
@@ -118,6 +138,7 @@ class RewardStore extends ChangeNotifier {
     if (_tag == heute) return;
     _tag = heute;
     _stand.clear();
+    _shortsHeute = 0;
     _jokerHeute = false;
   }
 
@@ -133,6 +154,7 @@ class RewardStore extends ChangeNotifier {
           for (final MapEntry<QuestKind, int> e in _stand.entries)
             e.key.id: e.value,
         },
+        'shorts': _shortsHeute,
         'freezeEarned': _jokerHeute,
         'seen': _gemeldet.toList()..sort(),
       }),
@@ -147,6 +169,8 @@ class RewardStore extends ChangeNotifier {
       if (json is! Map) return;
       _tag = json['day'] is String ? json['day'] as String : '';
       _jokerHeute = json['freezeEarned'] == true;
+      final Object? shorts = json['shorts'];
+      if (shorts is num) _shortsHeute = shorts.toInt();
 
       final Object? quests = json['quests'];
       if (quests is Map) {
