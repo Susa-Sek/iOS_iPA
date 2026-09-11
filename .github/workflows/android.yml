@@ -5,6 +5,12 @@ on:
   push:
     branches:
       - main
+      # Auch vom Arbeitsbranch aus. Der Grund steckt in einer Eigenart von
+      # GitHub: Ein Workflow mit `workflow_dispatch` taucht nur auf, wenn die
+      # Datei auf dem Standardbranch liegt — dort liegt sie nicht, und die
+      # Actions-Seite meldet „This workflow does not exist". Bei einem `push`
+      # dagegen wird der Workflow aus dem gepushten Branch selbst gelesen.
+      - 'claude/**'
   pull_request:
 
 jobs:
@@ -86,13 +92,19 @@ jobs:
         if: always()
         run: rm -f android/upload.jks android/key.properties
 
-      # Nur bei einem von Hand angestoßenen Lauf: eine Version mit der
-      # vollständigen APK. Sie ist 56 MB und passt durch keinen Chat; ein
-      # Actions-Artefakt verlangt eine Anmeldung und läuft nach Wochen ab —
-      # eine Version nicht. Die Nummer kommt aus pubspec.yaml, damit sie
-      # nicht zweimal gepflegt werden muss.
+      # Eine Version mit der vollständigen APK. Sie ist 56 MB und passt
+      # durch keinen Chat; ein Actions-Artefakt verlangt eine Anmeldung und
+      # läuft nach Wochen ab — eine Version nicht. Die Nummer kommt aus
+      # pubspec.yaml, damit sie nicht zweimal gepflegt werden muss.
+      #
+      # Von Hand angestoßen — oder wenn die Commit-Nachricht `[release]`
+      # trägt. Ohne diese Bremse entstünde bei jedem Push eine Version, und
+      # acht Minuten Bau kostete jede Kleinigkeit. `head_commit` ist bei
+      # einem Lauf von Hand leer, deshalb steht dessen Bedingung zuerst.
       - name: Version veröffentlichen
-        if: github.event_name == 'workflow_dispatch'
+        if: >-
+          github.event_name == 'workflow_dispatch'
+          || contains(github.event.head_commit.message, '[release]')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
