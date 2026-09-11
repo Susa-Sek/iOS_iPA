@@ -137,6 +137,59 @@ const List<Achievement> kAchievements = <Achievement>[
     target: 5,
     progress: _topics,
   ),
+
+  // ---- Feed, Tagesaufgaben und Jokertage --------------------------------
+  //
+  // Drei Wege, die es vorher nicht gab. Ein Abzeichen für jeden, damit
+  // sichtbar wird, dass sie zählen — und nicht nur Beiwerk sind.
+  Achievement(
+    id: 'erstes_thema_gewischt',
+    name: 'Durchgewischt',
+    description: 'Ein Thema im Feed bis zum Ende',
+    icon: Icons.swipe_up_alt_outlined,
+    target: 1,
+    progress: _shorts,
+  ),
+  Achievement(
+    id: 'zehn_themen_gewischt',
+    name: 'Zwischendurch',
+    description: '10 Themen durchgewischt',
+    icon: Icons.swipe_outlined,
+    target: 10,
+    progress: _shorts,
+  ),
+  Achievement(
+    id: 'erster_voller_tag',
+    name: 'Alles erledigt',
+    description: 'Alle drei Tagesaufgaben an einem Tag',
+    icon: Icons.checklist_rtl,
+    target: 1,
+    progress: _questDays,
+  ),
+  Achievement(
+    id: 'sieben_volle_tage',
+    name: 'Gründlich',
+    description: 'An 7 Tagen alle Tagesaufgaben',
+    icon: Icons.task_alt,
+    target: 7,
+    progress: _questDays,
+  ),
+  Achievement(
+    id: 'erster_joker',
+    name: 'Vorgesorgt',
+    description: 'Einen Jokertag verdient',
+    icon: Icons.ac_unit,
+    target: 1,
+    progress: _freezes,
+  ),
+  Achievement(
+    id: 'drei_joker',
+    name: 'Gut gewappnet',
+    description: '3 Jokertage verdient',
+    icon: Icons.shield_outlined,
+    target: 3,
+    progress: _freezes,
+  ),
 ];
 
 int _learned(AchievementStats s) => s.learnedWords;
@@ -148,3 +201,6 @@ int _quran(AchievementStats s) => s.learnedQuranWords;
 int _level(AchievementStats s) => s.level;
 int _lessons(AchievementStats s) => s.lessonsDone;
 int _topics(AchievementStats s) => s.topicsUnderstood;
+int _shorts(AchievementStats s) => s.shortsDone;
+int _questDays(AchievementStats s) => s.questDays;
+int _freezes(AchievementStats s) => s.freezesEarned;

@@ -18,6 +18,11 @@ class StoredProgress {
     this.xp = 0,
     this.perfectRounds = 0,
     this.goalDays = 0,
+    this.freezes = 0,
+    this.frozenDays = const <String>{},
+    this.shortsDone = 0,
+    this.questDays = 0,
+    this.freezesEarned = 0,
   });
 
   final Map<String, WordProgress> words;
@@ -39,6 +44,32 @@ class StoredProgress {
 
   /// Tage insgesamt, an denen das Tagesziel erreicht wurde.
   final int goalDays;
+
+  /// Vorrätige Jokertage.
+  ///
+  /// Ein Jokertag hält die Serie über einen verpassten Tag hinweg. Ohne ihn
+  /// löscht ein einziger kranker Tag eine Serie von dreißig — der häufigste
+  /// Grund, ganz aufzuhören. Verdient wird er, nicht geschenkt: für einen
+  /// Tag, an dem alle drei Tagesaufgaben erledigt sind.
+  final int freezes;
+
+  /// Tage, die ein Jokertag gerettet hat, als "YYYY-MM-DD".
+  ///
+  /// Sie werden festgehalten und nicht nur gezählt: Die Serie muss beim
+  /// nächsten Start dieselbe sein, und es soll dabeistehen, welcher Tag
+  /// gerettet wurde.
+  final Set<String> frozenDays;
+
+  /// Themen, die im Feed bis zum Ende durchgewischt wurden.
+  final int shortsDone;
+
+  /// Tage, an denen alle drei Tagesaufgaben erledigt waren.
+  final int questDays;
+
+  /// Wie viele Jokertage insgesamt verdient wurden — auch die schon
+  /// verbrauchten. Der Vorrat allein taugt nicht als Maß: Wer seinen
+  /// einzigen Joker eingesetzt hat, hat ihn trotzdem verdient.
+  final int freezesEarned;
 }
 
 /// Reads and writes [StoredProgress] — backed by shared_preferences, so the
@@ -104,6 +135,11 @@ class ProgressStore {
       'xp': progress.xp,
       'perfectRounds': progress.perfectRounds,
       'goalDays': progress.goalDays,
+      'freezes': progress.freezes,
+      'shortsDone': progress.shortsDone,
+      'questDays': progress.questDays,
+      'freezesEarned': progress.freezesEarned,
+      'frozenDays': progress.frozenDays.toList()..sort(),
       'history': history,
       'words': <String, dynamic>{
         for (final MapEntry<String, WordProgress> e in progress.words.entries)
@@ -119,6 +155,7 @@ class ProgressStore {
 
     final Object? words = decoded['words'];
     final Object? history = decoded['history'];
+    final Object? frozen = decoded['frozenDays'];
 
     return StoredProgress(
       answered: (decoded['answered'] as num?)?.toInt() ?? 0,
@@ -128,6 +165,17 @@ class ProgressStore {
       xp: (decoded['xp'] as num?)?.toInt() ?? 0,
       perfectRounds: (decoded['perfectRounds'] as num?)?.toInt() ?? 0,
       goalDays: (decoded['goalDays'] as num?)?.toInt() ?? 0,
+      // Fehlen die Felder, ist der Stand von vor dem Jokertag — er wird
+      // gelesen wie bisher, nur ohne Joker.
+      freezes: (decoded['freezes'] as num?)?.toInt() ?? 0,
+      shortsDone: (decoded['shortsDone'] as num?)?.toInt() ?? 0,
+      questDays: (decoded['questDays'] as num?)?.toInt() ?? 0,
+      freezesEarned: (decoded['freezesEarned'] as num?)?.toInt() ?? 0,
+      frozenDays: <String>{
+        if (frozen is List)
+          for (final Object? tag in frozen)
+            if (tag is String) tag,
+      },
       words: <String, WordProgress>{
         if (words is Map<String, dynamic>)
           for (final MapEntry<String, dynamic> e in words.entries)

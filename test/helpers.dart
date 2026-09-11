@@ -7,6 +7,7 @@ import 'package:ipa_testing_github_action/state/daily_feed.dart';
 import 'package:ipa_testing_github_action/state/learning_state.dart';
 import 'package:ipa_testing_github_action/state/lesson_store.dart';
 import 'package:ipa_testing_github_action/state/reminders.dart';
+import 'package:ipa_testing_github_action/state/reward_store.dart';
 import 'package:ipa_testing_github_action/state/speech.dart';
 import 'package:ipa_testing_github_action/widgets/speak_button.dart';
 
@@ -98,11 +99,14 @@ Widget wrapScreen(
   DailyFeedService? feed,
   CustomCardStore? cards,
   LessonStore? lessons,
+  RewardStore? rewards,
 }) =>
     LearningScope(
       state: state ?? LearningState(),
       child: LessonScope(
         store: lessons ?? LessonStore(),
+        child: RewardScope(
+        store: rewards ?? RewardStore(),
         child: CustomCardScope(
         store: cards ?? CustomCardStore(),
         child: DailyFeedScope(
@@ -115,6 +119,7 @@ Widget wrapScreen(
               child: MaterialApp(home: child),
             ),
           ),
+        ),
         ),
         ),
       ),
@@ -134,11 +139,14 @@ Widget wrapScreenScaled(
   DailyFeedService? feed,
   CustomCardStore? cards,
   LessonStore? lessons,
+  RewardStore? rewards,
 }) =>
     LearningScope(
       state: state ?? LearningState(),
       child: LessonScope(
         store: lessons ?? LessonStore(),
+        child: RewardScope(
+        store: rewards ?? RewardStore(),
         child: CustomCardScope(
         store: cards ?? CustomCardStore(),
         child: DailyFeedScope(
@@ -158,6 +166,7 @@ Widget wrapScreenScaled(
               ),
             ),
           ),
+        ),
         ),
         ),
       ),

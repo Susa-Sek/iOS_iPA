@@ -6,7 +6,9 @@ import '../data/knowledge/lessons.dart';
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
 import '../state/lesson_store.dart';
+import '../state/daily_quests.dart';
 import '../state/quiz_builder.dart';
+import '../state/reward_store.dart';
 import '../theme/app_theme.dart';
 import '../widgets/answer_feedback.dart';
 
@@ -139,6 +141,7 @@ class _LessonScreenState extends State<LessonScreen> {
             _phase = _Phase.takeaway;
             _index = 0;
             LessonScope.of(context).markDone(widget.lesson.id);
+            RewardScope.maybeOf(context)?.report(QuestKind.lektion);
           }
         case _Phase.takeaway:
           Navigator.of(context).pop();

@@ -7,7 +7,9 @@ import 'theme/app_theme.dart';
 import 'state/custom_cards.dart';
 import 'state/daily_feed.dart';
 import 'state/learning_state.dart';
+import 'state/daily_quests.dart';
 import 'state/lesson_store.dart';
+import 'state/reward_store.dart';
 import 'state/reminders.dart';
 import 'state/speech.dart';
 import 'widgets/speak_button.dart';
@@ -38,6 +40,7 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
   final ReminderService _reminders = ReminderService();
   final DailyFeedService _feed = DailyFeedService();
   final LessonStore _lessons = LessonStore();
+  final RewardStore _rewards = RewardStore();
 
   @override
   void initState() {
@@ -57,6 +60,11 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
     // Stand, statt den Speicher zu kennen.
     _lessons.addListener(_meldeLektionen);
     _lessons.load().then((_) => _meldeLektionen());
+    // Jede Antwort läuft durch den Lernkern; von dort aus zählen die
+    // Tagesaufgaben mit, ohne dass acht Übungsbildschirme davon wissen.
+    _state.attachQuests(
+        (QuestKind kind, int amount) => _rewards.report(kind, amount: amount));
+    _rewards.load();
     _setUpReminders();
   }
 
@@ -81,6 +89,7 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
   @override
   void dispose() {
     _lessons.removeListener(_meldeLektionen);
+    _rewards.dispose();
     _cards.removeListener(_state.contentChanged);
     _cards.dispose();
     _feed.dispose();
@@ -99,6 +108,8 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
         store: _cards,
         child: LessonScope(
           store: _lessons,
+          child: RewardScope(
+          store: _rewards,
           child: DailyFeedScope(
           service: _feed,
           child: SpeechScope(
@@ -114,6 +125,7 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
               ),
             ),
           ),
+        ),
         ),
         ),
       ),

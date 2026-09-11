@@ -10,6 +10,7 @@ import '../models/achievement.dart';
 import '../models/subject.dart';
 import '../models/vocabulary.dart';
 import 'progress_store.dart';
+import 'daily_quests.dart';
 import 'word_progress.dart';
 
 /// Tracks what the learner knows, when each word is due again, and how the
@@ -101,6 +102,25 @@ class LearningState extends ChangeNotifier {
   int _xp = 0;
   int _perfectRounds = 0;
   int _goalDays = 0;
+  int _freezes = 0;
+  Set<String> _frozenDays = <String>{};
+  int _shortsDone = 0;
+  int _questDays = 0;
+  int _freezesEarned = 0;
+
+  /// Wohin gemeldet wird, was gerade passiert ist.
+  ///
+  /// Jede Antwort läuft ohnehin durch [recordAnswer] — hier hängen die
+  /// Tagesaufgaben an **einer** Stelle statt an acht Übungsbildschirmen.
+  /// Der Lernkern kennt dabei keinen Speicher, nur einen Rückruf.
+  void Function(QuestKind kind, int amount)? _questReporter;
+
+  /// Verbindet die Tagesaufgaben mit dem Lernkern. Einmal beim Start.
+  void attachQuests(void Function(QuestKind kind, int amount) reporter) =>
+      _questReporter = reporter;
+
+  void _melde(QuestKind kind, [int amount = 1]) =>
+      _questReporter?.call(kind, amount);
 
   bool get isLoaded => _loaded;
   int get answered => _answered;
@@ -149,6 +169,7 @@ class LearningState extends ChangeNotifier {
   void recordPerfectRound() {
     _perfectRounds++;
     _xp += 25;
+    _melde(QuestKind.fehlerfrei);
     notifyListeners();
     unawaited(_persist());
   }
@@ -188,6 +209,9 @@ class LearningState extends ChangeNotifier {
         level: level,
         lessonsDone: _lessonsDone,
         topicsUnderstood: _topicsUnderstood,
+        shortsDone: _shortsDone,
+        questDays: _questDays,
+        freezesEarned: _freezesEarned,
       );
 
   List<Achievement> get unlockedAchievements {
@@ -213,6 +237,14 @@ class LearningState extends ChangeNotifier {
     _xp = stored.xp;
     _perfectRounds = stored.perfectRounds;
     _goalDays = stored.goalDays;
+    _freezes = stored.freezes;
+    _frozenDays = Set<String>.of(stored.frozenDays);
+    _shortsDone = stored.shortsDone;
+    _questDays = stored.questDays;
+    _freezesEarned = stored.freezesEarned;
+    // Beim Öffnen wird nachgeholt, was seit dem letzten Mal liegen blieb:
+    // Eine Lücke von gestern wird geschlossen, solange Joker da sind.
+    _spendFreezes();
 
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     _subject = Subject.byId(prefs.getString(subjectKey)) ?? Subject.arabisch;
@@ -231,6 +263,11 @@ class LearningState extends ChangeNotifier {
         xp: _xp,
         perfectRounds: _perfectRounds,
         goalDays: _goalDays,
+        freezes: _freezes,
+        frozenDays: _frozenDays,
+        shortsDone: _shortsDone,
+        questDays: _questDays,
+        freezesEarned: _freezesEarned,
       ));
 
   WordProgress progressOfWord(VocabEntry entry) =>
@@ -318,20 +355,118 @@ class LearningState extends ChangeNotifier {
   double get goalProgress =>
       _dailyGoal == 0 ? 1 : min(1, answeredToday / _dailyGoal);
 
+  /// Ob ein Tag für die Serie zählt: Ziel erreicht — oder von einem
+  /// Jokertag gehalten.
+  bool _dayCounts(DateTime day) =>
+      (_history[dayKey(day)] ?? 0) >= _dailyGoal ||
+      _frozenDays.contains(dayKey(day));
+
   /// Consecutive days up to today in which the daily goal was reached.
   int get dayStreak {
     int streak = 0;
     DateTime day = dayOf(_now());
     // Today only breaks the streak once it is over, so a day that has not
     // reached the goal yet is simply skipped.
-    if ((_history[dayKey(day)] ?? 0) < _dailyGoal) {
+    if (!_dayCounts(day)) {
       day = day.subtract(const Duration(days: 1));
     }
-    while ((_history[dayKey(day)] ?? 0) >= _dailyGoal) {
+    while (_dayCounts(day)) {
       streak++;
       day = day.subtract(const Duration(days: 1));
     }
     return streak;
+  }
+
+  // ---- Jokertage --------------------------------------------------------
+
+  /// Wie viele Jokertage höchstens auf Vorrat liegen.
+  ///
+  /// Drei. Mehr wären eine Versicherung gegen das Aufhören, und dann hieße
+  /// „Serie" nichts mehr.
+  static const int maxFreezes = 3;
+
+  /// Wie viele Tage am Stück ein Vorrat überbrücken darf.
+  static const int maxFrozenInARow = 3;
+
+  int get freezes => _freezes;
+
+  /// Ob die letzte Lücke von einem Jokertag gehalten wurde — dann steht es
+  /// auf der Startseite, statt stillschweigend zu passieren.
+  bool get streakWasSaved {
+    final DateTime gestern = dayOf(_now()).subtract(const Duration(days: 1));
+    return _frozenDays.contains(dayKey(gestern));
+  }
+
+  /// Schließt die Lücke unmittelbar vor heute, solange Joker da sind.
+  ///
+  /// **Die Grenzen sind der Punkt.** Ein Joker rettet einen vergessenen Tag,
+  /// keine vergessene Woche: höchstens [maxFrozenInARow] Tage am Stück, nur
+  /// direkt vor heute, und nur, wenn davor überhaupt eine Serie stand. Wer
+  /// nach drei Monaten zurückkommt, verbraucht keinen einzigen — dort gibt
+  /// es nichts zu halten.
+  void _spendFreezes() {
+    if (_freezes <= 0) return;
+
+    final DateTime heute = dayOf(_now());
+    // Die Lücke: Tage vor heute, die nicht zählen.
+    final List<DateTime> luecke = <DateTime>[];
+    DateTime tag = heute.subtract(const Duration(days: 1));
+    while (luecke.length <= maxFrozenInARow && !_dayCounts(tag)) {
+      luecke.add(tag);
+      tag = tag.subtract(const Duration(days: 1));
+    }
+
+    // Keine Lücke, oder eine zu große: nichts zu tun. Bei einer zu großen
+    // wären die Joker verschwendet, ohne dass eine Serie entstünde.
+    if (luecke.isEmpty || luecke.length > maxFrozenInARow) return;
+    if (luecke.length > _freezes) return;
+    // `tag` steht jetzt auf dem letzten Tag vor der Lücke. Zählt der nicht,
+    // gab es keine Serie, die zu halten wäre.
+    if (!_dayCounts(tag)) return;
+
+    for (final DateTime geschlossen in luecke) {
+      _frozenDays.add(dayKey(geschlossen));
+      _freezes--;
+    }
+  }
+
+  int get shortsDone => _shortsDone;
+  int get questDays => _questDays;
+  int get freezesEarned => _freezesEarned;
+
+  /// Ein Thema im Feed bis zum Ende durchgewischt.
+  Future<void> recordShortsFinished() async {
+    _shortsDone++;
+    notifyListeners();
+    await _persist();
+  }
+
+  /// Ein Tag, an dem alle drei Tagesaufgaben erledigt waren.
+  ///
+  /// Der Jokertag hängt daran: Er wird **verdient**, nicht geschenkt. Über
+  /// dem Vorrat verfällt er — gezählt wird trotzdem nur, was wirklich
+  /// dazukam, sonst stimmte das Abzeichen nicht mit der Zahl überein.
+  Future<void> recordQuestDay() async {
+    _questDays++;
+    final bool bekommen = _freezes < maxFreezes;
+    if (bekommen) {
+      _freezes++;
+      _freezesEarned++;
+    }
+    notifyListeners();
+    await _persist();
+  }
+
+  /// Verdient einen Jokertag — für einen Tag, an dem alles erledigt wurde.
+  ///
+  /// Gibt zurück, ob wirklich einer dazukam: Über dem Vorrat verfällt er,
+  /// und der Bildschirm soll nichts melden, was nicht passiert ist.
+  Future<bool> earnFreeze() async {
+    if (_freezes >= maxFreezes) return false;
+    _freezes++;
+    notifyListeners();
+    await _persist();
+    return true;
   }
 
   /// Answers per day for the last [days] days, oldest first.
@@ -439,6 +574,10 @@ class LearningState extends ChangeNotifier {
   }
 
   void recordAnswer({required bool correct}) {
+    // Erst die Lücke schließen, dann heute zählen: Wer nach einem
+    // verpassten Tag wieder anfängt, soll die gehaltene Serie sehen und
+    // nicht erst beim nächsten Start.
+    _spendFreezes();
     final bool goalWasReached = goalReached;
 
     _answered++;
@@ -452,6 +591,9 @@ class LearningState extends ChangeNotifier {
     }
     final String key = dayKey(_now());
     _history[key] = (_history[key] ?? 0) + 1;
+
+    _melde(QuestKind.antworten);
+    if (correct) _melde(QuestKind.richtige);
 
     // Der Moment, in dem das Tagesziel fällt: einmalig Punkte und ein Tag
     // mehr auf dem Konto.
@@ -474,6 +616,11 @@ class LearningState extends ChangeNotifier {
     _xp = 0;
     _perfectRounds = 0;
     _goalDays = 0;
+    _freezes = 0;
+    _frozenDays = <String>{};
+    _shortsDone = 0;
+    _questDays = 0;
+    _freezesEarned = 0;
     notifyListeners();
     await _store.clear();
   }

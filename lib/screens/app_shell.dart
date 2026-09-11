@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/subject.dart';
 import '../state/learning_state.dart';
+import '../widgets/reward_sheet.dart';
 import 'achievements_screen.dart';
 import 'home_screen.dart';
 import 'knowledge_home.dart';
@@ -36,7 +37,12 @@ class _AppShellState extends State<AppShell> {
     final LearningState state = LearningScope.of(context);
     final int due = state.repetitionsDueIn(state.subject);
 
-    return Scaffold(
+    return AppTabs(
+      goTo: (int index) => setState(() => _index = index),
+      // Der Wächter sitzt über dem Gerüst, damit sein Blatt über allem
+      // liegt — und einmal, statt in jeder einzelnen Übung.
+      child: RewardWatcher(
+      child: Scaffold(
       // IndexedStack statt Neuaufbau: Wer in einem Bereich gescrollt hat,
       // findet die Stelle beim Zurückwechseln wieder.
       body: IndexedStack(
@@ -78,6 +84,31 @@ class _AppShellState extends State<AppShell> {
           ),
         ],
       ),
+      ),
+      ),
     );
   }
+}
+
+/// Lässt einen Bildschirm den Bereich wechseln, ohne das Gerüst zu kennen.
+///
+/// Gebraucht für die Serienanzeige in der Kopfzeile: Sie führt zu
+/// „Erfolge", und das ist ein **Bereich**, keine Seite, die man aufschlägt.
+/// Ohne diesen Weg bliebe nur, denselben Bildschirm ein zweites Mal als
+/// Route zu öffnen — mit zwei Rücksprüngen und ohne unten markierten
+/// Bereich.
+class AppTabs extends InheritedWidget {
+  const AppTabs({super.key, required this.goTo, required super.child});
+
+  /// Der Bereich „Erfolge" — dort stehen Level, Serie und Abzeichen.
+  static const int erfolge = 2;
+
+  final void Function(int index) goTo;
+
+  static void open(BuildContext context, int index) => context
+      .getInheritedWidgetOfExactType<AppTabs>()
+      ?.goTo(index);
+
+  @override
+  bool updateShouldNotify(AppTabs oldWidget) => false;
 }

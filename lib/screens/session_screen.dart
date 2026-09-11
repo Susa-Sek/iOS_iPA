@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
+import '../state/daily_quests.dart';
+import '../state/reward_store.dart';
 import '../state/session_plan.dart';
 import '../theme/app_theme.dart';
 import 'build_word_screen.dart';
@@ -65,6 +67,10 @@ class _SessionScreenState extends State<SessionScreen> {
   void _weiter() {
     if (!mounted) return;
     setState(() => _block++);
+    // Der letzte Block ist durch: Die Kurzrunde zählt als erledigt.
+    if (_block >= _blocks.length && _blocks.isNotEmpty) {
+      RewardScope.maybeOf(context)?.report(QuestKind.kurzrunde);
+    }
   }
 
   @override

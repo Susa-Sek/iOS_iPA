@@ -4,7 +4,9 @@ import 'package:flutter/material.dart' hide Feedback;
 
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
+import '../state/daily_quests.dart';
 import '../state/quiz_builder.dart';
+import '../state/reward_store.dart';
 import '../state/shorts_feed.dart';
 import '../theme/app_theme.dart';
 import '../widgets/answer_feedback.dart';
@@ -44,6 +46,10 @@ class _ShortsScreenState extends State<ShortsScreen> {
 
   int _index = 0;
   int _richtig = 0;
+
+  /// Ob das Thema für die Tagesaufgabe schon gezählt wurde — „Nochmal"
+  /// soll sie nicht ein zweites Mal erledigen.
+  bool _gemeldet = false;
 
   @override
   void dispose() {
@@ -113,7 +119,15 @@ class _ShortsScreenState extends State<ShortsScreen> {
           controller: _controller,
           scrollDirection: Axis.vertical,
           itemCount: _feed.length + 1,
-          onPageChanged: (int seite) => setState(() => _index = seite),
+          onPageChanged: (int seite) {
+            setState(() => _index = seite);
+            // Durchgewischt bis zur Abschlusskarte: Das ist die Aufgabe.
+            if (seite == _feed.length && !_gemeldet) {
+              _gemeldet = true;
+              RewardScope.maybeOf(context)?.report(QuestKind.feed);
+              LearningScope.of(context).recordShortsFinished();
+            }
+          },
           itemBuilder: (BuildContext context, int seite) {
             if (seite == _feed.length) {
               return _Abschluss(

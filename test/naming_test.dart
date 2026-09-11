@@ -8,6 +8,7 @@ import 'package:ipa_testing_github_action/state/learning_state.dart';
 import 'package:ipa_testing_github_action/state/lesson_store.dart';
 import 'package:ipa_testing_github_action/state/progress_store.dart';
 import 'package:ipa_testing_github_action/state/reminders.dart';
+import 'package:ipa_testing_github_action/state/reward_store.dart';
 import 'package:ipa_testing_github_action/state/speech.dart';
 
 /// Die Speicher-Schlüssel sind der Lernstand bestehender Nutzer.
@@ -48,6 +49,12 @@ void main() {
 
     test('gewähltes Fach', () {
       expect(LearningState.subjectKey, 'arabisch_lernen.subject');
+    });
+
+    test('Tagesaufgaben und gemeldete Abzeichen', () {
+      // Hier steht, welche Abzeichen schon gezeigt wurden. Ein neuer
+      // Schlüssel hieße: Beim nächsten Update gehen alle noch einmal hoch.
+      expect(RewardStore.storageKey, 'arabisch_lernen.rewards.v1');
     });
 
     test('gemerkte Karten', () {

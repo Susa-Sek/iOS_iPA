@@ -56,6 +56,17 @@ void main() {
     // einmal da — als Überschrift der Tageskarte. Der gleichnamige Bereich
     // unten ist ins Fach Wissen gewandert, wo der Tagesstoff hingehört.
     expect(find.text('Heute'), findsOneWidget);
+    expect(find.text('Tagesaufgaben'), findsOneWidget);
+
+    // Level und Punkte stehen weiter unten, seit die Tagesaufgaben
+    // dazwischenliegen. Ganz ohne Scrollen sieht man sie trotzdem: oben in
+    // der Kopfzeile läuft die Serie mit den Punkten mit.
+    await tester.scrollUntilVisible(
+      find.text('Level 1'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     expect(find.text('Level 1'), findsOneWidget);
     expect(find.text('0 Punkte'), findsOneWidget);
 

@@ -45,6 +45,9 @@ class AchievementStats {
     required this.level,
     this.lessonsDone = 0,
     this.topicsUnderstood = 0,
+    this.shortsDone = 0,
+    this.questDays = 0,
+    this.freezesEarned = 0,
   });
 
   final int learnedWords;
@@ -61,4 +64,13 @@ class AchievementStats {
   /// zählt, sondern die Lektion und das verstandene Thema.
   final int lessonsDone;
   final int topicsUnderstood;
+
+  /// Themen, die im Feed bis zum Ende durchgewischt wurden.
+  final int shortsDone;
+
+  /// Tage, an denen alle drei Tagesaufgaben erledigt waren.
+  final int questDays;
+
+  /// Verdiente Jokertage — auch die schon eingesetzten.
+  final int freezesEarned;
 }
