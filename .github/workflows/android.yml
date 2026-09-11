@@ -11,6 +11,10 @@ jobs:
   build-android:
     name: 🤖 Android Build
     runs-on: ubuntu-latest
+    permissions:
+      # Nur für den Veröffentlichungsschritt unten; beim normalen Bauen
+      # wird nichts geschrieben.
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -81,3 +85,35 @@ jobs:
       - name: Signaturschlüssel entfernen
         if: always()
         run: rm -f android/upload.jks android/key.properties
+
+      # Nur bei einem von Hand angestoßenen Lauf: eine Version mit der
+      # vollständigen APK. Sie ist 56 MB und passt durch keinen Chat; ein
+      # Actions-Artefakt verlangt eine Anmeldung und läuft nach Wochen ab —
+      # eine Version nicht. Die Nummer kommt aus pubspec.yaml, damit sie
+      # nicht zweimal gepflegt werden muss.
+      - name: Version veröffentlichen
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          VERSION="$(sed -n 's/^version: *\([^+]*\).*/\1/p' pubspec.yaml)"
+          TAG="v${VERSION}"
+          cp build/app/outputs/flutter-apk/app-release.apk \
+             "Taeglich-Klueger-${TAG}.apk"
+          cp build/app/outputs/bundle/release/app-release.aab \
+             "Taeglich-Klueger-${TAG}.aab"
+          NOTIZ="Vollständige APK für alle Architekturen (arm64, armeabi-v7a, x86_64). Auf dem Telefon herunterladen und öffnen; Android fragt einmal nach der Erlaubnis, Apps aus dieser Quelle zu installieren."
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" \
+              "Taeglich-Klueger-${TAG}.apk" \
+              "Taeglich-Klueger-${TAG}.aab" --clobber
+          else
+            gh release create "$TAG" \
+              --target "$GITHUB_SHA" \
+              --title "Täglich Klüger $TAG" \
+              --notes "$NOTIZ" \
+              "Taeglich-Klueger-${TAG}.apk" \
+              "Taeglich-Klueger-${TAG}.aab"
+          fi
+
