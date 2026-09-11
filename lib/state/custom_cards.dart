@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/vocabulary.dart';
+import 'card_codec.dart';
 
 /// Die selbst gemerkten Karten.
 ///
@@ -78,18 +79,9 @@ class CustomCardStore extends ChangeNotifier {
     final SharedPreferences prefs = await _preferences();
     await prefs.setString(
       storageKey,
-      jsonEncode(<Object?>[for (final VocabEntry c in _cards) _toJson(c)]),
+      jsonEncode(<Object?>[for (final VocabEntry c in _cards) CardCodec.toJson(c)]),
     );
   }
-
-  static Map<String, Object?> _toJson(VocabEntry card) => <String, Object?>{
-        'term': card.german,
-        'answer': card.answer,
-        if (card.question != null) 'question': card.question,
-        if (card.distractors.isNotEmpty) 'distractors': card.distractors,
-        if (card.explanation != null) 'explanation': card.explanation,
-        if (card.source != null) 'source': card.source,
-      };
 
   /// Liest, was lesbar ist. Ein kaputter Eintrag kostet diese eine Karte,
   /// nicht die ganze Sammlung.
@@ -99,7 +91,7 @@ class CustomCardStore extends ChangeNotifier {
       if (json is! List) return const <VocabEntry>[];
       return <VocabEntry>[
         for (final Object? entry in json)
-          if (_fromJson(entry) case final VocabEntry card) card,
+          if (CardCodec.fromJson(entry) case final VocabEntry card) card,
       ];
     } catch (error) {
       debugPrint('Gemerkte Karten unlesbar: $error');
@@ -107,32 +99,6 @@ class CustomCardStore extends ChangeNotifier {
     }
   }
 
-  static VocabEntry? _fromJson(Object? json) {
-    if (json is! Map) return null;
-    final Object? term = json['term'];
-    final Object? answer = json['answer'];
-    if (term is! String || answer is! String) return null;
-    if (term.trim().isEmpty || answer.trim().isEmpty) return null;
-    final Object? question = json['question'];
-    final Object? distractors = json['distractors'];
-    return VocabEntry(
-      term,
-      answer,
-      '',
-      question: question is String ? question : null,
-      distractors: distractors is List
-          ? <String>[
-              for (final Object? d in distractors)
-                if (d is String) d,
-            ]
-          : const <String>[],
-      explanation: json['explanation'] is String
-          ? json['explanation'] as String
-          : null,
-      source: json['source'] is String ? json['source'] as String : null,
-      script: TextScript.latin,
-    );
-  }
 }
 
 /// Macht die gemerkten Karten im Baum verfügbar.

@@ -7,6 +7,7 @@ import 'package:ipa_testing_github_action/state/daily_feed.dart';
 import 'package:ipa_testing_github_action/state/learning_state.dart';
 import 'package:ipa_testing_github_action/state/lesson_store.dart';
 import 'package:ipa_testing_github_action/state/progress_store.dart';
+import 'package:ipa_testing_github_action/state/daily_card_store.dart';
 import 'package:ipa_testing_github_action/state/duel_store.dart';
 import 'package:ipa_testing_github_action/state/reminders.dart';
 import 'package:ipa_testing_github_action/state/reward_store.dart';
@@ -56,6 +57,12 @@ void main() {
       // Hier steht, welche Abzeichen schon gezeigt wurden. Ein neuer
       // Schlüssel hieße: Beim nächsten Update gehen alle noch einmal hoch.
       expect(RewardStore.storageKey, 'arabisch_lernen.rewards.v1');
+    });
+
+    test('Tagesfunde', () {
+      // Hier liegen die Karten, die der Tagesstoff von selbst gebracht hat.
+      // Ein neuer Schlüssel hieße: Der Bestand von Monaten ist weg.
+      expect(DailyCardStore.storageKey, 'arabisch_lernen.daily_cards.v1');
     });
 
     test('Duelle', () {

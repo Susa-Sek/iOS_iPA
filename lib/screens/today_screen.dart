@@ -4,7 +4,9 @@ import 'package:flutter/services.dart';
 import '../models/daily_item.dart';
 import '../models/vocabulary.dart';
 import '../state/custom_cards.dart';
+import '../state/daily_card_store.dart';
 import '../state/daily_feed.dart';
+import '../state/learning_state.dart';
 import '../theme/app_theme.dart';
 
 /// Der Bereich „Heute": jeden Tag etwas Neues, das nicht im Programm steht.
@@ -58,6 +60,8 @@ class _TodayScreenState extends State<TodayScreen> {
               Insets.lg, Insets.sm, Insets.lg, Insets.xxl),
           children: <Widget>[
             _StatusLine(service: service),
+            const SizedBox(height: Insets.sm),
+            const _AutoSwitch(),
             if (feed == null) ...<Widget>[
               const SizedBox(height: Insets.xl),
               _EmptyHint(service: service),
@@ -93,6 +97,92 @@ class _TodayScreenState extends State<TodayScreen> {
         ),
       ),
     );
+  }
+}
+
+/// Der Schalter, ob der Tagesstoff von selbst in den Bestand wandert.
+///
+/// Hier und nicht in einem Einstellungsmenü: An dieser Stelle steht der
+/// Stoff, um den es geht. Wer hier liest, versteht ohne Erklärung, was
+/// eingesammelt würde.
+class _AutoSwitch extends StatelessWidget {
+  const _AutoSwitch();
+
+  @override
+  Widget build(BuildContext context) {
+    final DailyCardStore funde = DailyCardScope.of(context);
+    final ThemeData theme = Theme.of(context);
+
+    return Card(
+      child: Column(
+        children: <Widget>[
+          SwitchListTile(
+            value: funde.enabled,
+            onChanged: funde.setEnabled,
+            secondary:
+                Icon(Icons.auto_awesome, color: theme.colorScheme.primary),
+            title: const Text('Jeden Tag automatisch merken'),
+            subtitle: const Text(
+                'Artikel des Tages und ein Ereignis wandern als Karten in '
+                'den Bestand — sonst muss man sie einzeln merken.'),
+            isThreeLine: true,
+          ),
+          if (funde.length > 0)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  Insets.lg, 0, Insets.sm, Insets.sm),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Text(
+                      funde.length == 1
+                          ? '1 Tagesfund im Bestand'
+                          : '${funde.length} Tagesfunde im Bestand',
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => _alleLoeschen(context, funde),
+                    child: const Text('Alle löschen'),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Löschen heißt hier auch: den Lernstand dieser Karten vergessen. Bliebe
+  /// er liegen, wüchse er weiter mit Einträgen zu Karten, die es nicht mehr
+  /// gibt.
+  Future<void> _alleLoeschen(
+      BuildContext context, DailyCardStore funde) async {
+    final LearningState state = LearningScope.of(context);
+    final bool? sicher = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Alle Tagesfunde löschen?'),
+        content: Text('${funde.length} Karten und ihr Lernstand sind dann '
+            'weg. Die selbst gemerkten Karten bleiben.'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Löschen'),
+          ),
+        ],
+      ),
+    );
+    if (sicher != true) return;
+    final List<String> weg = <String>[
+      for (final VocabEntry karte in funde.cards) karte.id,
+    ];
+    await funde.clear();
+    await state.forget(weg);
   }
 }
 

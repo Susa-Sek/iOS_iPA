@@ -7,6 +7,7 @@ import '../state/daily_feed.dart';
 import '../state/learning_state.dart';
 import '../state/lesson_store.dart';
 import '../theme/app_theme.dart';
+import '../widgets/daily_find_card.dart';
 import '../widgets/quest_card.dart';
 import '../widgets/streak_chip.dart';
 import '../widgets/subject_switch.dart';
@@ -78,6 +79,7 @@ class _KnowledgeHomeState extends State<KnowledgeHome> {
           SliverToBoxAdapter(
             child: _LektionKarte(lesson: naechste, store: lessons),
           ),
+          const SliverToBoxAdapter(child: DailyFindCard()),
           const SliverToBoxAdapter(child: QuestCard()),
           const SliverToBoxAdapter(child: _Tagesstoff()),
           SliverToBoxAdapter(

@@ -7,6 +7,9 @@ import 'theme/app_theme.dart';
 import 'state/custom_cards.dart';
 import 'state/daily_feed.dart';
 import 'state/learning_state.dart';
+import 'models/daily_item.dart';
+import 'state/daily_card_store.dart';
+import 'state/daily_harvest.dart';
 import 'state/daily_quests.dart';
 import 'state/duel_store.dart';
 import 'state/lesson_store.dart';
@@ -36,11 +39,12 @@ class TaeglichKluegerApp extends StatefulWidget {
 class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
   final CustomCardStore _cards = CustomCardStore();
   late final LearningState _state = LearningState(
-    content: ContentWithCustomCards(kDefaultContent, _cards),
+    content: ContentWithCustomCards(kDefaultContent, _cards, _dailyCards),
   );
   final Speaker _speaker = Speaker();
   final ReminderService _reminders = ReminderService();
   final DailyFeedService _feed = DailyFeedService();
+  final DailyCardStore _dailyCards = DailyCardStore();
   final LessonStore _lessons = LessonStore();
   final RewardStore _rewards = RewardStore();
   final DuelStore _duels = DuelStore();
@@ -57,9 +61,13 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
     _state.load();
     // … and asks the system whether it can speak Arabic at all.
     _speaker.init();
-    // Der Tagesinhalt wird nur aus dem Speicher gelesen; geholt wird er erst,
-    // wenn jemand den Bereich „Heute" öffnet.
+    // Der Tagesinhalt wird aus dem Speicher gelesen; geholt wird er im
+    // Gerüst, einmal am Tag (siehe AppShell).
     _feed.load();
+    // Ein neuer Tagesstoff heißt: zwei neue Karten im Bestand.
+    _feed.addListener(_ernten);
+    _dailyCards.addListener(_state.contentChanged);
+    _dailyCards.load();
     // Die Abzeichen fürs Wissen zählen Lektionen; der Lernkern erfährt den
     // Stand, statt den Speicher zu kennen.
     _lessons.addListener(_meldeLektionen);
@@ -86,6 +94,19 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
     );
   }
 
+  /// Holt aus dem frischen Tagesstoff die Karten des Tages.
+  ///
+  /// Hier und nicht in einem Bildschirm: Der Fund soll ankommen, egal wo man
+  /// gerade ist — und nur **einmal**, nicht bei jedem Neuzeichnen. Fallen
+  /// dabei alte Karten aus dem Bestand, vergisst der Lernkern ihre Stufen
+  /// mit; sonst wüchse er still weiter.
+  Future<void> _ernten() async {
+    final DailyFeed? heute = _feed.feed;
+    if (heute == null || !_dailyCards.enabled) return;
+    final List<String> weg = await _dailyCards.addAll(harvestDaily(heute));
+    if (weg.isNotEmpty) await _state.forget(weg);
+  }
+
   void _meldeLektionen() => _state.reportLessons(
         done: _lessons.doneCount,
         topicsUnderstood: _lessons.understoodIn(kKnowledgeCategories),
@@ -94,6 +115,9 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
   @override
   void dispose() {
     _lessons.removeListener(_meldeLektionen);
+    _feed.removeListener(_ernten);
+    _dailyCards.removeListener(_state.contentChanged);
+    _dailyCards.dispose();
     _rewards.dispose();
     _duels.dispose();
     _cards.removeListener(_state.contentChanged);
@@ -116,6 +140,8 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
           store: _lessons,
           child: RewardScope(
           store: _rewards,
+          child: DailyCardScope(
+          store: _dailyCards,
           child: DuelScope(
           store: _duels,
           child: ShareScope(
@@ -135,6 +161,7 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
               ),
             ),
           ),
+        ),
         ),
         ),
         ),

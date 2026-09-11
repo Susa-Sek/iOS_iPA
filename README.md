@@ -211,6 +211,53 @@ Gezählt wird an einer Stelle. Jede Antwort läuft ohnehin durch den Lernkern,
 und der erreicht die Tagesaufgaben über einen Rückruf — nicht acht
 Übungsbildschirme, die einzeln daran denken müssten.
 
+## Die App geht nie aus
+
+Nachgemessen: **42 Lektionen, 21 Themen.** Wer eine Lektion am Tag macht, ist
+nach **sechs Wochen** durch. Für eine App, die „jeden Tag zwischendurch"
+sein will, ist das der wunde Punkt.
+
+Die Lösung lag schon halb im Code. `DailyItem.toCard()` macht seit dem
+Bereich „Heute" aus dem **Artikel des Tages** eine Begriffskarte und aus
+**„Was geschah heute"** eine Jahresfrage mit drei plausiblen
+Falschantworten — geschrieben, getestet, benutzt. Nur der Weg dorthin
+fehlte: Man musste den Bereich aufschlagen und jeden Fund einzeln auf „Als
+Karte merken" tippen. Das tut niemand täglich.
+
+Jetzt geschieht es von selbst. **Zwei Karten am Tag**, die in Wiederholung,
+Quiz und Feed mitlaufen wie alles andere — und auf beiden Startseiten steht
+einen Tag lang:
+
+```
+ ✦  Neu von heute                          2 Karten
+    Golfstrom · In welchem Jahr wurde …            ›
+```
+
+Antippen heißt: eine Runde aus genau diesen zwei Fragen. Dreißig Sekunden,
+jeden Tag etwas anderes.
+
+**Die Regeln, damit daraus keine Lawine wird:**
+
+* **Ein** Ereignis am Tag, nicht alle zwölf, die Wikipedia für ein Datum
+  listet. Ein Schwall wäre keine Abwechslung, sondern eine Hausaufgabe.
+* Nachrichten nie — sie wären in einer Wiederholung nach drei Wochen
+  überholt. Das entscheidet weiter `canRemember`, nicht eine zweite Regel.
+* **Grenze bei 180 Karten** (rund drei Monate). Darüber fallen die ältesten
+  weg, und der Lernkern **vergisst ihre Lernstufen mit**. Sonst wüchse der
+  Lernstand still weiter mit Einträgen zu Karten, die es nicht mehr gibt.
+* Derselbe Fund an zwei Tagen ergibt eine Karte — die `id` ist der Schlüssel
+  des Lernstands.
+
+**Abschaltbar, wo es hingehört:** ein Schalter im Bereich „Heute", direkt
+über dem Stoff, um den es geht. Aus heißt: Der Bestand bleibt liegen, es
+kommt nur nichts dazu. Dort steht auch, wie viele Tagesfunde sich
+angesammelt haben, und dort wirft man sie wieder weg.
+
+**Zwei Speicher, zwei Themen.** „Meine Karten" ist, was man sich selbst
+aufgehoben hat; „Tagesfunde" ist, was von allein kam. Sie stehen im Lernweg
+nebeneinander unter **„Aus dem Alltag"** — nicht in einem Topf, damit „alles
+löschen" auf dem einen den anderen nicht mitnimmt.
+
 ## Duell — Community ohne Server
 
 Die App hat **kein Konto, keinen Server und keine Anmeldung**, und ein Duell
@@ -429,6 +476,7 @@ lib/
 ├── theme/                 Abstände, Radien, Bewegung, Erscheinungsbild
 ├── state/                 Lernstufen & Termine, Speicherung, Punkte,
 │                          Jokertage, Tagesaufgaben, Duell-Codes, Teilen,
+│                          Tagesfunde und ihre Ernte,
 │                          Sprachausgabe, Erinnerungen, Tagesinhalte,
 │                          gemerkte Karten
 ├── data/                  Wortschatz, Lernweg, Registry, Alphabet, Verben,
@@ -440,7 +488,7 @@ lib/
 │                          Navigationsgerüst, Übungsübersicht
 └── widgets/               Arabische Textausgabe (RTL), Wortzeile, Lernboxen,
                            Fachumschalter, Serienanzeige, Tagesaufgaben,
-                           Belohnungsblatt
+                           Belohnungsblatt, Tagesfund-Karte
 ```
 
 ## Entwickeln
@@ -530,6 +578,10 @@ Ehrlicher als eine halbe Umsetzung:
 * **Gerätefragen.** Ob die Erinnerung abends wirklich ankommt, wie die
   arabische Sprachausgabe klingt und ob die Tagesinhalte eintreffen, zeigt
   erst das Telefon.
+* **Ob morgens wirklich zwei neue Karten dastehen**, braucht einen echten
+  Tageswechsel und echtes Netz. Geprüft ist, was die abgelegten Antworten
+  hergeben (`test/daily_harvest_test.dart`) — ein echter Morgen ist das
+  nicht.
 * **Ob das Teilen-Blatt aufgeht** und wie ein Code in WhatsApp ankommt, ist
   nur am Gerät zu sehen — `share_plus` gehört dem Betriebssystem. Im Test
   liegt eine Attrappe dahinter, und der Rückfall auf die Zwischenablage ist

@@ -164,7 +164,9 @@ void main() {
       await tester.drag(find.byType(CustomScrollView), const Offset(0, -2000));
       await tester.pumpAndSettle();
 
-      expect(find.text('Gemerkt'), findsOneWidget);
+      // Der Bereich heißt „Aus dem Alltag", seit die Tagesfunde als zweites
+      // Thema danebenstehen.
+      expect(find.text('Aus dem Alltag'), findsOneWidget);
     });
 
     testWidgets('ohne gemerkte Karten gibt es das Thema nicht',
@@ -184,7 +186,7 @@ void main() {
       await tester.drag(find.byType(CustomScrollView), const Offset(0, -2000));
       await tester.pumpAndSettle();
 
-      expect(find.text('Gemerkt'), findsNothing);
+      expect(find.text('Aus dem Alltag'), findsNothing);
     });
   });
 

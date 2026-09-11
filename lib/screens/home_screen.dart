@@ -5,6 +5,7 @@ import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
 import '../state/reminders.dart';
 import '../theme/app_theme.dart';
+import '../widgets/daily_find_card.dart';
 import '../widgets/quest_card.dart';
 import '../widgets/streak_chip.dart';
 import '../widgets/subject_switch.dart';
@@ -80,6 +81,7 @@ class HomeScreen extends StatelessWidget {
           ),
           SliverToBoxAdapter(child: _KurzrundeCard(state: state)),
           SliverToBoxAdapter(child: _TodayCard(state: state)),
+          const SliverToBoxAdapter(child: DailyFindCard()),
           const SliverToBoxAdapter(child: QuestCard()),
           SliverToBoxAdapter(child: _ProgressCard(state: state)),
           SliverToBoxAdapter(

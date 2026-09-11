@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/vocabulary.dart';
 import '../state/custom_cards.dart';
+import '../state/daily_card_store.dart';
 import 'curriculum.dart';
 import 'knowledge/knowledge_data.dart';
 import 'quran_vocab.dart';
@@ -85,42 +86,65 @@ class FixedContent implements ContentRegistry {
   }
 }
 
-/// Der eingebaute Inhalt plus die selbst gemerkten Karten.
+/// Der eingebaute Inhalt plus alles, was aus dem Bereich „Heute" kommt.
 ///
 /// Die Karten kommen erst hier dazu, eine Ebene über den Konstanten: So
 /// bleiben `kAllEntries` und `kGroups` das, was die Datentests prüfen — rein
 /// arabisch und lückenlos vom Lernweg abgedeckt.
+///
+/// Zwei Quellen, zwei Themen: **Meine Karten** sind selbst gemerkt,
+/// **Tagesfunde** kommen von allein. Sie stehen nebeneinander und nicht in
+/// einem Topf, damit man sie auseinanderhalten und einzeln wegwerfen kann.
 class ContentWithCustomCards implements ContentRegistry {
-  const ContentWithCustomCards(this.base, this.store);
+  const ContentWithCustomCards(this.base, this.store, [this.daily]);
 
   final ContentRegistry base;
   final CustomCardStore store;
+
+  /// Die Tagesfunde. Fehlen sie, verhält sich alles wie vorher — so bleiben
+  /// Tests und Vorschauen ohne diesen Speicher gültig.
+  final DailyCardStore? daily;
 
   /// Das Thema, unter dem gemerkte Funde erscheinen.
   static const String customCategoryId = 'meine_karten';
   static const String customGroupId = 'gemerkt';
 
-  /// Erst wenn etwas gemerkt wurde, taucht das Thema überhaupt auf — ein
-  /// leeres Fach auf der Startseite wäre nur im Weg.
+  /// Das Thema, unter dem der Tagesstoff landet.
+  static const String dailyCategoryId = 'tagesfunde';
+
+  /// Erst wenn etwas da ist, taucht das Thema überhaupt auf — ein leeres
+  /// Fach auf der Startseite wäre nur im Weg.
   List<CategoryGroup> get _custom {
     final List<VocabEntry> cards = store.cards;
-    if (cards.isEmpty) return const <CategoryGroup>[];
+    final List<VocabEntry> funde = daily?.cards ?? const <VocabEntry>[];
+    if (cards.isEmpty && funde.isEmpty) return const <CategoryGroup>[];
     return <CategoryGroup>[
       CategoryGroup(
         id: customGroupId,
-        name: 'Gemerkt',
-        description: 'Was du dir aus dem Bereich „Heute" aufgehoben hast.',
+        name: 'Aus dem Alltag',
+        description: 'Was du dir aufgehoben hast — und was der Tag brachte.',
         icon: Icons.bookmark,
         categories: <VocabCategory>[
-          VocabCategory(
-            id: customCategoryId,
-            name: 'Meine Karten',
-            icon: Icons.bookmark_added,
-            color: const Color(0xFF6A4C93),
-            softColor: const Color(0xFFEDE7F6),
-            script: TextScript.latin,
-            entries: cards,
-          ),
+          if (cards.isNotEmpty)
+            VocabCategory(
+              id: customCategoryId,
+              name: 'Meine Karten',
+              icon: Icons.bookmark_added,
+              color: const Color(0xFF6A4C93),
+              softColor: const Color(0xFFEDE7F6),
+              script: TextScript.latin,
+              entries: cards,
+            ),
+          if (funde.isNotEmpty)
+            VocabCategory(
+              id: dailyCategoryId,
+              name: 'Tagesfunde',
+              icon: Icons.auto_awesome,
+              color: const Color(0xFF1F7A6C),
+              softColor: const Color(0xFFDDF0EC),
+              script: TextScript.latin,
+              entries: funde,
+            ),
         ],
       ),
     ];
@@ -139,11 +163,12 @@ class ContentWithCustomCards implements ContentRegistry {
   List<VocabEntry> get entries => <VocabEntry>[
         ...base.entries,
         ...store.cards,
+        ...?daily?.cards,
       ];
 
   @override
   VocabCategory? categoryById(String id) {
-    if (id == customCategoryId) {
+    if (id == customCategoryId || id == dailyCategoryId) {
       for (final CategoryGroup g in _custom) {
         for (final VocabCategory c in g.categories) {
           if (c.id == id) return c;

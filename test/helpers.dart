@@ -7,6 +7,7 @@ import 'package:ipa_testing_github_action/state/daily_feed.dart';
 import 'package:ipa_testing_github_action/state/learning_state.dart';
 import 'package:ipa_testing_github_action/state/lesson_store.dart';
 import 'package:ipa_testing_github_action/state/reminders.dart';
+import 'package:ipa_testing_github_action/state/daily_card_store.dart';
 import 'package:ipa_testing_github_action/state/duel_store.dart';
 import 'package:ipa_testing_github_action/state/reward_store.dart';
 import 'package:ipa_testing_github_action/state/sharing.dart';
@@ -126,6 +127,7 @@ Widget wrapScreen(
   LessonStore? lessons,
   RewardStore? rewards,
   DuelStore? duels,
+  DailyCardStore? dailyCards,
   Sharer? sharer,
 }) =>
     LearningScope(
@@ -134,6 +136,8 @@ Widget wrapScreen(
         store: lessons ?? LessonStore(),
         child: RewardScope(
         store: rewards ?? RewardStore(),
+        child: DailyCardScope(
+        store: dailyCards ?? DailyCardStore(),
         child: DuelScope(
         store: duels ?? DuelStore(),
         child: ShareScope(
@@ -150,6 +154,7 @@ Widget wrapScreen(
               child: MaterialApp(home: child),
             ),
           ),
+        ),
         ),
         ),
         ),
@@ -174,6 +179,7 @@ Widget wrapScreenScaled(
   LessonStore? lessons,
   RewardStore? rewards,
   DuelStore? duels,
+  DailyCardStore? dailyCards,
   Sharer? sharer,
 }) =>
     LearningScope(
@@ -182,6 +188,8 @@ Widget wrapScreenScaled(
         store: lessons ?? LessonStore(),
         child: RewardScope(
         store: rewards ?? RewardStore(),
+        child: DailyCardScope(
+        store: dailyCards ?? DailyCardStore(),
         child: DuelScope(
         store: duels ?? DuelStore(),
         child: ShareScope(
@@ -205,6 +213,7 @@ Widget wrapScreenScaled(
               ),
             ),
           ),
+        ),
         ),
         ),
         ),

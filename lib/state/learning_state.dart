@@ -270,6 +270,21 @@ class LearningState extends ChangeNotifier {
         freezesEarned: _freezesEarned,
       ));
 
+  /// Wirft die Lernstufen zu Karten weg, die es nicht mehr gibt.
+  ///
+  /// Gebraucht von den Tagesfunden: Über der Grenze fallen die ältesten
+  /// Karten weg. Bliebe ihr Lernstand liegen, wüchse `_words` still weiter —
+  /// Jahr für Jahr mit Einträgen zu Karten, die niemand mehr sieht.
+  Future<void> forget(Iterable<String> ids) async {
+    int weg = 0;
+    for (final String id in ids) {
+      if (_words.remove(id) != null) weg++;
+    }
+    if (weg == 0) return;
+    notifyListeners();
+    await _persist();
+  }
+
   WordProgress progressOfWord(VocabEntry entry) =>
       _words[entry.id] ?? WordProgress();
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../models/subject.dart';
+import '../state/daily_card_store.dart';
+import '../state/daily_feed.dart';
 import '../state/learning_state.dart';
 import '../widgets/reward_sheet.dart';
 import 'achievements_screen.dart';
@@ -31,6 +33,23 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int _index = 0;
+  bool _gefragt = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_gefragt) return;
+    _gefragt = true;
+    // Der Tagesstoff wird hier geholt und nicht mehr nur im Bereich „Heute":
+    // Wer nur Arabisch lernt, bekäme sonst nie einen Fund. Einmal am Tag,
+    // aus dem Zwischenspeicher beantwortet — und nur, wenn der Schalter an
+    // ist, damit ein Abgeschalteter keinen Abruf auslöst.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (!DailyCardScope.of(context).enabled) return;
+      DailyFeedScope.of(context).ensureFresh();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
