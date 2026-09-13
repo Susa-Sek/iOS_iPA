@@ -11,6 +11,7 @@ import '../models/subject.dart';
 import '../models/vocabulary.dart';
 import 'progress_store.dart';
 import 'daily_quests.dart';
+import 'session_plan.dart';
 import 'word_progress.dart';
 
 /// Tracks what the learner knows, when each word is due again, and how the
@@ -107,6 +108,9 @@ class LearningState extends ChangeNotifier {
   int _shortsDone = 0;
   int _questDays = 0;
   int _freezesEarned = 0;
+  Set<ExerciseKind> _sessionKinds = ExerciseKind.values.toSet();
+  int _sessionBlocks = kBlocksPerSession;
+  int _blockSize = kDefaultBlockSize;
 
   /// Wohin gemeldet wird, was gerade passiert ist.
   ///
@@ -242,6 +246,19 @@ class LearningState extends ChangeNotifier {
     _shortsDone = stored.shortsDone;
     _questDays = stored.questDays;
     _freezesEarned = stored.freezesEarned;
+    // Leer heißt alle: Eine Installation von vor dieser Einstellung soll
+    // keine Kurzrunde ohne Inhalt bekommen.
+    final Set<ExerciseKind> gewaehlt = <ExerciseKind>{
+      for (final String id in stored.sessionKinds)
+        if (ExerciseKind.byId(id) case final ExerciseKind k) k,
+    };
+    _sessionKinds =
+        gewaehlt.isEmpty ? ExerciseKind.values.toSet() : gewaehlt;
+    _sessionBlocks = stored.sessionBlocks > 0
+        ? stored.sessionBlocks
+        : kBlocksPerSession;
+    _blockSize =
+        stored.blockSize > 0 ? stored.blockSize : kDefaultBlockSize;
     // Beim Öffnen wird nachgeholt, was seit dem letzten Mal liegen blieb:
     // Eine Lücke von gestern wird geschlossen, solange Joker da sind.
     _spendFreezes();
@@ -268,6 +285,11 @@ class LearningState extends ChangeNotifier {
         shortsDone: _shortsDone,
         questDays: _questDays,
         freezesEarned: _freezesEarned,
+        sessionKinds: <String>[
+          for (final ExerciseKind k in _sessionKinds) k.id,
+        ],
+        sessionBlocks: _sessionBlocks,
+        blockSize: _blockSize,
       ));
 
   /// Wirft die Lernstufen zu Karten weg, die es nicht mehr gibt.
@@ -445,6 +467,82 @@ class LearningState extends ChangeNotifier {
     }
   }
 
+  // ---- Lernen in Blöcken -------------------------------------------------
+
+  /// Wie viele Wörter ein Block umfasst.
+  int get blockSize => _blockSize;
+
+  Future<void> setBlockSize(int size) async {
+    _blockSize = size.clamp(5, 50);
+    notifyListeners();
+    await _persist();
+  }
+
+  /// Die Wörter, an denen gerade gearbeitet wird.
+  ///
+  /// **Warum es das gibt.** Vorher stand auf der Startseite „793 Wörter
+  /// warten auf eine Wiederholung" — weil ein nie angesehenes Wort als
+  /// fällig gilt. Das ist keine Aufgabe, das ist eine Drohung, und sie wird
+  /// über Monate nicht kleiner.
+  ///
+  /// Ein Block sind die nächsten [blockSize] Wörter des Lernwegs, die noch
+  /// nicht sitzen. Man übt sie, bis sie sitzen; dann rückt der Block von
+  /// selbst weiter. Es braucht dafür **nichts Gespeichertes**: Was sitzt,
+  /// steht schon im Lernstand, und die Reihenfolge steht im Lernweg. Ein
+  /// zweiter Merker wäre eine zweite Wahrheit, die irgendwann abweicht.
+  List<VocabEntry> get currentBlock {
+    final List<VocabEntry> offen = <VocabEntry>[
+      for (final VocabEntry e in activeEntries)
+        if (!isLearned(e)) e,
+    ];
+    return offen.take(min(_blockSize, offen.length)).toList();
+  }
+
+  /// Wie viele Wörter des laufenden Blocks schon sitzen.
+  ///
+  /// Immer 0, solange keines sitzt — der Block besteht ja gerade aus den
+  /// noch offenen. Gezählt wird deshalb innerhalb der Blockgrenze des
+  /// Lernwegs, nicht innerhalb von [currentBlock].
+  int get blockLearned {
+    final int gelernt = learnedCount;
+    return gelernt - (gelernt ~/ _blockSize) * _blockSize;
+  }
+
+  /// Der wievielte Block gerade dran ist, ab 1.
+  int get blockNumber => (learnedCount ~/ _blockSize) + 1;
+
+  /// Wie viele Blöcke das aktive Fach insgesamt hat.
+  int get blockCount => (totalCount + _blockSize - 1) ~/ _blockSize;
+
+  /// Fortschritt im laufenden Block, 0 bis 1.
+  double get blockProgress =>
+      _blockSize == 0 ? 1 : (blockLearned / _blockSize).clamp(0, 1).toDouble();
+
+  // ---- Kurzrunde nach Maß ------------------------------------------------
+
+  /// Welche Übungsarten in einer Kurzrunde vorkommen dürfen.
+  Set<ExerciseKind> get sessionKinds => Set<ExerciseKind>.unmodifiable(
+        _sessionKinds.isEmpty ? ExerciseKind.values.toSet() : _sessionKinds,
+      );
+
+  /// Wie viele Blöcke eine Kurzrunde hat.
+  int get sessionBlocks => _sessionBlocks;
+
+  /// Setzt die Auswahl. **Eine Art bleibt immer übrig** — eine Kurzrunde
+  /// ohne Übung wäre ein Knopf, der ins Leere führt.
+  Future<void> setSessionKinds(Set<ExerciseKind> kinds) async {
+    if (kinds.isEmpty) return;
+    _sessionKinds = Set<ExerciseKind>.of(kinds);
+    notifyListeners();
+    await _persist();
+  }
+
+  Future<void> setSessionBlocks(int blocks) async {
+    _sessionBlocks = blocks.clamp(1, 6);
+    notifyListeners();
+    await _persist();
+  }
+
   int get shortsDone => _shortsDone;
   int get questDays => _questDays;
   int get freezesEarned => _freezesEarned;
@@ -562,13 +660,35 @@ class LearningState extends ChangeNotifier {
 
   /// Die Karten für heute: fällige zuerst, dann die schwächsten — und nicht
   /// mehr, als in einer Sitzung zu schaffen ist.
+  /// Woran heute gearbeitet wird: fällige Wiederholungen und der laufende
+  /// Block — nicht der ganze Bestand.
+  ///
+  /// Vorher zog jede Übung aus allen 801 Wörtern. Man bekam ständig neue
+  /// vorgesetzt und brachte keines zu Ende; genau daher kam die Zahl, die
+  /// nie kleiner wurde.
+  List<VocabEntry> get workingSet {
+    final List<VocabEntry> faellig = repetitionsDue();
+    final Set<String> drin = <String>{
+      for (final VocabEntry e in faellig) e.id,
+    };
+    return <VocabEntry>[
+      ...faellig,
+      for (final VocabEntry e in currentBlock)
+        if (drin.add(e.id)) e,
+    ];
+  }
+
   List<VocabEntry> dailySelection({
     List<VocabEntry>? pool,
     int? size,
     Random? random,
   }) {
-    final List<VocabEntry> ordered =
-        trainingOrder(pool ?? activeEntries, random: random);
+    final List<VocabEntry> quelle = pool ?? workingSet;
+    // Ein leerer Block heißt: alles sitzt. Dann darf eine Übung wieder aus
+    // dem ganzen Fach ziehen, statt ins Leere zu greifen.
+    final List<VocabEntry> ordered = trainingOrder(
+        quelle.isEmpty ? activeEntries : quelle,
+        random: random);
     return ordered.take(min(size ?? dosePerRound, ordered.length)).toList();
   }
 
@@ -636,6 +756,9 @@ class LearningState extends ChangeNotifier {
     _shortsDone = 0;
     _questDays = 0;
     _freezesEarned = 0;
+    _sessionKinds = ExerciseKind.values.toSet();
+    _sessionBlocks = kBlocksPerSession;
+    _blockSize = kDefaultBlockSize;
     notifyListeners();
     await _store.clear();
   }

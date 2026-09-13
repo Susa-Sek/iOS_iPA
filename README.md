@@ -211,6 +211,62 @@ Gezählt wird an einer Stelle. Jede Antwort läuft ohnehin durch den Lernkern,
 und der erreicht die Tagesaufgaben über einen Rückruf — nicht acht
 Übungsbildschirme, die einzeln daran denken müssten.
 
+## Lernen in Blöcken
+
+Auf der Startseite stand: **„793 Wörter warten auf eine Wiederholung."**
+
+Das ist keine Aufgabe, das ist eine Drohung — und sie wurde über Monate
+nicht kleiner. Der Grund steckte in der Zählung: `dueCount` hält auch ein
+**nie angesehenes** Wort für fällig. Bei 801 Wörtern und 8 angefangenen
+kommt genau diese Zahl heraus.
+
+Jetzt ist die Einheit der **Block**: die nächsten zehn Wörter des Lernwegs,
+die noch nicht sitzen. Man übt sie, bis sie sitzen; dann rückt der Block von
+selbst weiter.
+
+```
+   Block 3 von 81 · 4 von 10 sitzen
+   ▓▓▓▓░░░░░░
+   2 Wiederholungen fällig · Tagesziel 8/10
+   ┌────────────────────────────────┐
+   │   Block üben & wiederholen     │
+   └────────────────────────────────┘
+```
+
+**Der Block braucht nichts Gespeichertes.** Was sitzt, steht im Lernstand;
+die Reihenfolge steht im Lernweg. Ein zweiter Merker wäre eine zweite
+Wahrheit, die irgendwann abweicht.
+
+Und die Übungen ziehen nicht mehr aus allen 801 Wörtern, sondern aus dem
+**Arbeitsvorrat**: fällige Wiederholungen zuerst, dann der laufende Block.
+Vorher bekam man ständig neue Wörter vorgesetzt und brachte keines zu
+Ende — genau daher kam die Zahl, die nie kleiner wurde. Sitzt einmal alles,
+greift eine Übung wieder ins ganze Fach, statt ins Leere.
+
+Die Blockgröße ist einstellbar (5 bis 30), zusammen mit der Kurzrunde unter
+**Üben → Kurzrunde → Zahnrad**: welche Übungsarten vorkommen dürfen und wie
+viele Blöcke eine Runde hat. Eine Art bleibt immer an — eine Kurzrunde ohne
+Übung wäre ein Knopf ins Leere.
+
+## Wort bauen verrät die Lösung nicht mehr
+
+Unter dem deutschen Wort stand fest die Lautschrift:
+
+```
+        siebzig
+        sab'un          ← das war die Bauanleitung
+    [ ن ] [ و ] [ سَ ] [ بْ ] [ عُ ]
+```
+
+s → سَ, b → بْ, ʻ → عُ, u → و, n → ن. Es blieb nichts zu wissen, nur noch
+abzulesen. Die Lautschrift ist jetzt ein **Hinweis, den man holen kann** —
+und nach dem Prüfen steht sie ohnehin da, dann verrät sie nichts mehr.
+
+Beim **Tippen** bleibt sie sichtbar: Dort steht das arabische Wort oben und
+gesucht ist das deutsche, also ist sie eine Lesehilfe und keine Lösung. Auf
+der **Karteikarte** steht sie auf der Rückseite, bei der Antwort. Nur „Wort
+bauen" war kaputt.
+
 ## Der Feed zieht nicht
 
 Ein Wisch-Feed ist ein gefährliches Werkzeug: Dieselbe Form, die Wissen
@@ -540,7 +596,8 @@ lib/
 │                          Navigationsgerüst, Übungsübersicht
 └── widgets/               Arabische Textausgabe (RTL), Wortzeile, Lernboxen,
                            Fachumschalter, Serienanzeige, Tagesaufgaben,
-                           Belohnungsblatt, Tagesfund-Karte, Portionsende
+                           Belohnungsblatt, Tagesfund-Karte, Portionsende,
+                           Lerneinstellungen
 ```
 
 ## Entwickeln

@@ -323,8 +323,13 @@ class _TodayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final int due = state.dueCount;
+    // `repetitionsDue`, nicht `dueCount`: Dort gilt auch ein nie
+    // angesehenes Wort als fällig, und daraus wurde „793 Wörter warten" —
+    // eine Zahl, die über Monate nicht kleiner wird. Was hier steht, ist,
+    // was wirklich zur Wiederholung ansteht.
+    final int due = state.repetitionsDue().length;
     final int streak = state.dayStreak;
+    final List<VocabEntry> block = state.currentBlock;
 
     return Card(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -364,33 +369,57 @@ class _TodayCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
+            // Der Block ist die Aufgabe: zehn Wörter, bis sie sitzen. Die
+            // Wiederholungen kommen dazu, wenn welche anstehen.
             Text(
-              due == 0
-                  ? 'Alles wiederholt. Neue Wörter findest du in den Themen.'
-                  : '$due ${due == 1 ? "Wort wartet" : "Wörter warten"} '
-                      'auf eine Wiederholung.',
+              block.isEmpty
+                  ? 'Alle Wörter dieses Fachs sitzen.'
+                  : 'Block ${state.blockNumber} von ${state.blockCount} · '
+                      '${state.blockLearned} von ${state.blockSize} sitzen',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onPrimaryContainer,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
-                value: state.goalProgress,
+                value: state.blockProgress,
                 minHeight: 6,
                 backgroundColor: theme.colorScheme.surface,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 10),
             Text(
-              'Tagesziel: ${state.answeredToday} / ${state.dailyGoal} '
-              'Antworten${state.goalReached ? " · geschafft" : ""}',
+              due == 0
+                  ? 'Keine Wiederholung fällig.'
+                  : '$due ${due == 1 ? "Wiederholung" : "Wiederholungen"} '
+                      'fällig · Tagesziel ${state.answeredToday}/'
+                      '${state.dailyGoal}',
               style: theme.textTheme.labelMedium?.copyWith(
                 color: theme.colorScheme.onPrimaryContainer,
               ),
             ),
-            if (due > 0) ...<Widget>[
+            if (block.isNotEmpty) ...<Widget>[
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.play_arrow),
+                  label: Text(due > 0
+                      ? 'Block üben & wiederholen'
+                      : 'Block ${state.blockNumber} üben'),
+                  onPressed: () => HomeScreen._push(
+                    context,
+                    FlashcardScreen(
+                      entries: state.workingSet,
+                      title: 'Block ${state.blockNumber}',
+                    ),
+                  ),
+                ),
+              ),
+            ] else if (due > 0) ...<Widget>[
               const SizedBox(height: 14),
               SizedBox(
                 width: double.infinity,
@@ -400,8 +429,8 @@ class _TodayCard extends StatelessWidget {
                   onPressed: () => HomeScreen._push(
                     context,
                     FlashcardScreen(
-                      entries: state.dueEntries(),
-                      title: 'Heute fällig',
+                      entries: state.repetitionsDue(),
+                      title: 'Fällige Wiederholungen',
                     ),
                   ),
                 ),

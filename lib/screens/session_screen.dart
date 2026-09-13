@@ -52,13 +52,20 @@ class _SessionScreenState extends State<SessionScreen> {
 
   void _planen() {
     final LearningState state = LearningScope.of(context);
+    // Nur die Arten, die eingestellt sind: Eine abgewählte Art fällt aus
+    // der Eignungstabelle, und `buildSession` sieht sie gar nicht erst.
+    final Map<ExerciseKind, Suitability> eignung = <ExerciseKind, Suitability>{
+      for (final MapEntry<ExerciseKind, Suitability> e in suitabilityFor(
+        wortBauen: BuildWordScreen.isSuitable,
+        zuordnen: MatchingScreen.isSuitable,
+      ).entries)
+        if (state.sessionKinds.contains(e.key)) e.key: e.value,
+    };
     _blocks = buildSession(
       pool: widget.pool ?? state.dailySelection(random: _random),
       random: _random,
-      suitability: suitabilityFor(
-        wortBauen: BuildWordScreen.isSuitable,
-        zuordnen: MatchingScreen.isSuitable,
-      ),
+      suitability: eignung,
+      blocks: state.sessionBlocks,
     );
     _block = 0;
     _xpVorher = state.xp;

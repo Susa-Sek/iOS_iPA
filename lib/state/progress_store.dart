@@ -23,6 +23,9 @@ class StoredProgress {
     this.shortsDone = 0,
     this.questDays = 0,
     this.freezesEarned = 0,
+    this.sessionKinds = const <String>[],
+    this.sessionBlocks = 0,
+    this.blockSize = 0,
   });
 
   final Map<String, WordProgress> words;
@@ -70,6 +73,22 @@ class StoredProgress {
   /// verbrauchten. Der Vorrat allein taugt nicht als Maß: Wer seinen
   /// einzigen Joker eingesetzt hat, hat ihn trotzdem verdient.
   final int freezesEarned;
+
+  /// Welche Übungsarten in einer Kurzrunde vorkommen dürfen.
+  ///
+  /// Als Kennungen und nicht als `ExerciseKind`: Der Speicher soll die
+  /// Übungen nicht kennen müssen, und eine Art, die es nicht mehr gibt, darf
+  /// beim Einlesen nicht alles mitreißen.
+  ///
+  /// **Leer heißt: alle.** Nicht „keine" — sonst stünde jede bestehende
+  /// Installation nach dem Update vor einer Kurzrunde ohne Inhalt.
+  final List<String> sessionKinds;
+
+  /// Wie viele Blöcke eine Kurzrunde hat. 0 heißt: die übliche Zahl.
+  final int sessionBlocks;
+
+  /// Wie viele Wörter ein Lernblock umfasst. 0 heißt: die übliche Zahl.
+  final int blockSize;
 }
 
 /// Reads and writes [StoredProgress] — backed by shared_preferences, so the
@@ -139,6 +158,9 @@ class ProgressStore {
       'shortsDone': progress.shortsDone,
       'questDays': progress.questDays,
       'freezesEarned': progress.freezesEarned,
+      'sessionKinds': progress.sessionKinds,
+      'sessionBlocks': progress.sessionBlocks,
+      'blockSize': progress.blockSize,
       'frozenDays': progress.frozenDays.toList()..sort(),
       'history': history,
       'words': <String, dynamic>{
@@ -156,6 +178,7 @@ class ProgressStore {
     final Object? words = decoded['words'];
     final Object? history = decoded['history'];
     final Object? frozen = decoded['frozenDays'];
+    final Object? kinds = decoded['sessionKinds'];
 
     return StoredProgress(
       answered: (decoded['answered'] as num?)?.toInt() ?? 0,
@@ -171,6 +194,13 @@ class ProgressStore {
       shortsDone: (decoded['shortsDone'] as num?)?.toInt() ?? 0,
       questDays: (decoded['questDays'] as num?)?.toInt() ?? 0,
       freezesEarned: (decoded['freezesEarned'] as num?)?.toInt() ?? 0,
+      sessionKinds: <String>[
+        if (kinds is List)
+          for (final Object? id in kinds)
+            if (id is String) id,
+      ],
+      sessionBlocks: (decoded['sessionBlocks'] as num?)?.toInt() ?? 0,
+      blockSize: (decoded['blockSize'] as num?)?.toInt() ?? 0,
       frozenDays: <String>{
         if (frozen is List)
           for (final Object? tag in frozen)

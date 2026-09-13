@@ -13,6 +13,17 @@ enum ExerciseKind {
   wortBauen,
   tippen;
 
+  /// Der Schlüssel im Speicher — bleibt stabil, auch wenn der Text sich
+  /// ändert.
+  String get id => name;
+
+  static ExerciseKind? byId(String id) {
+    for (final ExerciseKind k in ExerciseKind.values) {
+      if (k.id == id) return k;
+    }
+    return null;
+  }
+
   String get label => switch (this) {
         ExerciseKind.karteikarten => 'Karteikarten',
         ExerciseKind.quiz => 'Quiz',
@@ -55,6 +66,12 @@ class SessionBlock {
 
 /// Wie viele Blöcke eine Kurzrunde hat.
 const int kBlocksPerSession = 3;
+
+/// Wie viele Wörter ein Lernblock umfasst.
+///
+/// Zehn: klein genug, um sie an einem Tag wirklich zu schaffen, groß genug,
+/// dass es sich nach Fortschritt anfühlt.
+const int kDefaultBlockSize = 10;
 
 /// Ob ein Eintrag sich für eine Übungsart eignet.
 ///

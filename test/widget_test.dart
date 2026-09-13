@@ -134,13 +134,20 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Zum Aufdecken tippen'), findsNothing);
 
-    // Ohne ausgewähltes Thema ist der Stapel die Tagesportion, nicht der
-    // gesamte Bestand — sonst stünde hier „Karte 1 von 1102".
-    final int dose = LearningState().dosePerRound;
-    expect(find.text('Karte 1 von $dose'), findsOneWidget);
+    // Ohne ausgewähltes Thema ist der Stapel der **laufende Block** — nicht
+    // der gesamte Bestand und auch nicht mehr die volle Tagesportion. Auf
+    // einer frischen Installation steht keine Wiederholung an, also sind es
+    // genau die Wörter des ersten Blocks.
+    final LearningState frisch = LearningState();
+    await frisch.load();
+    final int erwartet =
+        frisch.workingSet.length.clamp(0, frisch.dosePerRound);
+    expect(erwartet, frisch.blockSize,
+        reason: 'frisch: nur der erste Block, keine Wiederholungen');
+    expect(find.text('Karte 1 von $erwartet'), findsOneWidget);
     await tester.tap(find.text('Kann ich'));
     await tester.pumpAndSettle();
-    expect(find.text('Karte 2 von $dose'), findsOneWidget);
+    expect(find.text('Karte 2 von $erwartet'), findsOneWidget);
   });
 
   testWidgets('Das Alphabet zeigt alle 28 Buchstaben',

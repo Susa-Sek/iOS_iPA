@@ -8,6 +8,7 @@ import '../state/lesson_store.dart';
 import '../state/quiz_builder.dart';
 import '../state/speech.dart';
 import '../theme/app_theme.dart';
+import '../widgets/learning_settings.dart';
 import '../widgets/speak_button.dart';
 import 'alphabet_screen.dart';
 import 'build_word_screen.dart';
@@ -70,8 +71,14 @@ class PracticeScreen extends StatelessWidget {
             _PracticeCard(
               icon: Icons.play_arrow_rounded,
               title: 'Kurzrunde',
-              subtitle: 'Mehrere Übungsarten, etwa zwei Minuten',
+              subtitle: '${state.sessionKinds.length} Übungsarten · '
+                  '${state.sessionBlocks} Blöcke',
               onTap: () => _open(context, const SessionScreen()),
+              trailing: IconButton(
+                icon: const Icon(Icons.tune),
+                tooltip: 'Kurzrunde einstellen',
+                onPressed: () => LearningSettingsSheet.open(context),
+              ),
             ),
           // Jede Übung ist eine Portion, kein Marathon: Fällige und schwache
           // Karten zuerst, dann ist Schluss. Wer mehr will, fängt neu an —
@@ -256,12 +263,16 @@ class _PracticeCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.trailing,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+
+  /// Steht statt des Pfeils rechts — für die Kurzrunde das Zahnrad.
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -303,7 +314,7 @@ class _PracticeCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right),
+                trailing ?? const Icon(Icons.chevron_right),
               ],
             ),
           ),

@@ -66,6 +66,17 @@ class _BuildWordScreenState extends State<BuildWordScreen> {
   int _solved = 0;
   bool? _result;
 
+  /// Ob die Lautschrift zu diesem Wort aufgedeckt ist.
+  ///
+  /// **Sie stand hier fest unter dem deutschen Wort — und war damit die
+  /// Lösung.** „siebzig / sab'un" sagt Buchstabe für Buchstabe, was zu bauen
+  /// ist: s → سَ, b → بْ, ʻ → عُ, u → و, n → ن. Es blieb nichts zu wissen,
+  /// nur noch abzulesen.
+  ///
+  /// Jetzt ist sie ein Hinweis, den man holen kann. Wer ihn braucht, bekommt
+  /// ihn; wer ihn nicht holt, hat die Übung wirklich gemacht.
+  bool _hinweis = false;
+
   @override
   void initState() {
     super.initState();
@@ -83,6 +94,7 @@ class _BuildWordScreenState extends State<BuildWordScreen> {
     _tiles = arabicLetterUnits(_round[_index].arabic)..shuffle(_random);
     _picked.clear();
     _result = null;
+    _hinweis = false;
   }
 
   String get _assembled =>
@@ -190,10 +202,25 @@ class _BuildWordScreenState extends State<BuildWordScreen> {
                     Text(entry.german,
                         style: theme.textTheme.headlineSmall
                             ?.copyWith(fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 4),
-                    Text(entry.transliteration,
-                        style: theme.textTheme.titleMedium
-                            ?.copyWith(fontStyle: FontStyle.italic)),
+                    // Die Lautschrift ist hier die Bauanleitung, nicht ein
+                    // Lesehinweis wie beim Tippen. Deshalb erst auf Wunsch —
+                    // und nach dem Prüfen ohnehin, dann verrät sie nichts
+                    // mehr.
+                    if (_hinweis || _result != null) ...<Widget>[
+                      const SizedBox(height: 4),
+                      Text(entry.transliteration,
+                          style: theme.textTheme.titleMedium
+                              ?.copyWith(fontStyle: FontStyle.italic)),
+                    ] else
+                      TextButton.icon(
+                        onPressed: () => setState(() => _hinweis = true),
+                        icon: const Icon(Icons.lightbulb_outline, size: 18),
+                        style: TextButton.styleFrom(
+                          foregroundColor:
+                              theme.colorScheme.onSurfaceVariant,
+                        ),
+                        label: const Text('Lautschrift zeigen'),
+                      ),
                   ],
                 ),
               ),
