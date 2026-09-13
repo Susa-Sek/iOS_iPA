@@ -93,11 +93,45 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
     } else {
       state.demote(_cards[_index]);
     }
-    setState(() {
-      _revealed = false;
-      _index++;
-    });
+    _weiter();
   }
+
+  /// Ein Wort, das man ohnehin kann, sofort abhaken.
+  ///
+  /// **Warum das nötig ist.** „Kann ich" schiebt ein Wort nur **eine** Stufe
+  /// weiter; gelernt ist es ab Fach 3. Bis „Gesundheit!" sitzt, muss man es
+  /// also dreimal richtig haben — und weil die Termine dazwischen 1, 3 und 7
+  /// Tage betragen, dauert das über eine Woche. Bei einem Wort, das man
+  /// sowieso kennt, ist das reine Wartezeit.
+  ///
+  /// Von Hand gesetzt wird das oberste Fach: gelernt, und für zwei Monate
+  /// aus dem Weg. Dieselbe Handlung gibt es in der Wortliste schon
+  /// (`toggleLearned`) — sie fehlte nur dort, wo sie auffällt.
+  void _abhaken() {
+    AnswerFeedback.tap(correct: true);
+    final LearningState state = LearningScope.of(context);
+    final VocabEntry card = _cards[_index];
+    // Das alte Fach mitnehmen, bevor es überschrieben wird: Rückgängig soll
+    // den Stand von vorher wiederherstellen und nicht bei null anfangen —
+    // ein Wort in Fach 2 bleibt sonst für den Fehlgriff bestraft.
+    final int vorher = state.boxOf(card);
+    state.markLearned(card);
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(
+        content: Text('„${card.german}" abgehakt.'),
+        action: SnackBarAction(
+          label: 'Rückgängig',
+          onPressed: () => state.setBox(card, vorher),
+        ),
+      ));
+    _weiter();
+  }
+
+  void _weiter() => setState(() {
+        _revealed = false;
+        _index++;
+      });
 
   /// Legt das Gerüst um den Inhalt.
   ///
@@ -283,7 +317,22 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
+            // Der dritte Weg, bewusst als Zeile und nicht als dritter Knopf:
+            // Er ist selten richtig, und er soll die beiden Hauptwege nicht
+            // schmaler machen.
+            Center(
+              child: TextButton.icon(
+                icon: const Icon(Icons.done_all, size: 18),
+                label: const Text('Kenn ich schon — abhaken'),
+                onPressed: _abhaken,
+                style: TextButton.styleFrom(
+                  foregroundColor:
+                      Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
             Row(
               children: <Widget>[
                 Expanded(

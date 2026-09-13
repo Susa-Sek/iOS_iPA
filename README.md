@@ -248,6 +248,45 @@ Die Blockgröße ist einstellbar (5 bis 30), zusammen mit der Kurzrunde unter
 viele Blöcke eine Runde hat. Eine Art bleibt immer an — eine Kurzrunde ohne
 Übung wäre ein Knopf ins Leere.
 
+## Was man schon kann, sofort abhaken
+
+Ein Wort, das man ohnehin kennt, musste bisher denselben Weg gehen wie jedes
+andere: „Kann ich" schiebt es nur **eine** Stufe weiter, gelernt ist es ab
+Fach 3, und weil zwischen den Stufen 1, 3 und 7 Tage liegen, dauert
+„Gesundheit!" mindestens vier Tage. Bis es wirklich aus dem Weg ist (Fach 5,
+60 Tage Pause), über zwei Wochen. Das ist bei „Tee" oder „Taxi" reine
+Wartezeit — und sie hält nebenbei den Block auf.
+
+Auf der Karteikarte steht deshalb über den beiden Knöpfen eine leise Zeile:
+
+```
+        ┌────────────────────────────┐
+        │          Gesundheit        │
+        └────────────────────────────┘
+
+           ✓✓ Kenn ich schon — abhaken
+
+   ┌ ─ ─ ─ ─ ─ ─ ─ ┐   ┌───────────────┐
+     Nochmal üben        Kann ich       │
+   └ ─ ─ ─ ─ ─ ─ ─ ┘   └───────────────┘
+```
+
+Das setzt das oberste Fach, das Wort verlässt den laufenden Block, und der
+füllt sich sofort nach. Bewusst **kein** dritter gleichwertiger Knopf: Der
+Weg ist selten richtig und soll die beiden Hauptwege nicht schmaler machen.
+
+* **Abhaken zählt nicht als beantwortete Frage.** Es heißt „das weiß ich
+  schon", nicht „ich habe geübt" — sonst ließe sich das Tagesziel durch
+  Wegklicken erreichen.
+* **Rückgängig** steht in der Meldung darunter und stellt das **vorherige**
+  Fach wieder her, nicht Fach 0. Ein Fehlgriff würde das Wort sonst für zwei
+  Monate verstecken.
+* In der Wortliste geht das Abhaken wie bisher durch Antippen der Zeile.
+* In Quiz, Zuordnen und Wort bauen gibt es den Weg **nicht**: Dort ist das
+  Wort die Aufgabe, und ein Abhaken-Knopf wäre ein Weg an der Übung vorbei.
+  Die Karteikarte ist die eine Stelle, an der man das Wort sieht, ohne etwas
+  gelöst zu haben.
+
 ## Wort bauen verrät die Lösung nicht mehr
 
 Unter dem deutschen Wort stand fest die Lautschrift:

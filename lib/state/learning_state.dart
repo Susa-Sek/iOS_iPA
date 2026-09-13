@@ -614,11 +614,17 @@ class LearningState extends ChangeNotifier {
   void demote(VocabEntry entry) =>
       _update(entry, progressOfWord(entry).demote(_now()));
 
-  void markLearned(VocabEntry entry) => _update(
-      entry, progressOfWord(entry).setBox(WordProgress.maxBox, _now()));
+  /// Ein Fach von Hand setzen, ohne Antwortverlauf.
+  ///
+  /// Der Weg für „das kann ich schon" — und derselbe Weg zurück, wenn man
+  /// sich vertippt hat: Der Bildschirm merkt sich das alte Fach und reicht
+  /// es hier wieder herein.
+  void setBox(VocabEntry entry, int box) =>
+      _update(entry, progressOfWord(entry).setBox(box, _now()));
 
-  void markUnlearned(VocabEntry entry) =>
-      _update(entry, progressOfWord(entry).setBox(0, _now()));
+  void markLearned(VocabEntry entry) => setBox(entry, WordProgress.maxBox);
+
+  void markUnlearned(VocabEntry entry) => setBox(entry, 0);
 
   void toggleLearned(VocabEntry entry) {
     if (isLearned(entry)) {
