@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/subject.dart';
 import '../models/vocabulary.dart';
 import '../state/learning_state.dart';
+import '../state/reminder_texts.dart';
 import '../state/reminders.dart';
 import '../theme/app_theme.dart';
 import '../widgets/daily_find_card.dart';
@@ -166,13 +167,16 @@ class HomeScreen extends StatelessWidget {
         animation: reminders,
         builder: (BuildContext context, _) => AlertDialog(
           title: const Text('Tägliche Erinnerung'),
-          content: Column(
+          // Drei Zeilen mehr als früher — bei großer Systemschrift läuft der
+          // Dialog sonst über und „Fertig" wird unerreichbar.
+          content: SingleChildScrollView(
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const Text(
-                'Einmal am Tag eine kurze Erinnerung — an Tagen, an denen du '
-                'dein Ziel schon geschafft hast, bleibt es still.',
+                'Dreimal am Tag ein kurzer Anstoß. Sobald du dein Tagesziel '
+                'geschafft hast, bleibt es für heute still.',
               ),
               const SizedBox(height: 12),
               SwitchListTile(
@@ -197,27 +201,10 @@ class HomeScreen extends StatelessWidget {
                   }
                 },
               ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                enabled: reminders.enabled,
-                leading: const Icon(Icons.schedule),
-                title: const Text('Uhrzeit'),
-                trailing: Text(reminders.timeLabel),
-                onTap: !reminders.enabled
-                    ? null
-                    : () async {
-                        final TimeOfDay? picked = await showTimePicker(
-                          context: context,
-                          initialTime: TimeOfDay(
-                              hour: reminders.hour, minute: reminders.minute),
-                        );
-                        if (picked != null) {
-                          await reminders.setTime(picked.hour, picked.minute,
-                              goalReachedToday: state.goalReached);
-                        }
-                      },
-              ),
+              for (final ReminderSlot slot in ReminderSlot.values)
+                _SlotZeile(slot: slot, state: state),
             ],
+          ),
           ),
           actions: <Widget>[
             TextButton(
@@ -663,6 +650,76 @@ class _CategoryCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Eine Zeile im Erinnerungsdialog: Morgens, Mittags oder Abends.
+///
+/// Morgen und Mittag lassen sich einzeln abschalten, der Abendtermin nicht —
+/// wer gar nichts mehr will, schaltet die Erinnerung aus. Ein Hauptschalter,
+/// der unbemerkt leer läuft, wäre schlimmer als keiner.
+///
+/// Und der Weg ist wichtig: Wem eine Meldung zu viel ist, der nimmt eine
+/// heraus, statt alles abzustellen. Genau so sterben Erinnerungen sonst.
+class _SlotZeile extends StatelessWidget {
+  const _SlotZeile({required this.slot, required this.state});
+
+  final ReminderSlot slot;
+  final LearningState state;
+
+  static const Map<ReminderSlot, String> _namen = <ReminderSlot, String>{
+    ReminderSlot.morgens: 'Morgens',
+    ReminderSlot.mittags: 'Mittags',
+    ReminderSlot.abends: 'Abends',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final ReminderService reminders = ReminderScope.of(context);
+    final bool an = reminders.isOn(slot);
+    final bool fest = slot == ReminderSlot.abends;
+    final bool waehlbar = reminders.enabled && an;
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      enabled: reminders.enabled,
+      leading: fest
+          ? const Icon(Icons.schedule)
+          : Checkbox(
+              value: an,
+              onChanged: !reminders.enabled
+                  ? null
+                  : (bool? on) => reminders.setSlotEnabled(slot, on ?? false,
+                      goalReachedToday: state.goalReached),
+            ),
+      title: Text(_namen[slot]!),
+      subtitle: fest ? const Text('Der Termin, der zählt') : null,
+      trailing: Text(
+        reminders.labelOf(slot),
+        style: an
+            ? null
+            : TextStyle(
+                decoration: TextDecoration.lineThrough,
+                color: Theme.of(context).disabledColor,
+              ),
+      ),
+      onTap: !waehlbar
+          ? null
+          : () async {
+              final List<String> teile = reminders.labelOf(slot).split(':');
+              final TimeOfDay? picked = await showTimePicker(
+                context: context,
+                initialTime: TimeOfDay(
+                  hour: int.parse(teile.first),
+                  minute: int.parse(teile.last),
+                ),
+              );
+              if (picked != null) {
+                await reminders.setSlotTime(slot, picked.hour, picked.minute,
+                    goalReachedToday: state.goalReached);
+              }
+            },
     );
   }
 }

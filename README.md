@@ -358,6 +358,58 @@ Damit gilt der Satz, der hier seit Langem steht, endlich überall: *Jede
 Übung ist eine Portion, kein Marathon.* Der Feed war die letzte Stelle, die
 sich davor gedrückt hat.
 
+## Die Erinnerung, die sich nicht abnutzt
+
+Die tägliche Erinnerung hatte drei Fehler, und alle drei sorgten dafür, dass
+man sie nach einer Woche nicht mehr wahrnimmt.
+
+**Vierzehn Tage lang derselbe Satz.** `plan()` gab jedem Tag ab morgen wörtlich
+dieselbe Meldung: *„Zeit für ein paar Wörter — ein paar Wörter heute halten die
+Serie am Leben."* Nur der heutige Tag hatte einen eigenen Text. Ab Tag drei
+liest man so etwas nicht mehr.
+
+**Eine Meldung am Tag.** Wer um 19:00 gerade kocht, hatte sie verpasst.
+
+**Und die eine Zahl darin war die kaputte.** Übergeben wurde `dueCountTotal`,
+und das zählt über `dueEntries` — dort gilt ein nie angesehenes Wort als
+fällig. Über beide Fächer sind das fast alle Einträge: Die Abendmeldung sagte
+sinngemäß *„1101 Wörter sind heute fällig"*, dieselbe Sorte Zahl wie die „793
+Wörter warten", die auf der Startseite schon rausgeflogen ist.
+
+Jetzt sind es **drei Anstöße am Tag**, jeder mit eigener Aufgabe:
+
+| | Voreinstellung | Was dort steht |
+| --- | --- | --- |
+| Morgens | 08:00 | Ein Wort zum Mitnehmen: „Gesundheit — ʿāfiya" |
+| Mittags | 13:00 | Der Stand: „Block 3 — noch 6 Wörter, dann ist er durch." |
+| Abends | **deine Zeit** (19:00) | Der Termin mit Gewicht: „Tag 12. Bis Mitternacht zählt heute noch." |
+
+* **Jeden Tag ein anderer Satz.** Der Zufall hängt an Tag und Anstoß, wie bei
+  den Tagesaufgaben — derselbe Tag ergibt denselben Text, ohne dass dafür etwas
+  gespeichert wird. Tag und Anstoß werden dabei **durchgerührt** (`stableMix`)
+  und nicht addiert: Bei benachbarten Startwerten liefert Darts Zufall oft
+  denselben ersten Griff, und dann stünde an drei Tagen hintereinander wieder
+  dasselbe da. Ein Test hält das fest.
+* **Keine Zahl, die nicht stimmt.** Ist nichts fällig, steht nichts von
+  Wiederholungen da; gibt es keine Serie, wird keine beschworen. Genannt wird
+  `repetitionsDueTotal` — die angefangenen Wiederholungen, nicht der ganze
+  Bestand.
+* **Zahlen nur für heute.** Was in drei Tagen fällig ist, weiß heute niemand;
+  die späteren Tage bekommen den wechselnden Text ohne Zahlen.
+* **Was erledigt ist, meldet sich nicht.** Ist das Tagesziel geschafft,
+  schweigt der ganze restliche Tag. Dafür schreibt die App den Plan jetzt auch
+  **beim Zuklappen** neu, nicht nur beim Start — sonst käme der Abendanstoß
+  auch dann noch, wenn man mittags längst fertig war. Drei Erinnerungen am Tag
+  sind genau so lange in Ordnung, wie keine davon überflüssig ist.
+* **Morgens und mittags lassen sich einzeln abschalten**, der Abendtermin
+  nicht. Wem eine Meldung zu viel ist, der nimmt eine heraus statt alles
+  abzustellen — so sterben Erinnerungen sonst. Und ein Hauptschalter, der
+  unbemerkt leer läuft, wäre schlimmer als keiner.
+
+Die gespeicherte Uhrzeit einer bestehenden Installation bleibt der
+**Abendtermin**; Morgen und Mittag kommen als Minuten seit Mitternacht dazu,
+`-1` heißt „aus".
+
 ## Die App geht nie aus
 
 Nachgemessen: **42 Lektionen, 21 Themen.** Wer eine Lektion am Tag macht, ist

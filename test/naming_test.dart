@@ -37,6 +37,8 @@ void main() {
       expect(ReminderService.enabledKey, 'arabisch_lernen.reminder.enabled');
       expect(ReminderService.hourKey, 'arabisch_lernen.reminder.hour');
       expect(ReminderService.minuteKey, 'arabisch_lernen.reminder.minute');
+      expect(ReminderService.morningKey, 'arabisch_lernen.reminder.morning');
+      expect(ReminderService.noonKey, 'arabisch_lernen.reminder.noon');
     });
 
     test('Tagesinhalte', () {

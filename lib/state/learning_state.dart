@@ -380,9 +380,16 @@ class LearningState extends ChangeNotifier {
     ];
   }
 
-  /// Fällige Wörter über beide Fächer. Die Abenderinnerung nennt diese Zahl:
-  /// Sie soll an das ganze Pensum erinnern, nicht an die Hälfte.
+  /// Fällige Wörter über beide Fächer — einschließlich der nie angesehenen.
   int get dueCountTotal => dueEntries(_content.entries).length;
+
+  /// **Angefangene** Wiederholungen über beide Fächer.
+  ///
+  /// Die Zahl, die eine Erinnerung nennen darf. [dueCountTotal] zählt auch
+  /// jedes nie angesehene Wort mit und ergibt über beide Fächer fast den
+  /// ganzen Bestand — dieselbe unerreichbare Zahl, die auf der Startseite
+  /// schon als „793 Wörter warten" stand.
+  int get repetitionsDueTotal => repetitionsDue(_content.entries).length;
 
   /// Answers given today, and whether the daily goal is reached.
   int get answeredToday => _history[dayKey(_now())] ?? 0;

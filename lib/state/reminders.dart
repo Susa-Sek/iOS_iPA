@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
+import 'reminder_texts.dart';
+
 /// One planned reminder.
 @immutable
 class PlannedReminder {
@@ -147,8 +149,27 @@ class ReminderService extends ChangeNotifier {
 
   /// Nicht umbenennen — siehe test/naming_test.dart.
   static const String enabledKey = 'arabisch_lernen.reminder.enabled';
+
+  /// Stunde und Minute des **Abendtermins** — die Schlüssel von früher, als
+  /// es nur eine Erinnerung am Tag gab. Sie behalten ihre Bedeutung, damit
+  /// eine bestehende Installation ihre gewählte Zeit nicht verliert.
   static const String hourKey = 'arabisch_lernen.reminder.hour';
   static const String minuteKey = 'arabisch_lernen.reminder.minute';
+
+  /// Morgen und Mittag als **Minuten seit Mitternacht**, `-1` heißt „aus".
+  ///
+  /// Eine Zahl statt zweier Schlüssel je Zeit, und das Abschalten steckt in
+  /// derselben Zahl: So kommt ein Anstoß weniger ohne einen dritten Schlüssel
+  /// aus, der mit den beiden anderen auseinanderlaufen könnte.
+  static const String morningKey = 'arabisch_lernen.reminder.morning';
+  static const String noonKey = 'arabisch_lernen.reminder.noon';
+
+  /// Voreinstellungen: 08:00 und 13:00.
+  static const int defaultMorning = 8 * 60;
+  static const int defaultNoon = 13 * 60;
+
+  /// Aus.
+  static const int slotOff = -1;
 
   /// How many days ahead are planned.
   static const int horizonDays = 14;
@@ -160,13 +181,39 @@ class ReminderService extends ChangeNotifier {
   bool _enabled = false;
   int _hour = 19;
   int _minute = 0;
+  int _morning = defaultMorning;
+  int _noon = defaultNoon;
 
   bool get enabled => _enabled;
   int get hour => _hour;
   int get minute => _minute;
 
-  String get timeLabel =>
-      '${_hour.toString().padLeft(2, '0')}:${_minute.toString().padLeft(2, '0')}';
+  String get timeLabel => _label(_hour * 60 + _minute);
+
+  /// Die Uhrzeit eines Anstoßes in Minuten seit Mitternacht, oder `null`,
+  /// wenn er abgeschaltet ist.
+  int? minutesOf(ReminderSlot slot) {
+    final int value = switch (slot) {
+      ReminderSlot.morgens => _morning,
+      ReminderSlot.mittags => _noon,
+      ReminderSlot.abends => _hour * 60 + _minute,
+    };
+    return value < 0 ? null : value;
+  }
+
+  bool isOn(ReminderSlot slot) => minutesOf(slot) != null;
+
+  /// „08:00" — auch für einen abgeschalteten Anstoß, damit im Menü nicht
+  /// plötzlich ein Strich steht, wo eben noch eine Zeit war.
+  String labelOf(ReminderSlot slot) => switch (slot) {
+        ReminderSlot.morgens => _label(_morning < 0 ? defaultMorning : _morning),
+        ReminderSlot.mittags => _label(_noon < 0 ? defaultNoon : _noon),
+        ReminderSlot.abends => timeLabel,
+      };
+
+  static String _label(int minutes) =>
+      '${(minutes ~/ 60).toString().padLeft(2, '0')}:'
+      '${(minutes % 60).toString().padLeft(2, '0')}';
 
   Future<void> load() async {
     try {
@@ -177,6 +224,8 @@ class ReminderService extends ChangeNotifier {
     _enabled = _prefs?.getBool(enabledKey) ?? false;
     _hour = _prefs?.getInt(hourKey) ?? 19;
     _minute = _prefs?.getInt(minuteKey) ?? 0;
+    _morning = _prefs?.getInt(morningKey) ?? defaultMorning;
+    _noon = _prefs?.getInt(noonKey) ?? defaultNoon;
     notifyListeners();
   }
 
@@ -209,45 +258,105 @@ class ReminderService extends ChangeNotifier {
     if (_enabled) await refresh(goalReachedToday: goalReachedToday);
   }
 
+  /// Die Uhrzeit eines Anstoßes setzen.
+  Future<void> setSlotTime(ReminderSlot slot, int hour, int minute,
+      {required bool goalReachedToday}) async {
+    if (slot == ReminderSlot.abends) {
+      return setTime(hour, minute, goalReachedToday: goalReachedToday);
+    }
+    await _setMinutes(slot, hour * 60 + minute,
+        goalReachedToday: goalReachedToday);
+  }
+
+  /// Einen Anstoß ab- oder wieder anschalten.
+  ///
+  /// Der Abendtermin bleibt: Wer alles los sein will, schaltet die Erinnerung
+  /// aus — ein Hauptschalter, der unbemerkt leer läuft, wäre schlimmer als
+  /// keiner.
+  Future<void> setSlotEnabled(ReminderSlot slot, bool on,
+      {required bool goalReachedToday}) async {
+    if (slot == ReminderSlot.abends) return;
+    final int wert = on
+        ? (slot == ReminderSlot.morgens
+            ? (_morning < 0 ? defaultMorning : _morning)
+            : (_noon < 0 ? defaultNoon : _noon))
+        : slotOff;
+    await _setMinutes(slot, wert, goalReachedToday: goalReachedToday);
+  }
+
+  Future<void> _setMinutes(ReminderSlot slot, int minutes,
+      {required bool goalReachedToday}) async {
+    if (slot == ReminderSlot.morgens) {
+      _morning = minutes;
+      await _prefs?.setInt(morningKey, minutes);
+    } else {
+      _noon = minutes;
+      await _prefs?.setInt(noonKey, minutes);
+    }
+    notifyListeners();
+    if (_enabled) await refresh(goalReachedToday: goalReachedToday);
+  }
+
   /// Rebuilds the plan: cancel everything, then schedule the coming days.
-  Future<void> refresh({required bool goalReachedToday, int? dueCount}) async {
+  Future<void> refresh({
+    required bool goalReachedToday,
+    ReminderFacts facts = const ReminderFacts(),
+  }) async {
     if (!_enabled) return;
     await _backend.cancelAll();
     for (final PlannedReminder reminder in plan(
       goalReachedToday: goalReachedToday,
-      dueCount: dueCount,
+      facts: facts,
     )) {
       await _backend.schedule(reminder);
     }
   }
 
   /// The reminders for the coming days — pure, so the tests can check it.
+  ///
+  /// Drei Anstöße am Tag statt einem, und jeder mit eigenem Text: Vorher stand
+  /// ab morgen vierzehn Tage lang derselbe Satz, und daran nutzt sich eine
+  /// Erinnerung ab.
   @visibleForTesting
   List<PlannedReminder> plan({
     required bool goalReachedToday,
-    int? dueCount,
+    ReminderFacts facts = const ReminderFacts(),
   }) {
     final DateTime now = _now();
     final List<PlannedReminder> reminders = <PlannedReminder>[];
 
     for (int day = 0; day < horizonDays; day++) {
-      final DateTime date = DateTime(now.year, now.month, now.day)
-          .add(Duration(days: day));
-      final DateTime when =
-          DateTime(date.year, date.month, date.day, _hour, _minute);
+      // Ist das Tagesziel geschafft, schweigt der ganze restliche Tag.
+      if (day == 0 && goalReachedToday) continue;
 
-      // Heute nur, wenn die Zeit noch kommt und das Ziel noch offen ist.
-      if (day == 0 && (goalReachedToday || !when.isAfter(now))) continue;
+      final DateTime date =
+          DateTime(now.year, now.month, now.day).add(Duration(days: day));
 
-      reminders.add(PlannedReminder(
-        id: 1000 + day,
-        when: when,
-        title: day == 0 ? 'Deine Serie wartet' : 'Zeit für ein paar Wörter',
-        body: day == 0 && dueCount != null && dueCount > 0
-            ? '$dueCount ${dueCount == 1 ? "Wort ist" : "Wörter sind"} heute '
-                'fällig — ein paar Minuten reichen.'
-            : 'Ein paar Wörter heute halten die Serie am Leben.',
-      ));
+      for (final ReminderSlot slot in ReminderSlot.values) {
+        final int? minutes = minutesOf(slot);
+        if (minutes == null) continue;
+
+        final DateTime when = DateTime(date.year, date.month, date.day)
+            .add(Duration(minutes: minutes));
+        // Was heute schon vorbei ist, kommt nicht mehr.
+        if (day == 0 && !when.isAfter(now)) continue;
+
+        final ReminderText text = buildReminderText(
+          day: date,
+          slot: slot,
+          // Zahlen nur für heute: Was in drei Tagen fällig ist, weiß heute
+          // niemand, und eine Zahl, die bis dahin falsch wird, entmutigt
+          // mehr, als sie antreibt.
+          facts: day == 0 ? facts : facts.ohneZahlen,
+        );
+
+        reminders.add(PlannedReminder(
+          id: 1000 + day * ReminderSlot.values.length + slot.index,
+          when: when,
+          title: text.title,
+          body: text.body,
+        ));
+      }
     }
     return reminders;
   }

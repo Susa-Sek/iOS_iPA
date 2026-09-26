@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import 'data/content_registry.dart';
@@ -15,6 +18,7 @@ import 'state/duel_store.dart';
 import 'state/lesson_store.dart';
 import 'state/reward_store.dart';
 import 'state/sharing.dart';
+import 'state/reminder_texts.dart';
 import 'state/reminders.dart';
 import 'state/speech.dart';
 import 'widgets/speak_button.dart';
@@ -36,7 +40,8 @@ class TaeglichKluegerApp extends StatefulWidget {
   State<TaeglichKluegerApp> createState() => _TaeglichKluegerAppState();
 }
 
-class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
+class _TaeglichKluegerAppState extends State<TaeglichKluegerApp>
+    with WidgetsBindingObserver {
   final CustomCardStore _cards = CustomCardStore();
   late final LearningState _state = LearningState(
     content: ContentWithCustomCards(kDefaultContent, _cards, _dailyCards),
@@ -78,7 +83,22 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
         (QuestKind kind, int amount) => _rewards.report(kind, amount: amount));
     _rewards.load();
     _duels.load();
+    // Der Erinnerungsplan wird beim Start **und** beim Zuklappen neu
+    // geschrieben — siehe didChangeAppLifecycleState.
+    WidgetsBinding.instance.addObserver(this);
     _setUpReminders();
+  }
+
+  /// Beim Zuklappen den Plan auffrischen.
+  ///
+  /// **Warum das nötig ist.** Benachrichtigungen werden im Voraus geplant, ob
+  /// man gelernt hat, weiß nur die laufende App. Ohne diesen Haken käme der
+  /// Mittags- und Abendanstoß auch dann noch, wenn man morgens längst fertig
+  /// war — und drei Erinnerungen am Tag sind genau so lange in Ordnung, wie
+  /// keine davon überflüssig ist.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) unawaited(_setUpReminders());
   }
 
   /// Bei jedem Start den Erinnerungsplan auffrischen: Ein Tag, an dem das
@@ -88,11 +108,26 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
     if (!_state.isLoaded) await _state.load();
     await _reminders.refresh(
       goalReachedToday: _state.goalReached,
-      // Über beide Fächer: Die Erinnerung soll an das ganze Pensum
-      // erinnern, nicht nur an das gerade gewählte Fach.
-      dueCount: _state.dueCountTotal,
+      facts: _facts(),
     );
   }
+
+  /// Was die Erinnerung über den Lernstand wissen darf.
+  ///
+  /// Über beide Fächer: Sie soll an das ganze Pensum erinnern, nicht nur an
+  /// das gerade gewählte. Und über `repetitionsDueTotal` statt `dueCountTotal`
+  /// — sonst stünde dort die Zahl, die auch nie angesehene Wörter für fällig
+  /// hält, also fast der ganze Bestand.
+  ReminderFacts _facts() => ReminderFacts(
+        streak: _state.dayStreak,
+        freezes: _state.freezes,
+        blockNumber: _state.blockNumber,
+        blockOpen: _state.blockSize - _state.blockLearned,
+        repetitionsDue: _state.repetitionsDueTotal,
+        goalRemaining:
+            max(0, _state.dailyGoal - _state.answeredToday),
+        woerter: _state.workingSet.take(20).toList(),
+      );
 
   /// Holt aus dem frischen Tagesstoff die Karten des Tages.
   ///
@@ -114,6 +149,7 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _lessons.removeListener(_meldeLektionen);
     _feed.removeListener(_ernten);
     _dailyCards.removeListener(_state.contentChanged);
