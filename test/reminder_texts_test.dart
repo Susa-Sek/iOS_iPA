@@ -23,11 +23,11 @@ void main() {
       expect(a.body, b.body);
     });
 
-    test('die drei Anstöße eines Tages sind nicht derselbe Satz', () {
+    test('die drei Lern-Anstöße eines Tages sind nicht derselbe Satz', () {
       final DateTime tag = DateTime(2026, 5, 1);
       final Set<String> texte = <String>{
         for (final ReminderSlot slot in ReminderSlot.values)
-          text(tag, slot: slot).body,
+          if (!slot.istAzkar) text(tag, slot: slot).body,
       };
       expect(texte.length, 3);
     });
@@ -172,6 +172,77 @@ void main() {
           text(DateTime(2026, 5, 1), slot: ReminderSlot.morgens);
       expect(t.title, isNotEmpty);
       expect(t.body, isNotEmpty);
+    });
+  });
+
+  group('Die Azkar-Anstöße', () {
+    test('rufen zu den Azkar, nicht zum Lernen', () {
+      // Ein Satz über fällige Vokabeln wäre hier schlicht falsch.
+      const ReminderFacts voll = ReminderFacts(
+        streak: 12,
+        goalRemaining: 8,
+        blockOpen: 6,
+        repetitionsDue: 40,
+        woerter: <VocabEntry>[gesundheit],
+      );
+      for (final ReminderSlot slot in <ReminderSlot>[
+        ReminderSlot.azkarMorgens,
+        ReminderSlot.azkarAbends,
+      ]) {
+        for (int tag = 0; tag < 20; tag++) {
+          final ReminderText t = text(
+              DateTime(2026, 5, 1).add(Duration(days: tag)),
+              slot: slot,
+              facts: voll);
+          expect(t.title, contains('Azkar'));
+          expect('${t.title} ${t.body}', isNot(contains('Wort')));
+          expect('${t.title} ${t.body}', isNot(contains('Block')));
+          expect('${t.title} ${t.body}', isNot(contains('Gesundheit')));
+          expect('${t.title} ${t.body}', isNot(contains('12')),
+              reason: 'die Lernserie gehört nicht hierher');
+        }
+      }
+    });
+
+    test('Morgen und Abend sind auseinanderzuhalten', () {
+      final DateTime tag = DateTime(2026, 5, 1);
+      expect(text(tag, slot: ReminderSlot.azkarMorgens).title,
+          contains('Morgen-Azkar'));
+      expect(text(tag, slot: ReminderSlot.azkarAbends).title,
+          contains('Abend-Azkar'));
+    });
+
+    test('die eigene Serie erscheint erst ab drei Tagen', () {
+      final Set<String> ohne = <String>{
+        for (int tag = 0; tag < 20; tag++)
+          text(DateTime(2026, 5, 1).add(Duration(days: tag)),
+                  slot: ReminderSlot.azkarMorgens,
+                  facts: const ReminderFacts(azkarStreakMorgens: 2))
+              .title,
+      };
+      expect(ohne.any((String t) => t.contains('Tag')), isFalse);
+
+      final Set<String> mit = <String>{
+        for (int tag = 0; tag < 20; tag++)
+          text(DateTime(2026, 5, 1).add(Duration(days: tag)),
+                  slot: ReminderSlot.azkarMorgens,
+                  facts: const ReminderFacts(azkarStreakMorgens: 12))
+              .title,
+      };
+      expect(mit.any((String t) => t.contains('Tag 12')), isTrue);
+    });
+
+    test('die Azkar-Serien bleiben getrennt', () {
+      const ReminderFacts facts =
+          ReminderFacts(azkarStreakMorgens: 9, azkarStreakAbends: 4);
+      final Set<String> morgens = <String>{
+        for (int tag = 0; tag < 20; tag++)
+          text(DateTime(2026, 5, 1).add(Duration(days: tag)),
+                  slot: ReminderSlot.azkarMorgens, facts: facts)
+              .title,
+      };
+      expect(morgens.any((String t) => t.contains('Tag 9')), isTrue);
+      expect(morgens.any((String t) => t.contains('Tag 4')), isFalse);
     });
   });
 

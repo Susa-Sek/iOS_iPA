@@ -52,6 +52,52 @@ void main() {
       expect(find.text('19:00'), findsOneWidget);
     });
 
+    testWidgets('die Azkar stehen mit dabei, aber ohne wählbare Uhrzeit',
+        (WidgetTester tester) async {
+      // Ihre Zeit kommt aus den Gebetszeiten und wandert mit der
+      // Jahreszeit — eine Uhrzeit zum Antippen wäre eine Lüge.
+      tester.view.physicalSize = const Size(420, 1200);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final ReminderService reminders =
+          ReminderService(backend: FakeReminderBackend());
+      await reminders.load();
+      await oeffneDialog(tester, reminders: reminders);
+
+      expect(find.text('Morgen-Azkar'), findsOneWidget);
+      expect(find.text('Abend-Azkar'), findsOneWidget);
+      expect(find.text('nach Fajr'), findsOneWidget);
+      expect(find.text('nach ʿAsr'), findsOneWidget);
+
+      await tester.tap(find.text('nach Fajr'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: 'kein Zeitwähler');
+    });
+
+    testWidgets('die Azkar-Erinnerung lässt sich abschalten',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(420, 1200);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final ReminderService reminders =
+          ReminderService(backend: FakeReminderBackend());
+      await reminders.load();
+      await reminders.enable(goalReachedToday: false);
+      await oeffneDialog(tester, reminders: reminders);
+
+      expect(reminders.isOn(ReminderSlot.azkarMorgens), isTrue);
+      await tester.tap(find.byType(Checkbox).last);
+      await tester.pumpAndSettle();
+
+      expect(reminders.isOn(ReminderSlot.azkarAbends), isFalse);
+      expect(reminders.isOn(ReminderSlot.azkarMorgens), isFalse,
+          reason: 'die beiden Azkar hängen an einem Schalter');
+      expect(reminders.isOn(ReminderSlot.morgens), isTrue,
+          reason: 'die Lern-Anstöße bleiben');
+    });
+
     testWidgets('ein Anstoß lässt sich einzeln abschalten',
         (WidgetTester tester) async {
       // Der Weg, auf dem Erinnerungen überleben: eine herausnehmen, statt

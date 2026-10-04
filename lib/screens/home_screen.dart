@@ -674,6 +674,8 @@ class _SlotZeile extends StatelessWidget {
     ReminderSlot.morgens: 'Morgens',
     ReminderSlot.mittags: 'Mittags',
     ReminderSlot.abends: 'Abends',
+    ReminderSlot.azkarMorgens: 'Morgen-Azkar',
+    ReminderSlot.azkarAbends: 'Abend-Azkar',
   };
 
   @override
@@ -681,7 +683,10 @@ class _SlotZeile extends StatelessWidget {
     final ReminderService reminders = ReminderScope.of(context);
     final bool an = reminders.isOn(slot);
     final bool fest = slot == ReminderSlot.abends;
-    final bool waehlbar = reminders.enabled && an;
+    // Die Azkar haben keine wählbare Uhrzeit: Sie hängen an Fajr und ʿAsr
+    // und wandern mit der Jahreszeit. Einstellen lässt sich dort nur der
+    // Versatz, und der steht im Azkar-Reiter.
+    final bool waehlbar = reminders.enabled && an && !slot.istAzkar;
 
     return ListTile(
       contentPadding: EdgeInsets.zero,
@@ -696,7 +701,13 @@ class _SlotZeile extends StatelessWidget {
                       goalReachedToday: state.goalReached),
             ),
       title: Text(_namen[slot]!),
-      subtitle: fest ? const Text('Der Termin, der zählt') : null,
+      subtitle: switch (slot) {
+        ReminderSlot.abends => const Text('Der Termin, der zählt'),
+        ReminderSlot.azkarMorgens ||
+        ReminderSlot.azkarAbends =>
+          const Text('Zeit aus den Gebetszeiten'),
+        _ => null,
+      },
       trailing: Text(
         reminders.labelOf(slot),
         style: an

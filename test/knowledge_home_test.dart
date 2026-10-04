@@ -128,10 +128,20 @@ void main() {
       expect(find.byType(HomeScreen), findsNothing);
     });
 
-    testWidgets('unten stehen drei Bereiche', (WidgetTester tester) async {
+    testWidgets('unten stehen vier Bereiche', (WidgetTester tester) async {
       await tester.pumpWidget(const TaeglichKluegerApp());
       await tester.pumpAndSettle();
-      expect(find.byType(NavigationDestination), findsNWidgets(3));
+      expect(find.byType(NavigationDestination), findsNWidgets(4));
+      for (final String name in <String>['Lernen', 'Üben', 'Azkar', 'Erfolge']) {
+        expect(
+          find.descendant(
+            of: find.byType(NavigationBar),
+            matching: find.text(name),
+          ),
+          findsOneWidget,
+          reason: name,
+        );
+      }
     });
   });
 

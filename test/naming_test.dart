@@ -10,6 +10,8 @@ import 'package:ipa_testing_github_action/state/progress_store.dart';
 import 'package:ipa_testing_github_action/state/daily_card_store.dart';
 import 'package:ipa_testing_github_action/state/duel_store.dart';
 import 'package:ipa_testing_github_action/state/reminders.dart';
+import 'package:ipa_testing_github_action/state/azkar_store.dart';
+import 'package:ipa_testing_github_action/state/prayer_times.dart';
 import 'package:ipa_testing_github_action/state/update_check.dart';
 import 'package:ipa_testing_github_action/state/reward_store.dart';
 import 'package:ipa_testing_github_action/state/speech.dart';
@@ -41,6 +43,12 @@ void main() {
       expect(ReminderService.morningKey, 'arabisch_lernen.reminder.morning');
       expect(ReminderService.noonKey, 'arabisch_lernen.reminder.noon');
       expect(UpdateService.checkedKey, 'arabisch_lernen.update.checked');
+      expect(ReminderService.azkarKey, 'arabisch_lernen.reminder.azkar');
+    });
+
+    test('Azkar', () {
+      expect(AzkarStore.storageKey, 'arabisch_lernen.azkar.v1');
+      expect(AzkarSettings.settingsKey, 'arabisch_lernen.azkar.settings.v1');
     });
 
     test('Tagesinhalte', () {

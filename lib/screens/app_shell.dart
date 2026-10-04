@@ -6,6 +6,7 @@ import '../state/daily_feed.dart';
 import '../state/learning_state.dart';
 import '../widgets/reward_sheet.dart';
 import 'achievements_screen.dart';
+import 'azkar_screen.dart';
 import 'home_screen.dart';
 import 'knowledge_home.dart';
 import 'practice_screen.dart';
@@ -72,6 +73,7 @@ class _AppShellState extends State<AppShell> {
           else
             const HomeScreen(),
           const PracticeScreen(),
+          const AzkarScreen(),
           const AchievementsScreen(),
         ],
       ),
@@ -97,6 +99,11 @@ class _AppShellState extends State<AppShell> {
             label: 'Üben',
           ),
           const NavigationDestination(
+            icon: Icon(Icons.brightness_4_outlined),
+            selectedIcon: Icon(Icons.brightness_4),
+            label: 'Azkar',
+          ),
+          const NavigationDestination(
             icon: Icon(Icons.emoji_events_outlined),
             selectedIcon: Icon(Icons.emoji_events),
             label: 'Erfolge',
@@ -119,8 +126,14 @@ class _AppShellState extends State<AppShell> {
 class AppTabs extends InheritedWidget {
   const AppTabs({super.key, required this.goTo, required super.child});
 
+  /// Der Bereich „Azkar" — Morgen- und Abendgedenken.
+  static const int azkar = 2;
+
   /// Der Bereich „Erfolge" — dort stehen Level, Serie und Abzeichen.
-  static const int erfolge = 2;
+  ///
+  /// Die Zahl ist die Stelle in der Leiste. Rückt ein Bereich dazwischen,
+  /// rückt sie mit — deshalb steht sie hier und nicht verstreut im Code.
+  static const int erfolge = 3;
 
   final void Function(int index) goTo;
 

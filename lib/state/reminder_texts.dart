@@ -8,17 +8,29 @@ import 'word_progress.dart';
 
 /// Wann am Tag eine Erinnerung kommt.
 ///
-/// Die drei Anstöße haben verschiedene Aufgaben: Der Morgen nimmt etwas mit,
-/// der Mittag nennt den Stand, der Abend ist der Termin mit Gewicht — dort
-/// steht die Serie auf dem Spiel.
+/// Die drei **Lern**-Anstöße haben verschiedene Aufgaben: Der Morgen nimmt
+/// etwas mit, der Mittag nennt den Stand, der Abend ist der Termin mit
+/// Gewicht — dort steht die Serie auf dem Spiel.
+///
+/// Dazu zwei **Azkar**-Anstöße. Die sind anders: Ihre Zeit steht nicht in
+/// einer Einstellung, sondern kommt aus den Gebetszeiten (nach Fajr und nach
+/// ʿAsr, siehe `lib/state/prayer_times.dart`), und sie schweigen, sobald die
+/// Azkar des Tages gesprochen sind.
 enum ReminderSlot {
   morgens('morgens'),
   mittags('mittags'),
-  abends('abends');
+  abends('abends'),
+  azkarMorgens('azkar-morgens'),
+  azkarAbends('azkar-abends');
 
   const ReminderSlot(this.id);
 
   final String id;
+
+  /// Azkar oder Lernen? Davon hängt ab, woher die Zeit kommt und welcher
+  /// Text erscheint.
+  bool get istAzkar =>
+      this == ReminderSlot.azkarMorgens || this == ReminderSlot.azkarAbends;
 }
 
 /// Was der Lernkern zur Erinnerung beisteuert.
@@ -35,6 +47,8 @@ class ReminderFacts {
     this.blockOpen = 0,
     this.repetitionsDue = 0,
     this.goalRemaining = 0,
+    this.azkarStreakMorgens = 0,
+    this.azkarStreakAbends = 0,
     this.woerter = const <VocabEntry>[],
   });
 
@@ -58,6 +72,11 @@ class ReminderFacts {
   /// Wie viele Antworten heute noch bis zum Tagesziel fehlen.
   final int goalRemaining;
 
+  /// Tage am Stück bei den Azkar — getrennt nach Morgen und Abend, und
+  /// getrennt von der Lernserie.
+  final int azkarStreakMorgens;
+  final int azkarStreakAbends;
+
   /// Wörter aus dem Arbeitsvorrat — welche, die gerade wirklich dran sind.
   ///
   /// Eine Liste und nicht ein Wort: Der Plan reicht vierzehn Tage, und jeder
@@ -70,6 +89,10 @@ class ReminderFacts {
   /// heute niemand — eine Zahl, die bis dahin falsch wird, ist schlimmer als
   /// keine. Die Wörter bleiben, die sind in drei Tagen noch dieselben.
   ReminderFacts get ohneZahlen => ReminderFacts(woerter: woerter);
+
+  int azkarStreak(ReminderSlot slot) => slot == ReminderSlot.azkarMorgens
+      ? azkarStreakMorgens
+      : azkarStreakAbends;
 }
 
 /// Titel und Text einer Benachrichtigung.
@@ -111,6 +134,13 @@ ReminderText buildReminderText({
     dayOf(day).millisecondsSinceEpoch ~/ 86400000,
     slot.index,
   ]));
+
+  // Die Azkar haben eigene Texte: Sie rufen zu etwas anderem als zum Lernen,
+  // und ein Satz über fällige Vokabeln wäre hier schlicht falsch.
+  if (slot.istAzkar) {
+    final List<ReminderText> azkar = _azkar(slot, facts);
+    return azkar[random.nextInt(azkar.length)];
+  }
 
   // Der Abend gehört der Serie, sobald etwas auf dem Spiel steht. Das ist der
   // einzige Vorrang: Wer seit Tagen dran ist, soll es am Abend lesen und
@@ -155,6 +185,11 @@ List<ReminderText> _passend(
     ReminderSlot.morgens => <ReminderText>[...wort, ...stand],
     ReminderSlot.mittags => <ReminderText>[...stand, ...wort],
     ReminderSlot.abends => <ReminderText>[...stand, ...wort],
+    // Die Azkar kommen hier nie an — sie werden oben abgefangen. Der Zweig
+    // steht da, damit ein neuer Anstoß den Übersetzer alarmiert statt still
+    // in den falschen Text zu laufen.
+    ReminderSlot.azkarMorgens || ReminderSlot.azkarAbends =>
+      const <ReminderText>[],
   };
 }
 
@@ -194,6 +229,29 @@ List<ReminderText> _stand(ReminderFacts facts) => <ReminderText>[
               'bis zum Tagesziel.',
         ),
     ];
+
+/// Die Texte der Azkar-Anstöße.
+///
+/// Ein anderer Ton als bei den Lern-Anstößen: kein Antreiben, kein Zählen
+/// von Wörtern. Die Serie kommt nur vor, wenn sie schon eine Weile läuft —
+/// und als Feststellung, nicht als Druckmittel.
+List<ReminderText> _azkar(ReminderSlot slot, ReminderFacts facts) {
+  final bool morgens = slot == ReminderSlot.azkarMorgens;
+  final String titel = morgens ? 'Morgen-Azkar' : 'Abend-Azkar';
+  final int serie = facts.azkarStreak(slot);
+  return <ReminderText>[
+    ReminderText(titel, morgens
+        ? 'Die Zeit ist da — ein paar Minuten vor dem Tag.'
+        : 'Die Zeit ist da — ein paar Minuten vor dem Abend.'),
+    ReminderText(titel, 'Jetzt wäre die Zeit dafür.'),
+    if (serie >= 3)
+      ReminderText('$titel · Tag $serie', 'Heute wieder?')
+    else
+      ReminderText(titel, morgens
+          ? 'Zum Anfangen reicht die leichte Stufe.'
+          : 'Auch kurz ist gesprochen.'),
+  ];
+}
 
 /// Der Rückfall, wenn nichts Konkretes anliegt — und der Grund, warum sich
 /// die Meldung auch bei gleichbleibendem Stand nicht abnutzt.

@@ -164,6 +164,10 @@ class ReminderService extends ChangeNotifier {
   static const String morningKey = 'arabisch_lernen.reminder.morning';
   static const String noonKey = 'arabisch_lernen.reminder.noon';
 
+  /// Ob die beiden Azkar-Anstöße kommen. Ihre **Zeit** steht hier nicht —
+  /// die rechnet `lib/state/prayer_times.dart` je Tag aus den Gebetszeiten.
+  static const String azkarKey = 'arabisch_lernen.reminder.azkar';
+
   /// Voreinstellungen: 08:00 und 13:00.
   static const int defaultMorning = 8 * 60;
   static const int defaultNoon = 13 * 60;
@@ -183,6 +187,7 @@ class ReminderService extends ChangeNotifier {
   int _minute = 0;
   int _morning = defaultMorning;
   int _noon = defaultNoon;
+  bool _azkar = true;
 
   bool get enabled => _enabled;
   int get hour => _hour;
@@ -197,11 +202,15 @@ class ReminderService extends ChangeNotifier {
       ReminderSlot.morgens => _morning,
       ReminderSlot.mittags => _noon,
       ReminderSlot.abends => _hour * 60 + _minute,
+      // Die Azkar haben keine feste Uhrzeit — ihre Zeit kommt je Tag aus
+      // den Gebetszeiten und wird [plan] von außen hereingereicht.
+      ReminderSlot.azkarMorgens || ReminderSlot.azkarAbends => slotOff,
     };
     return value < 0 ? null : value;
   }
 
-  bool isOn(ReminderSlot slot) => minutesOf(slot) != null;
+  bool isOn(ReminderSlot slot) =>
+      slot.istAzkar ? _azkar : minutesOf(slot) != null;
 
   /// „08:00" — auch für einen abgeschalteten Anstoß, damit im Menü nicht
   /// plötzlich ein Strich steht, wo eben noch eine Zeit war.
@@ -209,6 +218,8 @@ class ReminderService extends ChangeNotifier {
         ReminderSlot.morgens => _label(_morning < 0 ? defaultMorning : _morning),
         ReminderSlot.mittags => _label(_noon < 0 ? defaultNoon : _noon),
         ReminderSlot.abends => timeLabel,
+        ReminderSlot.azkarMorgens => 'nach Fajr',
+        ReminderSlot.azkarAbends => 'nach ʿAsr',
       };
 
   static String _label(int minutes) =>
@@ -226,6 +237,7 @@ class ReminderService extends ChangeNotifier {
     _minute = _prefs?.getInt(minuteKey) ?? 0;
     _morning = _prefs?.getInt(morningKey) ?? defaultMorning;
     _noon = _prefs?.getInt(noonKey) ?? defaultNoon;
+    _azkar = _prefs?.getBool(azkarKey) ?? true;
     notifyListeners();
   }
 
@@ -275,6 +287,13 @@ class ReminderService extends ChangeNotifier {
   /// keiner.
   Future<void> setSlotEnabled(ReminderSlot slot, bool on,
       {required bool goalReachedToday}) async {
+    if (slot.istAzkar) {
+      _azkar = on;
+      await _prefs?.setBool(azkarKey, on);
+      notifyListeners();
+      if (_enabled) await refresh(goalReachedToday: goalReachedToday);
+      return;
+    }
     if (slot == ReminderSlot.abends) return;
     final int wert = on
         ? (slot == ReminderSlot.morgens
@@ -301,12 +320,16 @@ class ReminderService extends ChangeNotifier {
   Future<void> refresh({
     required bool goalReachedToday,
     ReminderFacts facts = const ReminderFacts(),
+    AzkarZeit? azkarZeit,
+    Set<ReminderSlot> azkarErledigt = const <ReminderSlot>{},
   }) async {
     if (!_enabled) return;
     await _backend.cancelAll();
     for (final PlannedReminder reminder in plan(
       goalReachedToday: goalReachedToday,
       facts: facts,
+      azkarZeit: azkarZeit,
+      azkarErledigt: azkarErledigt,
     )) {
       await _backend.schedule(reminder);
     }
@@ -321,23 +344,35 @@ class ReminderService extends ChangeNotifier {
   List<PlannedReminder> plan({
     required bool goalReachedToday,
     ReminderFacts facts = const ReminderFacts(),
+    AzkarZeit? azkarZeit,
+    Set<ReminderSlot> azkarErledigt = const <ReminderSlot>{},
   }) {
     final DateTime now = _now();
     final List<PlannedReminder> reminders = <PlannedReminder>[];
 
     for (int day = 0; day < horizonDays; day++) {
-      // Ist das Tagesziel geschafft, schweigt der ganze restliche Tag.
-      if (day == 0 && goalReachedToday) continue;
-
       final DateTime date =
           DateTime(now.year, now.month, now.day).add(Duration(days: day));
 
       for (final ReminderSlot slot in ReminderSlot.values) {
-        final int? minutes = minutesOf(slot);
-        if (minutes == null) continue;
+        if (!isOn(slot)) continue;
 
-        final DateTime when = DateTime(date.year, date.month, date.day)
-            .add(Duration(minutes: minutes));
+        // Das Tagesziel bremst die **Lern**-Anstöße. Die Azkar haben damit
+        // nichts zu tun: Wer sein Pensum gelernt hat, hat deshalb noch nichts
+        // gesprochen — die beiden Spuren berühren sich nicht.
+        if (day == 0 && goalReachedToday && !slot.istAzkar) continue;
+
+        final DateTime? when = slot.istAzkar
+            ? azkarZeit?.call(slot, date)
+            : DateTime(date.year, date.month, date.day)
+                .add(Duration(minutes: minutesOf(slot)!));
+        // Ohne eingestellten Ort gibt es keine Azkar-Zeit — dann lieber
+        // keine Erinnerung als eine zur falschen Stunde.
+        if (when == null) continue;
+
+        // Was heute schon gesprochen ist, meldet sich nicht mehr.
+        if (day == 0 && azkarErledigt.contains(slot)) continue;
+
         // Was heute schon vorbei ist, kommt nicht mehr.
         if (day == 0 && !when.isAfter(now)) continue;
 
@@ -361,6 +396,13 @@ class ReminderService extends ChangeNotifier {
     return reminders;
   }
 }
+
+/// Woher die Zeit eines Azkar-Anstoßes an einem bestimmten Tag kommt.
+///
+/// Eine Funktion und keine Abhängigkeit: So bleibt dieser Dienst frei von
+/// `adhan` und von den Azkar-Einstellungen, und `plan()` lässt sich im Test
+/// mit festen Zeiten nachrechnen.
+typedef AzkarZeit = DateTime? Function(ReminderSlot slot, DateTime tag);
 
 /// Macht den [ReminderService] im Widget-Baum verfügbar.
 class ReminderScope extends InheritedNotifier<ReminderService> {

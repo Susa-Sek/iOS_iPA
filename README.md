@@ -726,6 +726,92 @@ ohne sie vollständig funktionieren — der Feed ist Beiwerk, nicht Fundament.
 Getestet wird er gegen abgelegte echte Antworten unter `test/data/`, nicht
 gegen das Netz.
 
+## Azkar: Morgen und Abend
+
+Ein vierter Bereich neben Lernen, Üben und Erfolge — und bewusst **keine
+zweite Lernspur**: kein XP, kein Level, keine Abzeichen, kein Einfluss auf
+den Jokertag. Eine Liste, die man durchgeht, und dann ist sie durch.
+
+### Drei Stufen, keine Mauer
+
+| Stufe | Umfang |
+| --- | --- |
+| **Leicht** | 5 Azkar — Āyat al-Kursī, die drei letzten Suren, Sayyid al-Istiġfār |
+| **Voll** | ~12, der Regelfall |
+| **Vollständig** | ~22 |
+
+Was nicht zur eigenen Stufe gehört, steht trotzdem unten unter **„Mehr, wenn
+du magst"** und lässt sich antippen. Wer an einem guten Tag mehr schafft, soll
+nicht erst in die Einstellungen.
+
+Antippen zählt hoch (`1 / 3`, `47 / 100`), langes Drücken setzt zurück. Kein
+Wischfeed, kein Fortschritt, der zum Weitermachen drängt.
+
+### Die Zeiten kommen aus den Gebetszeiten
+
+Morgen-Azkar nach **Fajr** bis zum Sonnenaufgang, Abend-Azkar nach **ʿAsr**
+bis zum Maġrib — gerechnet mit dem Paket `adhan`, reines Dart, offline. Eine
+feste Uhrzeit wäre im Dezember falsch oder im Juni.
+
+**Ohne Standortberechtigung.** Man stellt seinen Ort einmal ein (Stadtliste
+oder Koordinaten); danach fragt die App nie wieder. Methode (Vorgabe: Muslim
+World League), Maḏhab für ʿAsr (Vorgabe: Šāfiʿī) und der Versatz nach dem
+Gebet sind einstellbar.
+
+**Ein gemessener Fallstrick.** In Berlin geht die Sonne im Sommer nie 18°
+unter den Horizont — Fajr ist nach der reinen Winkelrechnung undefiniert, und
+`adhan` behilft sich mit einer Regel. Mit der Vorgabe der Bibliothek fiel Fajr
+am 21. Juni auf den **20. Juni, 23:08**, also einen Tag zu früh; eine darauf
+geplante Erinnerung läge in der Vergangenheit und entfiele den ganzen Sommer
+über still.
+
+```
+middle_of_the_night    fajr = 20.06. 23:08   ← falscher Tag
+twilight_angle         fajr = 21.06. 00:34
+seventh_of_the_night   fajr = 21.06. 01:42   ← gewählt
+```
+
+Ein Test geht jeden Junitag durch und prüft, dass Fajr auf seinem eigenen Tag
+bleibt.
+
+### In den Erinnerungen
+
+Aus drei Anstößen am Tag werden fünf. Zwei Dinge sind bei den Azkar anders:
+
+* Ihre Zeit steht in keiner Einstellung, sie kommt je Tag aus der
+  Gebetszeitrechnung — und wandert von allein mit der Jahreszeit.
+* **Das erreichte Tagesziel bremst sie nicht.** Wer sein Lernpensum geschafft
+  hat, hat deshalb noch nichts gesprochen; die beiden Spuren berühren sich
+  nicht. Dafür schweigen sie, sobald die Azkar des Tages abgehakt sind.
+
+Ohne eingestellten Ort gibt es **keine** Azkar-Erinnerung — lieber keine als
+eine zur geratenen Stunde.
+
+### Eine eigene, ruhige Serie
+
+Morgen und Abend zählen getrennt („12 Tage Morgen-Azkar"). Ein Test hält
+fest, dass XP, Lernserie, Antwortzahl und Jokertage dabei unberührt bleiben
+und der Lernstand nicht einmal angefasst wird.
+
+### Woher die Texte stammen
+
+**Der quranische Teil wird nicht abgetippt.** Al-Iḫlāṣ, Al-Falaq und An-Nās
+kommen aus `kSuras` — sie liegen bereits im Repository (Tanzil-Ausgabe
+„quran-simple"), und ein Test vergleicht sie zeichengenau, damit sich keine
+zweite Fassung einschleicht. Āyat al-Kursī stammt aus derselben Quelle.
+
+Die **Hadith-Azkar sind von Hand gesetzt**, nach dem Bestand von „Ḥiṣn
+al-Muslim", mit Sammlung und Nummer an jedem Eintrag; ein Test erzwingt, dass
+kein Eintrag ohne Quelle existiert.
+
+> **Bitte prüfen lassen.** Bei Tashkīl von Hand sind Fehler möglich, und bei
+> einem Gebetstext wiegt ein falsches Zeichen schwerer als anderswo. Der
+> Hinweis steht auch in der App, unter der Liste. Korrekturen sind in
+> `lib/data/azkar_data.dart` eine Zeile.
+
+Die deutschen Zeilen sind — wie beim Quran-Teil — eine Verständnishilfe und
+ersetzen keine anerkannte Übersetzung.
+
 ## Updates, die nichts kaputtmachen
 
 Zwei Dinge, die zusammengehören: Die App sagt Bescheid, wenn es etwas Neues

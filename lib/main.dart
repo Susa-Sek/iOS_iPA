@@ -18,6 +18,9 @@ import 'state/daily_quests.dart';
 import 'state/duel_store.dart';
 import 'state/lesson_store.dart';
 import 'state/reward_store.dart';
+import 'models/azkar.dart';
+import 'state/azkar_store.dart';
+import 'state/prayer_times.dart';
 import 'state/sharing.dart';
 import 'state/update_check.dart';
 import 'state/reminder_texts.dart';
@@ -57,6 +60,8 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp>
   final DuelStore _duels = DuelStore();
   final Sharer _sharer = Sharer();
   final UpdateService _updates = UpdateService();
+  final AzkarSettings _azkarSettings = AzkarSettings();
+  final AzkarStore _azkar = AzkarStore();
 
   @override
   void initState() {
@@ -86,6 +91,14 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp>
         (QuestKind kind, int amount) => _rewards.report(kind, amount: amount));
     _rewards.load();
     _duels.load();
+    // Die Azkar sind eine eigene Spur: eigener Speicher, eigene Serie, kein
+    // Einfluss auf den Lernstand. Sie melden sich trotzdem beim
+    // Erinnerungsplan, damit ein gesprochenes Pensum nicht noch einmal
+    // angemahnt wird.
+    _azkar.addListener(_planeErinnerungen);
+    _azkarSettings.addListener(_planeErinnerungen);
+    _azkarSettings.load();
+    _azkar.load();
     unawaited(_pruefeVersion());
     // Der Erinnerungsplan wird beim Start **und** beim Zuklappen neu
     // geschrieben — siehe didChangeAppLifecycleState.
@@ -113,8 +126,32 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp>
     await _reminders.refresh(
       goalReachedToday: _state.goalReached,
       facts: _facts(),
+      azkarZeit: _azkarZeit,
+      azkarErledigt: _azkarErledigt(),
     );
   }
+
+  void _planeErinnerungen() => unawaited(_setUpReminders());
+
+  /// Wann die Azkar an einem bestimmten Tag fällig sind.
+  ///
+  /// `null` ohne eingestellten Ort — dann entfällt die Erinnerung, statt zu
+  /// einer geratenen Stunde zu kommen.
+  DateTime? _azkarZeit(ReminderSlot slot, DateTime tag) {
+    final AzkarTime welche = slot == ReminderSlot.azkarMorgens
+        ? AzkarTime.morgens
+        : AzkarTime.abends;
+    return _azkarSettings.fenster(welche, tag)?.faellig;
+  }
+
+  /// Was heute schon gesprochen ist, meldet sich nicht mehr.
+  Set<ReminderSlot> _azkarErledigt() => <ReminderSlot>{
+        for (final (AzkarTime t, ReminderSlot s) in <(AzkarTime, ReminderSlot)>[
+          (AzkarTime.morgens, ReminderSlot.azkarMorgens),
+          (AzkarTime.abends, ReminderSlot.azkarAbends),
+        ])
+          if (_azkar.heuteSchonFertig(t)) s,
+      };
 
   /// Einmal am Tag nachsehen, ob es eine neuere Version gibt.
   ///
@@ -144,6 +181,8 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp>
         repetitionsDue: _state.repetitionsDueTotal,
         goalRemaining:
             max(0, _state.dailyGoal - _state.answeredToday),
+        azkarStreakMorgens: _azkar.serie(AzkarTime.morgens),
+        azkarStreakAbends: _azkar.serie(AzkarTime.abends),
         woerter: _state.workingSet.take(20).toList(),
       );
 
@@ -182,6 +221,10 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp>
     _speaker.dispose();
     _reminders.dispose();
     _updates.dispose();
+    _azkar.removeListener(_planeErinnerungen);
+    _azkarSettings.removeListener(_planeErinnerungen);
+    _azkar.dispose();
+    _azkarSettings.dispose();
     super.dispose();
   }
 
@@ -209,12 +252,18 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp>
               service: _reminders,
               child: UpdateScope(
               service: _updates,
+              child: AzkarSettingsScope(
+              settings: _azkarSettings,
+              child: AzkarScope(
+              store: _azkar,
               child: MaterialApp(
                 title: 'Täglich Klüger',
                 debugShowCheckedModeBanner: false,
                 theme: buildAppTheme(Brightness.light),
                 darkTheme: buildAppTheme(Brightness.dark),
                 home: const AppShell(),
+              ),
+              ),
               ),
               ),
             ),

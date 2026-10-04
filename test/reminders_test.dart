@@ -191,6 +191,99 @@ void main() {
     });
   });
 
+  group('Die Azkar-Anstöße', () {
+    // Die Zeiten kommen von außen herein, damit dieser Test ohne
+    // Gebetszeitrechnung auskommt — feste Stunden genügen.
+    DateTime? zeiten(ReminderSlot slot, DateTime tag) =>
+        slot == ReminderSlot.azkarMorgens
+            ? DateTime(tag.year, tag.month, tag.day, 6, 30)
+            : DateTime(tag.year, tag.month, tag.day, 17, 45);
+
+    test('kommen zu ihrer Zeit dazu — fünf am Tag', () async {
+      final ReminderService service = serviceAt(DateTime(2026, 5, 1, 5));
+      await service.load();
+
+      final List<PlannedReminder> plan =
+          service.plan(goalReachedToday: false, azkarZeit: zeiten);
+      expect(plan.length, ReminderService.horizonDays * 5);
+      final List<PlannedReminder> heute =
+          plan.where((PlannedReminder r) => r.when.day == 1).toList();
+      expect(heute.map((PlannedReminder r) => r.when.hour),
+          containsAll(<int>[6, 8, 13, 17, 19]));
+    });
+
+    test('ohne Zeiten gibt es sie nicht', () async {
+      // Ohne eingestellten Ort liefert die Gebetszeitrechnung nichts —
+      // dann lieber keine Erinnerung als eine zur geratenen Stunde.
+      final ReminderService service = serviceAt(DateTime(2026, 5, 1, 5));
+      await service.load();
+      expect(service.plan(goalReachedToday: false).length,
+          ReminderService.horizonDays * 3);
+    });
+
+    test('was heute gesprochen ist, meldet sich nicht mehr', () async {
+      final ReminderService service = serviceAt(DateTime(2026, 5, 1, 5));
+      await service.load();
+
+      final List<PlannedReminder> plan = service.plan(
+        goalReachedToday: false,
+        azkarZeit: zeiten,
+        azkarErledigt: <ReminderSlot>{ReminderSlot.azkarMorgens},
+      );
+      final List<PlannedReminder> heute =
+          plan.where((PlannedReminder r) => r.when.day == 1).toList();
+      expect(heute.any((PlannedReminder r) => r.when.hour == 6), isFalse);
+      expect(heute.any((PlannedReminder r) => r.when.hour == 17), isTrue,
+          reason: 'der Abend steht noch aus');
+      expect(plan.where((PlannedReminder r) => r.when.day == 2).length, 5,
+          reason: 'morgen wieder alle fünf');
+    });
+
+    test('das erreichte Tagesziel bremst sie nicht', () async {
+      // Wer sein Pensum gelernt hat, hat deshalb noch nichts gesprochen.
+      final ReminderService service = serviceAt(DateTime(2026, 5, 1, 5));
+      await service.load();
+
+      final List<PlannedReminder> heute = service
+          .plan(goalReachedToday: true, azkarZeit: zeiten)
+          .where((PlannedReminder r) => r.when.day == 1)
+          .toList();
+      expect(heute, hasLength(2));
+      expect(heute.every((PlannedReminder r) => r.title.contains('Azkar')),
+          isTrue);
+    });
+
+    test('lassen sich abschalten, die Lern-Anstöße bleiben', () async {
+      final ReminderService service = serviceAt(DateTime(2026, 5, 1, 5));
+      await service.load();
+      await service.setSlotEnabled(ReminderSlot.azkarMorgens, false,
+          goalReachedToday: false);
+
+      expect(service.isOn(ReminderSlot.azkarMorgens), isFalse);
+      expect(service.isOn(ReminderSlot.azkarAbends), isFalse);
+      expect(service.isOn(ReminderSlot.morgens), isTrue);
+      expect(service.plan(goalReachedToday: false, azkarZeit: zeiten).length,
+          ReminderService.horizonDays * 3);
+    });
+
+    test('die Kennungen bleiben eindeutig', () async {
+      final ReminderService service = serviceAt(DateTime(2026, 5, 1, 5));
+      await service.load();
+      final List<PlannedReminder> plan =
+          service.plan(goalReachedToday: false, azkarZeit: zeiten);
+      expect(plan.map((PlannedReminder r) => r.id).toSet().length, plan.length);
+    });
+
+    test('ihr Text ruft zu den Azkar', () async {
+      final ReminderService service = serviceAt(DateTime(2026, 5, 1, 5));
+      await service.load();
+      final PlannedReminder morgens = service
+          .plan(goalReachedToday: false, azkarZeit: zeiten)
+          .firstWhere((PlannedReminder r) => r.when.hour == 6);
+      expect(morgens.title, contains('Morgen-Azkar'));
+    });
+  });
+
   group('Ein- und Ausschalten', () {
     test('ohne Erlaubnis bleibt die Erinnerung aus', () async {
       final FakeReminderBackend backend =
