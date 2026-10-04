@@ -270,7 +270,14 @@ class LearningState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _persist() => _store.save(StoredProgress(
+  Future<void> _persist() => _store.save(snapshot);
+
+  /// Der ganze Lernstand in einem Stück — das, was gespeichert wird.
+  ///
+  /// Öffentlich, weil die Sicherung dasselbe braucht wie der Speicher. Zwei
+  /// Listen derselben Felder liefen irgendwann auseinander, und dann fehlte
+  /// in der Sicherung genau das Feld, das man vermisst.
+  StoredProgress get snapshot => StoredProgress(
         words: _words,
         answered: _answered,
         correct: _correct,
@@ -290,7 +297,7 @@ class LearningState extends ChangeNotifier {
         ],
         sessionBlocks: _sessionBlocks,
         blockSize: _blockSize,
-      ));
+      );
 
   /// Wirft die Lernstufen zu Karten weg, die es nicht mehr gibt.
   ///
@@ -752,6 +759,16 @@ class LearningState extends ChangeNotifier {
 
     notifyListeners();
     unawaited(_persist());
+  }
+
+  /// Einen gesicherten Lernstand einspielen.
+  ///
+  /// Erst in den Speicher, dann [load] — statt hier alle Felder ein zweites
+  /// Mal zuzuweisen. Dieselbe Begründung wie bei [snapshot]: Eine zweite
+  /// Liste derselben Felder vergisst irgendwann eines.
+  Future<void> restore(StoredProgress stored) async {
+    await _store.save(stored);
+    await load();
   }
 
   Future<void> reset() async {

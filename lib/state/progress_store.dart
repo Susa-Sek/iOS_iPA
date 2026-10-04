@@ -143,7 +143,11 @@ class ProgressStore {
     }
   }
 
-  @visibleForTesting
+  /// Der Lernstand als JSON.
+  ///
+  /// Öffentlich, weil die Sicherung (`lib/state/backup.dart`) genau dieses
+  /// Format herausgibt — es ist dasselbe, das auf dem Gerät liegt. Ein
+  /// zweites Format für die Sicherung wäre ein zweites, das veraltet.
   static String encode(StoredProgress progress) {
     final Map<String, int> history = _trimHistory(progress.history);
     return jsonEncode(<String, dynamic>{
@@ -170,7 +174,8 @@ class ProgressStore {
     });
   }
 
-  @visibleForTesting
+  /// Die Gegenrichtung zu [encode] — und nachsichtig: Jedes Feld hat eine
+  /// Vorgabe, damit eine Datei aus einer älteren Version weiter liest.
   static StoredProgress decode(String raw) {
     final Object? decoded = jsonDecode(raw);
     if (decoded is! Map<String, dynamic>) return const StoredProgress();

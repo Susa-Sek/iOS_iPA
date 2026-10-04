@@ -726,17 +726,64 @@ ohne sie vollständig funktionieren — der Feed ist Beiwerk, nicht Fundament.
 Getestet wird er gegen abgelegte echte Antworten unter `test/data/`, nicht
 gegen das Netz.
 
+## Updates, die nichts kaputtmachen
+
+Zwei Dinge, die zusammengehören: Die App sagt Bescheid, wenn es etwas Neues
+gibt, und man kann seinen Lernstand jederzeit beiseitelegen.
+
+### „Version 3.9.0 ist da"
+
+Einmal am Tag — nicht bei jedem Start, das wäre Datenverkehr ohne Gegenwert —
+fragt die App bei GitHub nach der neuesten Version. Ist eine da, steht auf der
+Startseite eine ruhige Karte mit einem Knopf; der öffnet die APK-Adresse,
+Android lädt sie, ein Tipp installiert sie **über** die vorhandene App.
+
+* **Kein Dialog.** Ein Update ist nie dringend. Etwas, das sich vor den
+  Bildschirm stellt, bevor man lernen darf, wäre an dieser Stelle respektlos.
+* **Scheitert die Abfrage, passiert nichts Sichtbares.** Offline, Repository
+  nicht öffentlich, GitHub gerade weg — alles derselbe Fall. Eine
+  Fehlermeldung über ein Update, das man nicht wollte, ist Lärm.
+* **Das Repository muss öffentlich sein.** Bei einem privaten bräuchte die App
+  einen GitHub-Token im Programmcode, und ein Token, der in einer 57-MB-APK
+  mitreist, ist keiner.
+* Verglichen wird **Zahl für Zahl**. Zeichenweise wäre „3.10.0" kleiner als
+  „3.9.0", weil „1" vor „9" kommt — der Fehler, den jeder Versionsvergleich
+  einmal macht, und deshalb steht `istNeuer` als reine Funktion mit eigenem
+  Test da.
+
+### Lernstand sichern und zurückholen
+
+Unter **Erfolge → Menü**. Gesichert wird in genau dem Format, in dem der Stand
+ohnehin auf dem Gerät liegt (`ProgressStore.encode`) — ein zweites Format für
+die Sicherung wäre ein zweites, das veraltet. Dazu eine Hülle mit Kennzeichen,
+damit nicht irgendeine JSON-Datei aus dem Download-Ordner als Lernstand
+durchgeht.
+
+Beim Einspielen wird **erst gefragt**, mit Zahlen aus der Datei („412
+Antworten, 180 Wörter mit Lernstand"). Eine Sicherung, die stillschweigend
+überschreibt, ist eine Falle: Wer die falsche Datei erwischt, wäre seinen
+Stand los und hätte es nicht gemerkt.
+
+Eine Datei aus einer älteren Version liest sich weiter — in `StoredProgress`
+hat jedes Feld eine Vorgabe, und ein Test hält genau diesen Fall fest.
+
 ## Eigenen Signaturschlüssel benutzen
 
-Ohne eigenen Schlüssel wird das Release-APK mit dem **Debug-Schlüssel**
-signiert. Es lässt sich installieren, aber **nicht** in den Play Store laden —
-und ein Update, das ein anderer Rechner baut, gilt als andere App.
+**Das ist der Grund, warum der Lernstand bei jedem Update verschwand.** Ohne
+eigenen Schlüssel signiert der Bau mit dem **Debug-Schlüssel**, und den
+erzeugt jeder CI-Läufer frisch. Jede Version trägt also eine andere Signatur,
+Android verweigert das Drüberinstallieren, man deinstalliert — und der
+Lernstand ist weg. Nicht gelegentlich: jedes Mal.
 
-Einen eigenen Schlüssel erzeugt nur der Besitzer, niemand sonst:
+Mit festem Schlüssel hört das auf. Der Workflow kann das längst, ihm fehlten
+nur die Secrets.
+
+Einen eigenen Schlüssel erzeugt **nur der Besitzer**, niemand sonst — er darf
+nicht durch fremde Hände gehen:
 
 ```bash
-keytool -genkey -v -keystore ~/upload.jks -keyalg RSA -keysize 2048 \
-        -validity 10000 -alias upload
+keytool -genkeypair -v -keystore ~/upload.jks -storetype PKCS12 \
+        -keyalg RSA -keysize 4096 -validity 10950 -alias upload
 ```
 
 Dann `android/key.properties` anlegen — die Datei steht in `.gitignore` und
@@ -754,13 +801,25 @@ läuft der Bau unverändert mit dem Debug-Schlüssel weiter. Beide Wege sind
 geprüft: einmal ohne Datei, einmal mit einem Wegwerfschlüssel, dessen Zertifikat
 danach im APK stand.
 
-Für GitHub Actions dieselben Werte als Secrets hinterlegen —
-`ANDROID_KEYSTORE_BASE64` (`base64 -w0 upload.jks`),
-`ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`.
-Fehlen sie, baut der Workflow ebenfalls weiter.
+Für GitHub Actions dieselben vier Werte unter **Settings → Secrets and
+variables → Actions → New repository secret** hinterlegen:
 
-**Den Schlüssel nie verlieren.** Ohne ihn lässt sich eine im Play Store
-veröffentlichte App nicht mehr aktualisieren.
+| Secret | Wert |
+| --- | --- |
+| `ANDROID_KEYSTORE_BASE64` | Ausgabe von `base64 -w0 ~/upload.jks` |
+| `ANDROID_KEYSTORE_PASSWORD` | das vergebene Kennwort |
+| `ANDROID_KEY_ALIAS` | `upload` |
+| `ANDROID_KEY_PASSWORD` | dasselbe Kennwort |
+
+Fehlen sie, baut der Workflow weiter — mit dem Debug-Schlüssel, und damit
+beginnt das Spiel von vorn.
+
+**Ein letztes Mal deinstallieren.** Der Wechsel auf den festen Schlüssel ist
+selbst noch ein Signaturwechsel; die Version davor lässt sich nicht
+überschreiben. Danach nie wieder.
+
+**Den Schlüssel nie verlieren.** Ohne ihn lässt sich keine installierte App
+mehr aktualisieren — weder über GitHub noch über den Play Store.
 
 ## Bewusst offen
 

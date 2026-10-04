@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'data/content_registry.dart';
 import 'data/knowledge/knowledge_data.dart';
@@ -18,6 +19,7 @@ import 'state/duel_store.dart';
 import 'state/lesson_store.dart';
 import 'state/reward_store.dart';
 import 'state/sharing.dart';
+import 'state/update_check.dart';
 import 'state/reminder_texts.dart';
 import 'state/reminders.dart';
 import 'state/speech.dart';
@@ -54,6 +56,7 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp>
   final RewardStore _rewards = RewardStore();
   final DuelStore _duels = DuelStore();
   final Sharer _sharer = Sharer();
+  final UpdateService _updates = UpdateService();
 
   @override
   void initState() {
@@ -83,6 +86,7 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp>
         (QuestKind kind, int amount) => _rewards.report(kind, amount: amount));
     _rewards.load();
     _duels.load();
+    unawaited(_pruefeVersion());
     // Der Erinnerungsplan wird beim Start **und** beim Zuklappen neu
     // geschrieben — siehe didChangeAppLifecycleState.
     WidgetsBinding.instance.addObserver(this);
@@ -110,6 +114,20 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp>
       goalReachedToday: _state.goalReached,
       facts: _facts(),
     );
+  }
+
+  /// Einmal am Tag nachsehen, ob es eine neuere Version gibt.
+  ///
+  /// Still: Geht es nicht — offline, Repository nicht öffentlich, GitHub
+  /// gerade nicht da —, passiert nichts Sichtbares. Eine Fehlermeldung über
+  /// ein Update, das man nicht wollte, ist nur Lärm.
+  Future<void> _pruefeVersion() async {
+    try {
+      final PackageInfo info = await PackageInfo.fromPlatform();
+      await _updates.check(laufendeVersion: info.version);
+    } catch (error) {
+      debugPrint('Versionsabfrage übersprungen: $error');
+    }
   }
 
   /// Was die Erinnerung über den Lernstand wissen darf.
@@ -163,6 +181,7 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp>
     _state.dispose();
     _speaker.dispose();
     _reminders.dispose();
+    _updates.dispose();
     super.dispose();
   }
 
@@ -188,12 +207,15 @@ class _TaeglichKluegerAppState extends State<TaeglichKluegerApp>
             speaker: _speaker,
             child: ReminderScope(
               service: _reminders,
+              child: UpdateScope(
+              service: _updates,
               child: MaterialApp(
                 title: 'Täglich Klüger',
                 debugShowCheckedModeBanner: false,
                 theme: buildAppTheme(Brightness.light),
                 darkTheme: buildAppTheme(Brightness.dark),
                 home: const AppShell(),
+              ),
               ),
             ),
           ),

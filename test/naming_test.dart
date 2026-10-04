@@ -10,6 +10,7 @@ import 'package:ipa_testing_github_action/state/progress_store.dart';
 import 'package:ipa_testing_github_action/state/daily_card_store.dart';
 import 'package:ipa_testing_github_action/state/duel_store.dart';
 import 'package:ipa_testing_github_action/state/reminders.dart';
+import 'package:ipa_testing_github_action/state/update_check.dart';
 import 'package:ipa_testing_github_action/state/reward_store.dart';
 import 'package:ipa_testing_github_action/state/speech.dart';
 
@@ -39,6 +40,7 @@ void main() {
       expect(ReminderService.minuteKey, 'arabisch_lernen.reminder.minute');
       expect(ReminderService.morningKey, 'arabisch_lernen.reminder.morning');
       expect(ReminderService.noonKey, 'arabisch_lernen.reminder.noon');
+      expect(UpdateService.checkedKey, 'arabisch_lernen.update.checked');
     });
 
     test('Tagesinhalte', () {

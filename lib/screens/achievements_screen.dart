@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../data/achievements_data.dart';
 import '../models/achievement.dart';
+import '../state/backup.dart';
 import '../state/learning_state.dart';
+import '../state/progress_store.dart';
 
 /// Level, Punkte und die Abzeichen — was schon geschafft ist und was als
 /// Nächstes drankommt.
@@ -26,6 +28,25 @@ class AchievementsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Erfolge'),
         automaticallyImplyLeading: false,
+        actions: <Widget>[
+          PopupMenuButton<String>(
+            tooltip: 'Lernstand',
+            onSelected: (String wahl) => switch (wahl) {
+              'sichern' => _sichern(context, state),
+              _ => _zurueckholen(context, state),
+            },
+            itemBuilder: (BuildContext context) => const <PopupMenuEntry<String>>[
+              PopupMenuItem<String>(
+                value: 'sichern',
+                child: Text('Lernstand sichern'),
+              ),
+              PopupMenuItem<String>(
+                value: 'zurueck',
+                child: Text('Sicherung einspielen'),
+              ),
+            ],
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -51,6 +72,71 @@ class AchievementsScreen extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+
+  /// Den Lernstand als Datei herausgeben.
+  ///
+  /// Die Versicherung gegen alles, was mit Signaturen und Neuinstallationen
+  /// schiefgehen kann — unabhängig davon, ob ein fester Schlüssel hinterlegt
+  /// ist.
+  static Future<void> _sichern(
+      BuildContext context, LearningState state) async {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final bool ok = await BackupScope.of(context).sichern(state.snapshot);
+    messenger.showSnackBar(SnackBar(
+      content: Text(ok
+          ? 'Sicherung herausgegeben — leg sie irgendwo ab, wo du sie '
+              'wiederfindest.'
+          : 'Es gab kein Ziel zum Ablegen.'),
+    ));
+  }
+
+  /// Eine Sicherung einspielen — **erst fragen, dann ersetzen.**
+  ///
+  /// Eine Sicherung, die stillschweigend überschreibt, ist eine Falle: Wer
+  /// die falsche Datei erwischt, wäre seinen Lernstand los und hätte nichts
+  /// davon gemerkt.
+  static Future<void> _zurueckholen(
+      BuildContext context, LearningState state) async {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final (RestoreOutcome ausgang, StoredProgress? stand) =
+        await BackupScope.of(context).lesen();
+
+    if (stand == null) {
+      if (ausgang != RestoreOutcome.abgebrochen) {
+        messenger.showSnackBar(SnackBar(content: Text(ausgang.message)));
+      }
+      return;
+    }
+    if (!context.mounted) return;
+
+    final bool? ja = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Sicherung einspielen?'),
+        content: Text(
+          'Die Sicherung enthält ${stand.words.length} Wörter mit Lernstand '
+          'und ${stand.answered} Antworten insgesamt. Sie ersetzt deinen '
+          'jetzigen Stand vollständig.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Einspielen'),
+          ),
+        ],
+      ),
+    );
+    if (ja != true) return;
+
+    await state.restore(stand);
+    messenger.showSnackBar(
+      SnackBar(content: Text(RestoreOutcome.eingespielt.message)),
     );
   }
 }

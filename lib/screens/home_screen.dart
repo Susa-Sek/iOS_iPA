@@ -10,6 +10,7 @@ import '../widgets/daily_find_card.dart';
 import '../widgets/quest_card.dart';
 import '../widgets/streak_chip.dart';
 import '../widgets/subject_switch.dart';
+import '../widgets/update_card.dart';
 import 'category_screen.dart';
 import 'flashcard_screen.dart';
 import 'search_screen.dart';
@@ -80,6 +81,7 @@ class HomeScreen extends StatelessWidget {
               MediaQuery.textScalerOf(context).scale(1),
             ),
           ),
+          const SliverToBoxAdapter(child: UpdateCard()),
           SliverToBoxAdapter(child: _KurzrundeCard(state: state)),
           SliverToBoxAdapter(child: _TodayCard(state: state)),
           const SliverToBoxAdapter(child: DailyFindCard()),
